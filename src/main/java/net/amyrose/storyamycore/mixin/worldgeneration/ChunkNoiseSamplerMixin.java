@@ -30,12 +30,16 @@ public class ChunkNoiseSamplerMixin {
         for (Chapter chapter : ChapterEngine.chapters) {
             // Check if within flat region
             if (x >= chapter.beginning.x && x <= chapter.end.x && z >= chapter.beginning.z && z <= chapter.end.z) {
-                if (y <= FLAT_Y) {
+                if (y <= 50) {
                     // Below or at Y=64: Preserve air (caves), otherwise use stone
                     cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
-                } else {
+                } else if(y > FLAT_Y){
                     // Above Y=64: Always air
                     cir.setReturnValue(Blocks.AIR.getDefaultState());
+                }
+                else
+                {
+                    cir.setReturnValue(Blocks.STONE.getDefaultState());
                 }
             }
         }
