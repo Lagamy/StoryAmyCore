@@ -1,0 +1,26 @@
+{
+  "mappings": {
+    "net/amyrose/storyamycore/mixin/worldgeneration/BiomeSourceMixin": {
+      "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
+    },
+    "net/amyrose/storyamycore/mixin/worldgeneration/HeightNoiseMixin": {
+      "getHeight": "Lnet/minecraft/class_3754;method_16397(IILnet/minecraft/class_2902$class_2903;Lnet/minecraft/class_5539;Lnet/minecraft/class_7138;)I"
+    },
+    "net/amyrose/storyamycore/mixin/worldgeneration/ServerWorldMixin": {
+      "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "net/amyrose/storyamycore/mixin/worldgeneration/BiomeSourceMixin": {
+        "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
+      },
+      "net/amyrose/storyamycore/mixin/worldgeneration/HeightNoiseMixin": {
+        "getHeight": "Lnet/minecraft/class_3754;method_16397(IILnet/minecraft/class_2902$class_2903;Lnet/minecraft/class_5539;Lnet/minecraft/class_7138;)I"
+      },
+      "net/amyrose/storyamycore/mixin/worldgeneration/ServerWorldMixin": {
+        "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
+      }
+    }
+  }
+}
