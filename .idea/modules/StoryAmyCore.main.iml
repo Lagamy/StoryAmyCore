@@ -12,7 +12,4 @@
       </configuration>
     </facet>
   </component>
-  <component name="McpModuleSettings">
-    <option name="minecraftVersion" value="1.20.1" />
-  </component>
 </module>
