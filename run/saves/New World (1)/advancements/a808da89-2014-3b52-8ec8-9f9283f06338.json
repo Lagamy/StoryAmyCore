@@ -1,0 +1,16 @@
+{
+  "minecraft:recipes/decorations/crafting_table": {
+    "criteria": {
+      "unlock_right_away": "2025-05-10 00:31:52 +0300"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:mangrove_swamp": "2025-05-10 00:31:55 +0300",
+      "minecraft:desert": "2025-05-10 00:31:56 +0300"
+    },
+    "done": false
+  },
+  "DataVersion": 3465
+}

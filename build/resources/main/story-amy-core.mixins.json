@@ -5,6 +5,7 @@
 	"mixins": [
 		"worldgeneration.BiomeSourceMixin",
 		"worldgeneration.ServerWorldMixin",
+		"worldgeneration.SurfaceBuilderMixin",
 		"worldgeneration.ChunkNoiseSamplerMixin"
 	],
 	"client": [],

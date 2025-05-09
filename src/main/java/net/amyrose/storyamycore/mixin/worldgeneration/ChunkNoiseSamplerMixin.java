@@ -4,11 +4,18 @@ import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.ChapterEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
+import net.minecraft.world.gen.chunk.GenerationShapeConfig;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Mixin(ChunkNoiseSampler.class)
 public class ChunkNoiseSamplerMixin {
@@ -22,28 +29,31 @@ public class ChunkNoiseSamplerMixin {
     )
     private void modifyBlockState(CallbackInfoReturnable<BlockState> cir) {
         BlockState originalState = cir.getReturnValue();
-        ChunkNoiseSampler sampler = (ChunkNoiseSampler)(Object)this;
+        ChunkNoiseSampler sampler = (ChunkNoiseSampler) (Object) this;
         int x = sampler.blockX();
         int y = sampler.blockY();
         int z = sampler.blockZ();
 
+        // Apply existing Chapter logic for flat regions
         for (Chapter chapter : ChapterEngine.chapters) {
-            // Check if within flat region
             if (x >= chapter.beginning.x && x <= chapter.end.x && z >= chapter.beginning.z && z <= chapter.end.z) {
                 if (y <= 50) {
-                    // Below or at Y=64: Preserve air (caves), otherwise use stone
+                    // Below or at Y=50: Preserve air (caves), otherwise use stone
                     cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
-                } else if(y > FLAT_Y){
+                } else if (y > FLAT_Y) {
                     // Above Y=64: Always air
                     cir.setReturnValue(Blocks.AIR.getDefaultState());
-                }
-                else
-                {
+                } else {
+                    // At Y=64: Stone
                     cir.setReturnValue(Blocks.STONE.getDefaultState());
                 }
+                return; // Exit early if in a Chapter region
             }
         }
     }
+
+
+
 
     @Inject(
             method = "estimateSurfaceHeight(II)I",
