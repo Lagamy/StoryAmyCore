@@ -1,7 +1,12 @@
 package net.amyrose.storyamycore.core;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Chapter {
     String name;
@@ -9,6 +14,7 @@ public class Chapter {
     public BlockPos2D end;
     public String biomeName;
     public RegistryEntry<Biome> biome;
+    public List<BlockPos> test = new ArrayList<>();
 
     public Chapter(String name, BlockPos2D beginning, BlockPos2D end, String biomeName, BlockPos2D offset){
         this.name = name;

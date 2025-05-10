@@ -4,21 +4,14 @@ import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.ChapterEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
-import net.minecraft.world.gen.chunk.GenerationShapeConfig;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Mixin(ChunkNoiseSampler.class)
-public class ChunkNoiseSamplerMixin {
+public class NoiseSamplerMixin {
     // Define flat region coordinates
     private static final int FLAT_Y = 64;    // Flat surface height
 
