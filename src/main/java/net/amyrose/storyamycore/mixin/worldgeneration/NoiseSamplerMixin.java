@@ -4,11 +4,15 @@ import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.ChapterEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Dictionary;
+import java.util.List;
 
 @Mixin(ChunkNoiseSampler.class)
 public class NoiseSamplerMixin {
@@ -29,7 +33,7 @@ public class NoiseSamplerMixin {
 
         // Apply existing Chapter logic for flat regions
         for (Chapter chapter : ChapterEngine.chapters) {
-            if (x >= chapter.beginning.x && x <= chapter.end.x && z >= chapter.beginning.z && z <= chapter.end.z) {
+            if (chapter.chapterArea.inBounds(x, z)) {
                 if (y <= 50) {
                     // Below or at Y=50: Preserve air (caves), otherwise use stone
                     cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
@@ -56,7 +60,7 @@ public class NoiseSamplerMixin {
     private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
         for (Chapter chapter : ChapterEngine.chapters) {
             // Check if within flat region
-            if (blockX >= chapter.beginning.x && blockX <= chapter.end.x && blockZ >= chapter.beginning.z && blockZ <= chapter.beginning.z) {
+            if (chapter.chapterArea.inBounds(blockX, blockZ)) {
                 cir.setReturnValue(FLAT_Y); // Force surface height to Y=64
             }
         }

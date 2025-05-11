@@ -21,7 +21,7 @@ public class BiomeSourceMixin {
         for(Chapter chapter : ChapterEngine.chapters) {
             if (chapter.biome != null) {
                 //System.out.println("Thread: " + Thread.currentThread().getName());
-                if (blockX >= chapter.beginning.x && blockX <= chapter.end.x && blockZ >= chapter.beginning.z && blockZ <= chapter.end.z) {
+                if (blockX >= chapter.chapterArea.beginning.x && blockX <= chapter.chapterArea.end.x && blockZ >= chapter.chapterArea.beginning.z && blockZ <= chapter.chapterArea.end.z) {
                     //System.out.println("Overriding biome to desert at blockX: " + blockX + ", blockZ: " + blockZ + ", Thread: " + Thread.currentThread().getName());
                     cir.setReturnValue(chapter.biome);
                 }

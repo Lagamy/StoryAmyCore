@@ -6,7 +6,7 @@
 		"worldgeneration.BiomeSourceMixin",
 		"worldgeneration.ServerWorldMixin",
 		"worldgeneration.SurfaceBuilderMixin",
-		"worldgeneration.NoiseGeneratorMixin"
+		"worldgeneration.NoiseSamplerMixin"
 	],
 	"client": [],
 	"server": [],

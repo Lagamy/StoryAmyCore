@@ -65,12 +65,6 @@ public class SurfaceBuilderMixin {
                             chunk.setBlockState(new BlockPos(x, currentHeight, z), Blocks.PINK_WOOL.getDefaultState(), false);
                         }
                     }
-                    for(BlockPos block : chapter.test){
-                        if(worldX == block.getX() && worldZ == block.getZ())
-                        {
-                            chunk.setBlockState(new BlockPos(x, block.getY(), z), Blocks.GREEN_WOOL.getDefaultState(), false);
-                        }
-                    }
                 }
             }
         }
