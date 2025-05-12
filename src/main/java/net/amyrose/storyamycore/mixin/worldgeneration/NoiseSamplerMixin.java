@@ -4,15 +4,11 @@ import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.ChapterEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Dictionary;
-import java.util.List;
 
 @Mixin(ChunkNoiseSampler.class)
 public class NoiseSamplerMixin {
@@ -46,6 +42,18 @@ public class NoiseSamplerMixin {
                 }
                 return; // Exit early if in a Chapter region
             }
+//            else
+//            {
+//                int ringLayer = chapter.CalculateWhatRingLayer(x, z);
+//                if (y > FLAT_Y - ringLayer) {
+//                    // Above Y=64: Always air
+//                    cir.setReturnValue(Blocks.AIR.getDefaultState());
+//                } else {
+//                    // At Y=64: Stone
+//                    cir.setReturnValue(Blocks.STONE.getDefaultState());
+//                }
+//
+//            }
         }
     }
 

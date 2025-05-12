@@ -1,13 +1,7 @@
 package net.amyrose.storyamycore.core;
 
-import net.minecraft.block.Blocks;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-
-import java.util.*;
-
-import static net.amyrose.storyamycore.core.ChapterEngine.RingBoundKey.*;
 
 public class Chapter {
     public String name;
@@ -21,9 +15,6 @@ public class Chapter {
         this.name = name;
         this.chapterArea = chapterArea;
         if (!ChapterEngine.chapters.isEmpty()) {
-            BlockPos2D lastEnd = ChapterEngine.chapters.get(ChapterEngine.chapters.size() - 1).chapterArea.end;
-            chapterArea.beginning.add(lastEnd);
-            chapterArea.end.add(lastEnd);
             chapterArea.beginning.add(offset);
             chapterArea.end.add(offset);
         }
@@ -32,5 +23,24 @@ public class Chapter {
                 new BlockPos2D(chapterArea.beginning.x - ChapterEngine.ringRadius, chapterArea.beginning.z - ChapterEngine.ringRadius),
                 new BlockPos2D(chapterArea.end.x + ChapterEngine.ringRadius, chapterArea.end.z + ChapterEngine.ringRadius)
         );
+    }
+
+    public int CalculateWhatRingLayer(int x, int z)
+    {
+        int xOffestFromСhapter = 0;
+
+        if (x < chapterArea.beginning.x)
+            xOffestFromСhapter = chapterArea.beginning.x - x;
+        else if (x > chapterArea.end.x)
+            xOffestFromСhapter = x - chapterArea.end.x;
+
+        int zOffestFromСhapter = 0;
+        if (z < chapterArea.beginning.z)
+            zOffestFromСhapter = chapterArea.beginning.z - z;
+        else if (z > chapterArea.end.z)
+            zOffestFromСhapter = z - chapterArea.end.z;
+
+
+        return Math.max(xOffestFromСhapter, zOffestFromСhapter);
     }
 }
