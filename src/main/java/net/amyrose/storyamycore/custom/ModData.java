@@ -11,6 +11,6 @@ public class ModData {
     public static void LoadChapters() {
         //ChapterEngine.chapters.add(new Chapter("test", new Zone(new BlockPos2D(0, 0), new BlockPos2D(100, 100)), "minecraft:desert", new BlockPos2D(0, 0))); // Safe place to put logic like this
         //ChapterEngine.chapters.add(new Chapter("test", new Zone(new BlockPos2D(0, 0), new BlockPos2D(100, 100)), "minecraft:mushroom_fields", new BlockPos2D(100 + ChapterEngine.ringRadius * 2, 0))); // Safe place to put logic like this
-        ChapterEngine.chapters.add(new Chapter("test", MOD_ID, new BlockPos2D(0, 0), "test", "", "minecraft:birch_forest", new BlockPos2D(0, 0))); // Safe place to put logic like this
+        ChapterEngine.chapters.add(new Chapter("test", MOD_ID, new BlockPos2D(0, 0), "test2", "", "minecraft:birch_forest", new BlockPos2D(0, 0))); // Safe place to put logic like this
     }
 }

@@ -12,17 +12,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static net.amyrose.storyamycore.core.ChapterEngine.XandZAsLong;
+
 @Mixin(MultiNoiseBiomeSource.class)
 public class BiomeSourceMixin {
 
     @Inject(method = "getBiome", at = @At("HEAD"), cancellable = true)
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
-        int blockX = x << 2;
-        int blockZ = z << 2;
+        int blockX = x * 4;
+        int blockZ = z * 4;
         for(Chapter chapter : ChapterEngine.chapters) {
             if (chapter.biome != null) {
                 //System.out.println("Thread: " + Thread.currentThread().getName());
-                if (blockX >= chapter.chapterArea.beginning.x && blockX <= chapter.chapterArea.end.x && blockZ >= chapter.chapterArea.beginning.z && blockZ <= chapter.chapterArea.end.z) {
+                if (chapter.landscape.containsKey(XandZAsLong(blockX, blockZ))) {
                     //System.out.println("Overriding biome to desert at blockX: " + blockX + ", blockZ: " + blockZ + ", Thread: " + Thread.currentThread().getName());
                     cir.setReturnValue(chapter.biome);
                 }
