@@ -1,38 +1,52 @@
 {
   "mappings": {
-    "net/amyrose/storyamycore/mixin/worldgeneration/BiomeSourceMixin": {
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
       "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
     },
-    "net/amyrose/storyamycore/mixin/worldgeneration/NoiseGeneratorMixin": {
-      "populateNoise(Lnet/minecraft/world/gen/chunk/Blender;Lnet/minecraft/world/gen/StructureAccessor;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/chunk/Chunk;II)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/class_3754;method_33754(Lnet/minecraft/class_6748;Lnet/minecraft/class_5138;Lnet/minecraft/class_7138;Lnet/minecraft/class_2791;II)Lnet/minecraft/class_2791;"
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
+      "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"
     },
-    "net/amyrose/storyamycore/mixin/worldgeneration/NoiseSamplerMixin": {
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
       "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
       "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
     },
-    "net/amyrose/storyamycore/mixin/worldgeneration/ServerWorldMixin": {
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixinOld": {
+      "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
+      "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
+    },
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {
       "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
     },
-    "net/amyrose/storyamycore/mixin/worldgeneration/SurfaceBuilderMixin": {
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixin": {
+      "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
+    },
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixinOld": {
       "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
     }
   },
   "data": {
     "named:intermediary": {
-      "net/amyrose/storyamycore/mixin/worldgeneration/BiomeSourceMixin": {
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
         "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
       },
-      "net/amyrose/storyamycore/mixin/worldgeneration/NoiseGeneratorMixin": {
-        "populateNoise(Lnet/minecraft/world/gen/chunk/Blender;Lnet/minecraft/world/gen/StructureAccessor;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/chunk/Chunk;II)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/class_3754;method_33754(Lnet/minecraft/class_6748;Lnet/minecraft/class_5138;Lnet/minecraft/class_7138;Lnet/minecraft/class_2791;II)Lnet/minecraft/class_2791;"
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
+        "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"
       },
-      "net/amyrose/storyamycore/mixin/worldgeneration/NoiseSamplerMixin": {
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
         "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
         "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
       },
-      "net/amyrose/storyamycore/mixin/worldgeneration/ServerWorldMixin": {
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixinOld": {
+        "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
+        "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
+      },
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {
         "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
       },
-      "net/amyrose/storyamycore/mixin/worldgeneration/SurfaceBuilderMixin": {
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixin": {
+        "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
+      },
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixinOld": {
         "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
       }
     }

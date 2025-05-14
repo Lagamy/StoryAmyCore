@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "all": {
+      "model": "minecraft:block/cyan_wool"
+    }
+  }
+}

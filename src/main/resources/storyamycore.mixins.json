@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "net.amyrose.storyamycore.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"WorldgenerationPipeline.MinecraftServerMixin",
+		"WorldgenerationPipeline.ServerWorldMixin",
+		"WorldgenerationPipeline.BiomeSourceMixin",
+		"WorldgenerationPipeline.NoiseSamplerMixin",
+		"WorldgenerationPipeline.SurfaceBuilderMixin"
+	],
+	"client": [],
+	"server": [],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
