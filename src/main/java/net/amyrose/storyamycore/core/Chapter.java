@@ -4,10 +4,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.structure.StructureTemplateManager;
@@ -37,7 +35,7 @@ public class Chapter {
 
     public Long2IntOpenHashMap landscape = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayers = new Long2IntOpenHashMap();
-    public LongOpenHashSet borderBlock = new LongOpenHashSet();
+    public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2ObjectOpenHashMap<BlockState> environment = new Long2ObjectOpenHashMap<>();
 
 
@@ -73,62 +71,17 @@ public class Chapter {
     }
 
     public int WhatRingLayerIsIt(int x, int z) {
-        long key = XandZAsLong(x, z);
-        int layer = ringLayers.getOrDefault(key, Integer.MIN_VALUE);
-        if (layer == Integer.MIN_VALUE) {
-            return -1; // Outside ringArea or uncomputed
-        }
-        return layer; // 0 for border/internal, 1–64 for rings
+        int encodedValue = ringLayers.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+        return encodedValue == Integer.MIN_VALUE ? encodedValue : RingLayerFromInt(encodedValue);
     }
 
-    public boolean isBorderBlock(int x, int z) {
-        long key = XandZAsLong(x, z);
-        return borderBlock.contains(key);
+    public int GetBorderYPosition(int x, int z){
+        int encodedValue = ringLayers.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+        return encodedValue == Integer.MIN_VALUE ? encodedValue : BorderYFromInt(encodedValue);
     }
-
-    public void computeLandscapeBorder() {
-        int[] dx = {1, -1, 0, 0};
-        int[] dz = {0, 0, 1, -1};
-
-        for (long key : landscape.keySet()) {
-            int x = LongToX(key);
-            int z = LongToZ(key);
-
-            boolean isEdge = false;
-            for (int i = 0; i < 4; i++) {
-                int nx = x + dx[i];
-                int nz = z + dz[i];
-                long neighborKey = XandZAsLong(nx, nz);
-
-                if (!landscape.containsKey(neighborKey)) {
-                    isEdge = true;
-                    break;
-                }
-            }
-
-            if (isEdge) {
-                borderBlock.add(key);
-            }
-        }
-    }
-
-//    public int CalculateWhatRingLayer(int x, int z)
-//    {
-//        int xOffestFromСhapter = 0;
-//
-//        if (x < chapterArea.beginning.x)
-//            xOffestFromСhapter = chapterArea.beginning.x - x;
-//        else if (x > chapterArea.end.x)
-//            xOffestFromСhapter = x - chapterArea.end.x;
-//
-//        int zOffestFromСhapter = 0;
-//        if (z < chapterArea.beginning.z)
-//            zOffestFromСhapter = chapterArea.beginning.z - z;
-//        else if (z > chapterArea.end.z)
-//            zOffestFromСhapter = z - chapterArea.end.z;
-//
-//
-//        return Math.max(xOffestFromСhapter, zOffestFromСhapter);
+//    public boolean isBorderBlock(int x, int z) {
+//        long key = XandZAsLong(x, z);
+//        return landscapeBorder.contains(key);
 //    }
 
 
@@ -175,47 +128,99 @@ public class Chapter {
         LOGGER.info("Populated landscape map with {} columns for chapter {}", landscape.size(), name);
         LOGGER.info(landscape.toString());
         computeLandscapeBorder();
-        computeRingLayersDeterministic();
+        computeRingLayersFromLandscape();
 
     }
 
-    public void computeRingLayersDeterministic() {
+    public void computeLandscapeBorder() {
+        int[] dx = {1, -1, 0, 0};
+        int[] dz = {0, 0, 1, -1};
+
+        for (long key : landscape.keySet()) {
+            int x = LongToX(key);
+            int z = LongToZ(key);
+
+            boolean isEdge = false;
+            for (int i = 0; i < 4; i++) {
+                int nx = x + dx[i];
+                int nz = z + dz[i];
+                long neighborKey = XandZAsLong(nx, nz);
+
+                if (!landscape.containsKey(neighborKey)) {
+                    landscapeBorder.put(key, landscape.get(key));
+                    break;
+                }
+            }
+        }
+    }
+
+    record RingStep(int x, int z, int borderY){
+    }
+
+    public void computeRingLayersFromLandscape() {
+        Queue<RingStep> queue = new ArrayDeque<>();
+        LongOpenHashSet visited = new LongOpenHashSet();
         ringLayers = new Long2IntOpenHashMap();
-        LongOpenHashSet currentLayer = new LongOpenHashSet(borderBlock); // Start with border blocks
-        LongOpenHashSet visited = new LongOpenHashSet(borderBlock);
+
+        // Initialize ring layer 1 from landscape border
+        for (long key : landscapeBorder.keySet()) {
+            int x = LongToX(key);
+            int z = LongToZ(key);
+            int borderY = landscapeBorder.get(key); // Get the Y-value
+            long packedKey = XandZAsLong(x, z);
+
+            queue.add(new RingStep(x, z, borderY));
+            ringLayers.put(packedKey, RingLayerandYAsInt(1, borderY)); // Ring layer 1
+            visited.add(packedKey);
+        }
 
         int[] dx = {1, -1, 0, 0};
         int[] dz = {0, 0, 1, -1};
 
-        for (int layer = 0; layer <= ChapterEngine.ringRadius; layer++) {
-            LongOpenHashSet nextLayer = new LongOpenHashSet();
+        while (!queue.isEmpty()) {
+            RingStep current = queue.poll();
+            int currentLayer = RingLayerFromInt(ringLayers.get(XandZAsLong(current.x, current.z)));
 
-            for (long key : currentLayer) {
-                ringLayers.put(key, layer);
-                int x = LongToX(key);
-                int z = LongToZ(key);
+            if (currentLayer >= ChapterEngine.ringRadius) continue;
 
-                for (int i = 0; i < 4; i++) {
-                    int nx = x + dx[i];
-                    int nz = z + dz[i];
-                    long neighborKey = XandZAsLong(nx, nz);
+            for (int i = 0; i < 4; i++) {
+                int nx = current.x + dx[i];
+                int nz = current.z + dz[i];
 
-                    if (visited.contains(neighborKey)) continue;
-                    if (!ringArea.inBounds(nx, nz)) continue;
+                if (!ringArea.inBounds(nx, nz)) continue;
 
-                    nextLayer.add(neighborKey);
-                    visited.add(neighborKey);
-                }
+                long key = XandZAsLong(nx, nz);
+                if (visited.contains(key) || landscape.containsKey(key)) continue;
+
+                ringLayers.put(key, RingLayerandYAsInt(currentLayer + 1, current.borderY));
+                visited.add(key);
+                queue.add(new RingStep(nx, nz, current.borderY));
             }
-
-            currentLayer = nextLayer;
-            if (currentLayer.isEmpty()) break; // All done early
         }
 
-        LOGGER.info("Deterministically calculated ring layers: {}", ringLayers.size());
+        LOGGER.info("Calculated ring layers: {}", ringLayers.size());
     }
 
 
+
+    public int SquareWhatRingLayer(int x, int z)
+    {
+        int xOffestFromСhapter = 0;
+
+        if (x < chapterArea.beginning.x)
+            xOffestFromСhapter = chapterArea.beginning.x - x;
+        else if (x > chapterArea.end.x)
+            xOffestFromСhapter = x - chapterArea.end.x;
+
+        int zOffestFromСhapter = 0;
+        if (z < chapterArea.beginning.z)
+            zOffestFromСhapter = chapterArea.beginning.z - z;
+        else if (z > chapterArea.end.z)
+            zOffestFromСhapter = z - chapterArea.end.z;
+
+
+        return Math.max(xOffestFromСhapter, zOffestFromСhapter);
+    }
     // Method to load a StructureTemplate from a path
     public StructureTemplate loadStructureTemplate(MinecraftServer server, String structureName) {
         // Get the StructureTemplateManager
@@ -226,4 +231,6 @@ public class Chapter {
         return templateManager.getTemplate(structureId)
                 .orElseThrow(() -> new IllegalArgumentException("Structure not found: " + structureId));
     }
+
+
 }

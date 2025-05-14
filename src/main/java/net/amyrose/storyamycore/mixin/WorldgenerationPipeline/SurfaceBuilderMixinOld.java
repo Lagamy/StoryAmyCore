@@ -48,7 +48,11 @@ public class SurfaceBuilderMixinOld {
                         currentHeight = chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z);
 
                         // Calculate which "ring layer" this block is in (distance from chapter edge)
-                        int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
+                        int ringLayer = chapter.SquareWhatRingLayer(worldX, worldZ);
+
+
+
+
 
                         // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
                         float normalized = (float) ringLayer / ChapterEngine.ringRadius;
