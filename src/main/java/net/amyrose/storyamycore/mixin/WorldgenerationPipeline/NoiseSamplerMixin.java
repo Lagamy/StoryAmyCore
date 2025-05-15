@@ -15,7 +15,6 @@ import static net.amyrose.storyamycore.core.ChapterEngine.XandZAsLong;
 @Mixin(ChunkNoiseSampler.class)
 public class NoiseSamplerMixin {
     // Define flat region coordinates
-    private static final int FLAT_Y = 64;    // Flat surface height
 
     @Inject(
             method = "sampleBlockState()Lnet/minecraft/block/BlockState;",
@@ -31,7 +30,7 @@ public class NoiseSamplerMixin {
         // Apply existing Chapter logic for flat regions
         for (Chapter chapter : ChapterEngine.chapters) {
             if (chapter.chapterArea.inBounds(x, z)) {
-                int MapedY = chapter.landscape.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
                 if (MapedY != Integer.MIN_VALUE) {
                     if (y <= 50) {
                         // Below or at Y=50: Preserve air (caves), otherwise use stone
@@ -73,7 +72,7 @@ public class NoiseSamplerMixin {
         for (Chapter chapter : ChapterEngine.chapters) {
             // Check if within flat region
             if (chapter.chapterArea.inBounds(blockX, blockZ)) {
-                int MapedY = chapter.landscape.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
+                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
                 if(MapedY != Integer.MIN_VALUE) {
                 cir.setReturnValue(MapedY);
                 }

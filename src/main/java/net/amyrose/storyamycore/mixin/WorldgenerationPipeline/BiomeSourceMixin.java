@@ -2,7 +2,6 @@ package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.ChapterEngine;
-import net.minecraft.block.StructureBlock;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.MultiNoiseBiomeSource;
@@ -24,7 +23,7 @@ public class BiomeSourceMixin {
         for(Chapter chapter : ChapterEngine.chapters) {
             if (chapter.biome != null) {
                 //System.out.println("Thread: " + Thread.currentThread().getName());
-                if (chapter.landscape.containsKey(XandZAsLong(blockX, blockZ))) {
+                if (chapter.landscapeMap.containsKey(XandZAsLong(blockX, blockZ))) {
                     //System.out.println("Overriding biome to desert at blockX: " + blockX + ", blockZ: " + blockZ + ", Thread: " + Thread.currentThread().getName());
                     cir.setReturnValue(chapter.biome);
                 }

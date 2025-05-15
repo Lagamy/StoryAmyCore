@@ -42,18 +42,6 @@ public class NoiseSamplerMixinOld {
                 }
                 return; // Exit early if in a Chapter region
             }
-//            else
-//            {
-//                int ringLayer = chapter.CalculateWhatRingLayer(x, z);
-//                if (y > FLAT_Y - ringLayer) {
-//                    // Above Y=64: Always air
-//                    cir.setReturnValue(Blocks.AIR.getDefaultState());
-//                } else {
-//                    // At Y=64: Stone
-//                    cir.setReturnValue(Blocks.STONE.getDefaultState());
-//                }
-//
-//            }
         }
     }
 

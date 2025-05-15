@@ -12,6 +12,7 @@ import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.HeightContext;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
+import net.minecraft.world.gen.foliage.FoliagePlacer;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.world.gen.surfacebuilder.MaterialRules;
 import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.amyrose.storyamycore.core.ChapterEngine.XandZAsLong;
-
+FoliagePlacer.TreeNode
 @Mixin(SurfaceBuilder.class)
 public class SurfaceBuilderMixin {
     @Inject(method = "buildSurface", at = @At("HEAD"))

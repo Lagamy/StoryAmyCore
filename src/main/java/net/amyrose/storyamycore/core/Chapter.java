@@ -33,10 +33,10 @@ public class Chapter {
     public String landscapeName;
     public String environmentPath;
 
-    public Long2IntOpenHashMap landscape = new Long2IntOpenHashMap();
-    public Long2IntOpenHashMap ringLayers = new Long2IntOpenHashMap();
+    public Long2IntOpenHashMap landscapeMap = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
-    public Long2ObjectOpenHashMap<BlockState> environment = new Long2ObjectOpenHashMap<>();
+    public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
+    public Long2ObjectOpenHashMap<BlockState> environmentMap = new Long2ObjectOpenHashMap<>();
 
 
     public RegistryEntry<Biome> biome;
@@ -71,12 +71,12 @@ public class Chapter {
     }
 
     public int WhatRingLayerIsIt(int x, int z) {
-        int encodedValue = ringLayers.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+        int encodedValue = ringLayersMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
         return encodedValue == Integer.MIN_VALUE ? encodedValue : RingLayerFromInt(encodedValue);
     }
 
     public int GetBorderYPosition(int x, int z){
-        int encodedValue = ringLayers.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+        int encodedValue = ringLayersMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
         return encodedValue == Integer.MIN_VALUE ? encodedValue : BorderYFromInt(encodedValue);
     }
 //    public boolean isBorderBlock(int x, int z) {
@@ -119,14 +119,63 @@ public class Chapter {
                 int y = worldPos.getY();
 
                 // Update the y-value only if it's higher than the current stored value (or if no value exists)
-                if (!landscape.containsKey(key) || y > landscape.get(key)) {
-                    landscape.put(key, y);
+                if (!landscapeMap.containsKey(key) || y > landscapeMap.get(key)) {
+                    landscapeMap.put(key, y);
                 }
             }
         }
 
-        LOGGER.info("Populated landscape map with {} columns for chapter {}", landscape.size(), name);
-        LOGGER.info(landscape.toString());
+        LOGGER.info("Populated landscape map with {} columns for chapter {}", landscapeMap.size(), name);
+        LOGGER.info(landscapeMap.toString());
+        computeLandscapeBorder();
+        computeRingLayersFromLandscape();
+
+    }
+
+
+
+    // Populate environment map with absolute world coordinates
+    public void populateEnvironmentMap(StructureTemplate environmentTemplate) {
+        if (environmentTemplate == null) {
+            LOGGER.error("Cannot populate landscape map: environmentTemplate is null for chapter {}", name);
+            throw new RuntimeException("environmentTemplate is null for chapter " + name); // Crash the game
+        }
+        Vec3i size = environmentTemplate.getSize();
+        chapterArea = new Zone(beginningTemp, new BlockPos2D(beginningTemp.x + size.getX(), beginningTemp.z + size.getZ()));
+
+        ringArea = new Zone(
+                new BlockPos2D(chapterArea.beginning.x - ChapterEngine.ringRadius, chapterArea.beginning.z - ChapterEngine.ringRadius),
+                new BlockPos2D(chapterArea.end.x + ChapterEngine.ringRadius, chapterArea.end.z + ChapterEngine.ringRadius)
+        );
+
+        // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
+        BlockPos origin = new BlockPos(chapterArea.beginning.x, 64, chapterArea.beginning.z); // y=64 for flat terrain
+
+        // Default placement settings (no rotation/mirror, adjust as needed)
+        StructurePlacementData placementData = new StructurePlacementData()
+                .setMirror(BlockMirror.NONE)
+                .setRotation(BlockRotation.NONE)
+                .setPosition(origin);
+
+        // Get transformed block infos
+        List<StructureTemplate.StructureBlockInfo> blockInfos = placementData.getRandomBlockInfos(environmentTemplate.blockInfoLists, origin).getAll();
+
+        // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
+        for (StructureTemplate.StructureBlockInfo info : blockInfos) {
+            if (!info.state().isAir()) {
+                BlockPos worldPos = info.pos(); // Absolute world position
+                long key = new BlockPos(worldPos.getX(), worldPos.getY(), worldPos.getZ()).asLong();
+                BlockState blockState = info.state();
+
+
+                if (!environmentMap.containsKey(key)) {
+                    environmentMap.put(key, blockState);
+                }
+            }
+        }
+
+        LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);
+        LOGGER.info(environmentMap.toString());
         computeLandscapeBorder();
         computeRingLayersFromLandscape();
 
@@ -136,7 +185,7 @@ public class Chapter {
         int[] dx = {1, -1, 0, 0};
         int[] dz = {0, 0, 1, -1};
 
-        for (long key : landscape.keySet()) {
+        for (long key : landscapeMap.keySet()) {
             int x = LongToX(key);
             int z = LongToZ(key);
 
@@ -146,8 +195,8 @@ public class Chapter {
                 int nz = z + dz[i];
                 long neighborKey = XandZAsLong(nx, nz);
 
-                if (!landscape.containsKey(neighborKey)) {
-                    landscapeBorder.put(key, landscape.get(key));
+                if (!landscapeMap.containsKey(neighborKey)) {
+                    landscapeBorder.put(key, landscapeMap.get(key));
                     break;
                 }
             }
@@ -160,7 +209,7 @@ public class Chapter {
     public void computeRingLayersFromLandscape() {
         Queue<RingStep> queue = new ArrayDeque<>();
         LongOpenHashSet visited = new LongOpenHashSet();
-        ringLayers = new Long2IntOpenHashMap();
+        ringLayersMap = new Long2IntOpenHashMap();
 
         // Initialize ring layer 1 from landscape border
         for (long key : landscapeBorder.keySet()) {
@@ -170,7 +219,7 @@ public class Chapter {
             long packedKey = XandZAsLong(x, z);
 
             queue.add(new RingStep(x, z, borderY));
-            ringLayers.put(packedKey, RingLayerandYAsInt(1, borderY)); // Ring layer 1
+            ringLayersMap.put(packedKey, RingLayerandYAsInt(1, borderY)); // Ring layer 1
             visited.add(packedKey);
         }
 
@@ -179,7 +228,7 @@ public class Chapter {
 
         while (!queue.isEmpty()) {
             RingStep current = queue.poll();
-            int currentLayer = RingLayerFromInt(ringLayers.get(XandZAsLong(current.x, current.z)));
+            int currentLayer = RingLayerFromInt(ringLayersMap.get(XandZAsLong(current.x, current.z)));
 
             if (currentLayer >= ChapterEngine.ringRadius) continue;
 
@@ -190,15 +239,15 @@ public class Chapter {
                 if (!ringArea.inBounds(nx, nz)) continue;
 
                 long key = XandZAsLong(nx, nz);
-                if (visited.contains(key) || landscape.containsKey(key)) continue;
+                if (visited.contains(key) || landscapeMap.containsKey(key)) continue;
 
-                ringLayers.put(key, RingLayerandYAsInt(currentLayer + 1, current.borderY));
+                ringLayersMap.put(key, RingLayerandYAsInt(currentLayer + 1, current.borderY));
                 visited.add(key);
                 queue.add(new RingStep(nx, nz, current.borderY));
             }
         }
 
-        LOGGER.info("Calculated ring layers: {}", ringLayers.size());
+        LOGGER.info("Calculated ring layers: {}", ringLayersMap.size());
     }
 
 
