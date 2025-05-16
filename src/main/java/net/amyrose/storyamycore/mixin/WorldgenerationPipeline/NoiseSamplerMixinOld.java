@@ -1,7 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
-import net.amyrose.storyamycore.core.ChapterEngine;
+import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
@@ -28,7 +28,7 @@ public class NoiseSamplerMixinOld {
         int z = sampler.blockZ();
 
         // Apply existing Chapter logic for flat regions
-        for (Chapter chapter : ChapterEngine.chapters) {
+        for (Chapter chapter : StoryEngine.chapters) {
             if (chapter.chapterArea.inBounds(x, z)) {
                 if (y <= 50) {
                     // Below or at Y=50: Preserve air (caves), otherwise use stone
@@ -54,7 +54,7 @@ public class NoiseSamplerMixinOld {
             cancellable = true
     )
     private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
-        for (Chapter chapter : ChapterEngine.chapters) {
+        for (Chapter chapter : StoryEngine.chapters) {
             // Check if within flat region
             if (chapter.chapterArea.inBounds(blockX, blockZ)) {
                 cir.setReturnValue(FLAT_Y); // Force surface height to Y=64

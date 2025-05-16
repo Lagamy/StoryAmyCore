@@ -1,7 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
-import net.amyrose.storyamycore.core.ChapterEngine;
+import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.math.BlockPos;
@@ -38,7 +38,7 @@ public class SurfaceBuilderMixinOld {
                 int currentHeight;
                 int chapterHeight = 64;
                 // Get the current surface height from the heightmap
-                for (Chapter chapter : ChapterEngine.chapters) {
+                for (Chapter chapter : StoryEngine.chapters) {
                     //for(int layer = 1; layer <= ringRadius; layer++ ) {
                     boolean isOuterBorder = !chapter.chapterArea.inBounds(worldX, worldZ) && chapter.ringArea.inBounds(worldX, worldZ);
 
@@ -55,7 +55,7 @@ public class SurfaceBuilderMixinOld {
 
 
                         // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
-                        float normalized = (float) ringLayer / ChapterEngine.ringRadius;
+                        float normalized = (float) ringLayer / StoryEngine.ringRadius;
 
                         // Interpolate between flatY and vanilla height using the normalized value
                         // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight

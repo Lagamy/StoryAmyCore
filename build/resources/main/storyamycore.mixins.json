@@ -6,8 +6,9 @@
 		"WorldgenerationPipeline.MinecraftServerMixin",
 		"WorldgenerationPipeline.ServerWorldMixin",
 		"WorldgenerationPipeline.BiomeSourceMixin",
-		"WorldgenerationPipeline.NoiseSamplerMixin",
-		"WorldgenerationPipeline.SurfaceBuilderMixin"
+		"WorldgenerationPipeline.SurfaceBuilderMixin",
+		"WorldgenerationPipeline.FeaturesMixin",
+		"WorldgenerationPipeline.CarverMixin"
 	],
 	"client": [],
 	"server": [],

@@ -1,7 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
-import net.amyrose.storyamycore.core.ChapterEngine;
+import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.MultiNoiseBiomeSource;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static net.amyrose.storyamycore.core.ChapterEngine.XandZAsLong;
+import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
 
 @Mixin(MultiNoiseBiomeSource.class)
 public class BiomeSourceMixin {
@@ -20,7 +20,7 @@ public class BiomeSourceMixin {
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
         int blockX = x * 4;
         int blockZ = z * 4;
-        for(Chapter chapter : ChapterEngine.chapters) {
+        for(Chapter chapter : StoryEngine.chapters) {
             if (chapter.biome != null) {
                 //System.out.println("Thread: " + Thread.currentThread().getName());
                 if (chapter.landscapeMap.containsKey(XandZAsLong(blockX, blockZ))) {

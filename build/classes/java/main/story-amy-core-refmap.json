@@ -3,6 +3,12 @@
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
       "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
     },
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/CarverMixin": {
+      "carveRegion": "Lnet/minecraft/class_2939;method_33978(Lnet/minecraft/class_5873;Lnet/minecraft/class_5871;Lnet/minecraft/class_2791;Ljava/util/function/Function;Lnet/minecraft/class_6350;DDDDDLnet/minecraft/class_6643;Lnet/minecraft/class_2939$class_5874;)Z"
+    },
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/FeaturesMixin": {
+      "generate(Lnet/minecraft/world/gen/feature/FeaturePlacementContext;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_6796;method_39648(Lnet/minecraft/class_5444;Lnet/minecraft/class_5819;Lnet/minecraft/class_2338;)Z"
+    },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
       "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"
     },
@@ -28,6 +34,12 @@
     "named:intermediary": {
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
         "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
+      },
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/CarverMixin": {
+        "carveRegion": "Lnet/minecraft/class_2939;method_33978(Lnet/minecraft/class_5873;Lnet/minecraft/class_5871;Lnet/minecraft/class_2791;Ljava/util/function/Function;Lnet/minecraft/class_6350;DDDDDLnet/minecraft/class_6643;Lnet/minecraft/class_2939$class_5874;)Z"
+      },
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/FeaturesMixin": {
+        "generate(Lnet/minecraft/world/gen/feature/FeaturePlacementContext;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_6796;method_39648(Lnet/minecraft/class_5444;Lnet/minecraft/class_5819;Lnet/minecraft/class_2338;)Z"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
         "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"

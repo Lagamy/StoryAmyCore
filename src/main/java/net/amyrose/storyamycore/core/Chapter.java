@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructurePlacementData;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Queue;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
-import static net.amyrose.storyamycore.core.ChapterEngine.*;
+import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 public class Chapter {
     public String modId;
@@ -31,8 +32,9 @@ public class Chapter {
     public Zone ringArea;
     public String biomeName;
     public String landscapeName;
-    public String environmentPath;
-
+    public String environmentName;
+    public int maxHeight = 64;
+    public LongOpenHashSet noFoliageMask = new LongOpenHashSet();
     public Long2IntOpenHashMap landscapeMap = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
@@ -45,27 +47,27 @@ public class Chapter {
     public Chapter(String name, Zone chapterArea, String biomeName, BlockPos2D offset) {
         this.name = name;
         this.chapterArea = chapterArea;
-        if (!ChapterEngine.chapters.isEmpty()) {
+        if (!StoryEngine.chapters.isEmpty()) {
             chapterArea.beginning.add(offset);
             chapterArea.end.add(offset);
         }
         this.biomeName = biomeName;
         ringArea = new Zone(
-                new BlockPos2D(chapterArea.beginning.x - ChapterEngine.ringRadius, chapterArea.beginning.z - ChapterEngine.ringRadius),
-                new BlockPos2D(chapterArea.end.x + ChapterEngine.ringRadius, chapterArea.end.z + ChapterEngine.ringRadius)
+                new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
+                new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
         );
     }
 
 
-    public Chapter(String name, String modId, BlockPos2D beginning, String landscapeName, String environmentPath, String biomeName, BlockPos2D offset) {
+    public Chapter(String name, String modId, BlockPos2D beginning, String landscapeName, String environmentName, String biomeName, BlockPos2D offset) {
         this.name = name;
         this.beginningTemp = beginning;
-        if (!ChapterEngine.chapters.isEmpty()) {
+        if (!StoryEngine.chapters.isEmpty()) {
             chapterArea.beginning.add(offset);
             chapterArea.end.add(offset);
         }
         this.landscapeName = landscapeName;
-        this.environmentPath = environmentPath;
+        this.environmentName = environmentName;
         this.biomeName = biomeName;
         this.modId = modId;
     }
@@ -95,8 +97,8 @@ public class Chapter {
         chapterArea = new Zone(beginningTemp, new BlockPos2D(beginningTemp.x + size.getX(), beginningTemp.z + size.getZ()));
 
         ringArea = new Zone(
-                new BlockPos2D(chapterArea.beginning.x - ChapterEngine.ringRadius, chapterArea.beginning.z - ChapterEngine.ringRadius),
-                new BlockPos2D(chapterArea.end.x + ChapterEngine.ringRadius, chapterArea.end.z + ChapterEngine.ringRadius)
+                new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
+                new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
         );
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
@@ -116,7 +118,7 @@ public class Chapter {
             if (!info.state().isAir()) {
                 BlockPos worldPos = info.pos(); // Absolute world position
                 long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
-                int y = worldPos.getY();
+                int y = worldPos.getY() + 64;
 
                 // Update the y-value only if it's higher than the current stored value (or if no value exists)
                 if (!landscapeMap.containsKey(key) || y > landscapeMap.get(key)) {
@@ -140,13 +142,7 @@ public class Chapter {
             LOGGER.error("Cannot populate landscape map: environmentTemplate is null for chapter {}", name);
             throw new RuntimeException("environmentTemplate is null for chapter " + name); // Crash the game
         }
-        Vec3i size = environmentTemplate.getSize();
-        chapterArea = new Zone(beginningTemp, new BlockPos2D(beginningTemp.x + size.getX(), beginningTemp.z + size.getZ()));
-
-        ringArea = new Zone(
-                new BlockPos2D(chapterArea.beginning.x - ChapterEngine.ringRadius, chapterArea.beginning.z - ChapterEngine.ringRadius),
-                new BlockPos2D(chapterArea.end.x + ChapterEngine.ringRadius, chapterArea.end.z + ChapterEngine.ringRadius)
-        );
+        maxHeight = environmentTemplate.getSize().getY() + 64;
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
         BlockPos origin = new BlockPos(chapterArea.beginning.x, 64, chapterArea.beginning.z); // y=64 for flat terrain
@@ -162,23 +158,21 @@ public class Chapter {
 
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
-            if (!info.state().isAir()) {
+            BlockState blockState = info.state();
+            if (!blockState.isAir()) {
+
                 BlockPos worldPos = info.pos(); // Absolute world position
-                long key = new BlockPos(worldPos.getX(), worldPos.getY(), worldPos.getZ()).asLong();
-                BlockState blockState = info.state();
-
-
-                if (!environmentMap.containsKey(key)) {
+                System.out.println(worldPos);
+                long key = XYZasLong(worldPos.getX(), worldPos.getY() + 64, worldPos.getZ());
+                noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
+                if (!(blockState == Blocks.PINK_WOOL.getDefaultState())) {
                     environmentMap.put(key, blockState);
                 }
             }
         }
 
         LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);
-        LOGGER.info(environmentMap.toString());
-        computeLandscapeBorder();
-        computeRingLayersFromLandscape();
-
+        //LOGGER.info(environmentMap.toString());
     }
 
     public void computeLandscapeBorder() {
@@ -230,7 +224,7 @@ public class Chapter {
             RingStep current = queue.poll();
             int currentLayer = RingLayerFromInt(ringLayersMap.get(XandZAsLong(current.x, current.z)));
 
-            if (currentLayer >= ChapterEngine.ringRadius) continue;
+            if (currentLayer >= StoryEngine.ringRadius) continue;
 
             for (int i = 0; i < 4; i++) {
                 int nx = current.x + dx[i];
