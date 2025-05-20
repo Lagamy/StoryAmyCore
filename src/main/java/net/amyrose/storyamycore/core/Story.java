@@ -52,6 +52,7 @@ public class Story {
 
         for(Chapter chapter : chapters.values()) {
             chapter.initializeChapter(this);
+            updateStoryBounds(chapter);
         }
     }
 
@@ -63,16 +64,14 @@ public class Story {
         chapters.put(name, new Chapter(size, offsetFromPrevious, landscapeName, environmentName, biomeName));
     }
 
-    public void InitializeChapters() {
-        for (Chapter chapter : chapters.values()) {
-            if (chapter.first) {
-                // First chapter: initialize the bounding area directly
+    public void updateStoryBounds(Chapter chapter) {
+        if (chapter.first) {
+            // First chapter: initialize the bounding area directly
                 area = chapter.ringArea;
-            } else {
-                // Expand storyArea to include this chapter's area
-                area.beginning.setMin(chapter.ringArea.beginning);
-                area.end.setMax(chapter.ringArea.end);
-            }
+        } else {
+            // Expand storyArea to include this chapter's area
+            area.beginning.setMin(chapter.ringArea.beginning);
+            area.end.setMax(chapter.ringArea.end);
         }
     }
 }
