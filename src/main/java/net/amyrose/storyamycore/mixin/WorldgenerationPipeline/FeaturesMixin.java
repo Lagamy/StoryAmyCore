@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -28,16 +29,17 @@ public class FeaturesMixin {
     private void redirectForEach(Stream<BlockPos> stream, Consumer<BlockPos> consumer, FeaturePlacementContext context, Random random, BlockPos pos) {
         ConfiguredFeature<?, ?> configuredFeature = ((PlacedFeature)(Object)this).feature().value();
         MutableBoolean mutableBoolean = new MutableBoolean();
-        long start = System.nanoTime();
         stream.forEach(placedPos -> {
-            int chunkX = placedPos.getX() >> 4;
-            int chunkZ = placedPos.getZ() >> 4;
-            for (Chapter chapter : StoryEngine.chapters) {
-                if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-                    if (chapter.noFoliageMask.contains(XandZAsLong(placedPos.getX(), placedPos.getZ()))) {
-                        return; // Skip generation
+            for(Story story : StoryEngine.stories) {
+                if (story.area.inBounds(placedPos.getX(), placedPos.getZ())) {
+                    for (Chapter chapter : story.chapters.values()) {
+                        if (chapter.chapterArea.inBounds(placedPos.getX(), placedPos.getZ())) {
+                            if (chapter.noFoliageMask.contains(XandZAsLong(placedPos.getX(), placedPos.getZ()))) {
+                                return; // Skip generation
+                            }
+                            break; // Apply first chapter's mask and exit
+                        }
                     }
-                    break; // Apply first chapter's mask and exit
                 }
             }
             if (configuredFeature.generate(context.getWorld(), context.getChunkGenerator(), random, placedPos)) {

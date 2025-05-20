@@ -14,7 +14,6 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.Biome;
 
 import java.util.ArrayDeque;
@@ -25,8 +24,9 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 public class Chapter {
-    public String modId;
-    public BlockPos2D beginningTemp;
+    public boolean first = false;
+    BlockPos2D offsetFromPrevious;
+    BlockPos2D size;
     public String name;
     public Zone chapterArea;
     public Zone ringArea;
@@ -34,6 +34,7 @@ public class Chapter {
     public String landscapeName;
     public String environmentName;
     public int maxHeight = 64;
+    public int maxEnvironmentHeight;
     public LongOpenHashSet noFoliageMask = new LongOpenHashSet();
     public Long2IntOpenHashMap landscapeMap = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
@@ -44,32 +45,39 @@ public class Chapter {
     public RegistryEntry<Biome> biome;
 
 
-    public Chapter(String name, Zone chapterArea, String biomeName, BlockPos2D offset) {
-        this.name = name;
-        this.chapterArea = chapterArea;
-        if (!StoryEngine.chapters.isEmpty()) {
-            chapterArea.beginning.add(offset);
-            chapterArea.end.add(offset);
-        }
+    public Chapter(BlockPos2D size, String landscapeName, String environmentName,  String biomeName) {
+        this.landscapeName = landscapeName;
+        this.environmentName = environmentName;
         this.biomeName = biomeName;
+        this.size = size;
+        first = true;
+    }
+
+    public Chapter(BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName,  String biomeName) {
+        this.landscapeName = landscapeName;
+        this.environmentName = environmentName;
+        this.biomeName = biomeName;
+        this.size = size;
+        this.offsetFromPrevious = offsetFromPrevious;
+    }
+
+
+    public void initializeChapter(Story story)
+    {
+        BlockPos2D beginning;
+        if(first) {
+            beginning = new BlockPos2D(story.area.beginning.x + StoryEngine.ringRadius, story.area.beginning.z + StoryEngine.ringRadius);
+        }
+        else {
+            Chapter previousChapter = story.chapters.get(story.chapters.size() - 1);
+            beginning = previousChapter.chapterArea.end;
+            beginning.add(offsetFromPrevious);
+        }
+        chapterArea = new Zone(beginning, new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
         ringArea = new Zone(
                 new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
                 new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
         );
-    }
-
-
-    public Chapter(String name, String modId, BlockPos2D beginning, String landscapeName, String environmentName, String biomeName, BlockPos2D offset) {
-        this.name = name;
-        this.beginningTemp = beginning;
-        if (!StoryEngine.chapters.isEmpty()) {
-            chapterArea.beginning.add(offset);
-            chapterArea.end.add(offset);
-        }
-        this.landscapeName = landscapeName;
-        this.environmentName = environmentName;
-        this.biomeName = biomeName;
-        this.modId = modId;
     }
 
     public int WhatRingLayerIsIt(int x, int z) {
@@ -81,28 +89,16 @@ public class Chapter {
         int encodedValue = ringLayersMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
         return encodedValue == Integer.MIN_VALUE ? encodedValue : BorderYFromInt(encodedValue);
     }
-//    public boolean isBorderBlock(int x, int z) {
-//        long key = XandZAsLong(x, z);
-//        return landscapeBorder.contains(key);
-//    }
-
 
     // Populate landscape map with absolute world coordinates for the highest non-air block in each column
     public void populateLandscapeMap(StructureTemplate landscapeTemplate) {
         if (landscapeTemplate == null) {
             LOGGER.error("Cannot populate landscape map: landscapeTemplate is null for chapter {}", name);
-            throw new RuntimeException("landscapeTemplate is null for chapter " + name); // Crash the game
+            throw new RuntimeException("landscapeTemplate is null for chapter " + name);
         }
-        Vec3i size = landscapeTemplate.getSize();
-        chapterArea = new Zone(beginningTemp, new BlockPos2D(beginningTemp.x + size.getX(), beginningTemp.z + size.getZ()));
-
-        ringArea = new Zone(
-                new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
-                new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
-        );
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, 64, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = new BlockPos(chapterArea.beginning.x, maxHeight, chapterArea.beginning.z); // y=64 for flat terrain
 
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
@@ -118,7 +114,7 @@ public class Chapter {
             if (!info.state().isAir()) {
                 BlockPos worldPos = info.pos(); // Absolute world position
                 long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
-                int y = worldPos.getY() + 64;
+                int y = worldPos.getY() + maxHeight;
 
                 // Update the y-value only if it's higher than the current stored value (or if no value exists)
                 if (!landscapeMap.containsKey(key) || y > landscapeMap.get(key)) {
@@ -127,8 +123,8 @@ public class Chapter {
             }
         }
 
-        LOGGER.info("Populated landscape map with {} columns for chapter {}", landscapeMap.size(), name);
-        LOGGER.info(landscapeMap.toString());
+        //LOGGER.info("Populated landscape map with {} columns for chapter {}", landscapeMap.size(), name);
+        //LOGGER.info(landscapeMap.toString());
         computeLandscapeBorder();
         computeRingLayersFromLandscape();
 
@@ -140,12 +136,12 @@ public class Chapter {
     public void populateEnvironmentMap(StructureTemplate environmentTemplate) {
         if (environmentTemplate == null) {
             LOGGER.error("Cannot populate landscape map: environmentTemplate is null for chapter {}", name);
-            throw new RuntimeException("environmentTemplate is null for chapter " + name); // Crash the game
+            throw new RuntimeException("environmentTemplate is null for chapter " + name);
         }
-        maxHeight = environmentTemplate.getSize().getY() + 64;
+        maxEnvironmentHeight = environmentTemplate.getSize().getY() + maxHeight;
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, 64, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = new BlockPos(chapterArea.beginning.x, maxHeight, chapterArea.beginning.z); // y=64 for flat terrain
 
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
@@ -162,8 +158,8 @@ public class Chapter {
             if (!blockState.isAir()) {
 
                 BlockPos worldPos = info.pos(); // Absolute world position
-                System.out.println(worldPos);
-                long key = XYZasLong(worldPos.getX(), worldPos.getY() + 64, worldPos.getZ());
+                //System.out.println(worldPos);
+                long key = XYZasLong(worldPos.getX(), worldPos.getY() + maxHeight, worldPos.getZ());
                 noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
                 if (!(blockState == Blocks.PINK_WOOL.getDefaultState())) {
                     environmentMap.put(key, blockState);
@@ -171,7 +167,7 @@ public class Chapter {
             }
         }
 
-        LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);
+        //LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);
         //LOGGER.info(environmentMap.toString());
     }
 
@@ -183,7 +179,6 @@ public class Chapter {
             int x = LongToX(key);
             int z = LongToZ(key);
 
-            boolean isEdge = false;
             for (int i = 0; i < 4; i++) {
                 int nx = x + dx[i];
                 int nz = z + dz[i];
@@ -241,7 +236,7 @@ public class Chapter {
             }
         }
 
-        LOGGER.info("Calculated ring layers: {}", ringLayersMap.size());
+        //LOGGER.info("Calculated ring layers: {}", ringLayersMap.size());
     }
 
 
@@ -265,7 +260,7 @@ public class Chapter {
         return Math.max(xOffestFromСhapter, zOffestFromСhapter);
     }
     // Method to load a StructureTemplate from a path
-    public StructureTemplate loadStructureTemplate(MinecraftServer server, String structureName) {
+    public StructureTemplate loadStructureTemplate(MinecraftServer server, String structureName, String modId) {
         // Get the StructureTemplateManager
         StructureTemplateManager templateManager = server.getStructureTemplateManager();
         Identifier structureId = new Identifier(modId, structureName);

@@ -16,17 +16,10 @@
       "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
       "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
     },
-    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixinOld": {
-      "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
-      "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
-    },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {
       "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixin": {
-      "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
-    },
-    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixinOld": {
       "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
     }
   },
@@ -48,17 +41,10 @@
         "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
         "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
       },
-      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixinOld": {
-        "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
-        "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
-      },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {
         "<init>": "Lnet/minecraft/class_3218;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_5268;Lnet/minecraft/class_5321;Lnet/minecraft/class_5363;Lnet/minecraft/class_3949;ZJLjava/util/List;ZLnet/minecraft/class_8565;)V"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixin": {
-        "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
-      },
-      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/SurfaceBuilderMixinOld": {
         "buildSurface": "Lnet/minecraft/class_6724;method_39106(Lnet/minecraft/class_7138;Lnet/minecraft/class_4543;Lnet/minecraft/class_2378;ZLnet/minecraft/class_5868;Lnet/minecraft/class_2791;Lnet/minecraft/class_6568;Lnet/minecraft/class_6686$class_6708;)V"
       }
     }

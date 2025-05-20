@@ -5,10 +5,15 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoryEngine {
-    public static List<Chapter> chapters = new ArrayList<>();
+    public static List<Story> stories = new ArrayList<>();
+
+    public static final int maxDistanceBetweenStories = 500;
+
     public static int ringRadius = 64;
 
     static final int COORD_OFFSET = 30_000_000; // Minecraft world limit
@@ -60,5 +65,6 @@ public class StoryEngine {
     {
         return new BlockPos((int) ((key >> 38) & 0x3FFFFFFL) - COORD_OFFSET, (int) ((key >> 26) & 0xFFFL) - 2048, (int) (key & 0x3FFFFFFL) - COORD_OFFSET);
     }
+
 
 }

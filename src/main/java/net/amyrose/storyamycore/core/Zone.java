@@ -9,6 +9,10 @@ public class Zone {
         this.end = end;
     }
 
+    public Zone(int xBeginning, int zBeginning){ // To add end later on
+        this.beginning = new BlockPos2D(xBeginning, zBeginning);
+    }
+
     public boolean inBounds(int x, int z) {
         return x >= beginning.x && x <= end.x && z >= beginning.z && z <= end.z;
     }
@@ -28,5 +32,4 @@ public class Zone {
 
         return !(chunkEndX < beginning.x || chunkX > end.x || chunkEndZ < beginning.z || chunkZ > end.z);
     }
-
 }

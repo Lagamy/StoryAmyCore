@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
@@ -20,12 +21,18 @@ public class BiomeSourceMixin {
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
         int blockX = x * 4;
         int blockZ = z * 4;
-        for(Chapter chapter : StoryEngine.chapters) {
-            if (chapter.biome != null) {
-                //System.out.println("Thread: " + Thread.currentThread().getName());
-                if (chapter.landscapeMap.containsKey(XandZAsLong(blockX, blockZ))) {
-                    //System.out.println("Overriding biome to desert at blockX: " + blockX + ", blockZ: " + blockZ + ", Thread: " + Thread.currentThread().getName());
-                    cir.setReturnValue(chapter.biome);
+        for(Story story : StoryEngine.stories) {
+            if(story.area.chunkInBound(x, z)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if(chapter.chapterArea.chunkInBound(x, z)) {
+                        if (chapter.biome != null) {
+                            //System.out.println("Thread: " + Thread.currentThread().getName());
+                            if (chapter.landscapeMap.containsKey(XandZAsLong(blockX, blockZ))) {
+                                //System.out.println("Overriding biome to desert at blockX: " + blockX + ", blockZ: " + blockZ + ", Thread: " + Thread.currentThread().getName());
+                                cir.setReturnValue(chapter.biome);
+                            }
+                        }
+                    }
                 }
             }
         }

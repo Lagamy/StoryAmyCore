@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
@@ -24,11 +25,15 @@ public class CarverMixin {
     @Inject(method = "carveRegion", at = @At("HEAD"), cancellable = true)
     private void preventCaveCarving(CarverContext context, CarverConfig config, Chunk chunk, Function<BlockPos, RegistryEntry<Biome>> posToBiome, AquiferSampler aquiferSampler, double x, double y, double z, double width, double height, CarvingMask mask, Carver.SkipPredicate skipPredicate, CallbackInfoReturnable<Boolean> cir)
     {
-        for(Chapter chapter : StoryEngine.chapters) {
-            ChunkPos chunkPos = chunk.getPos();
-            if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)){
-                cir.setReturnValue(false);
-                return;
+        ChunkPos chunkPos = chunk.getPos();
+        for(Story story : StoryEngine.stories) {
+            if (story.area.chunkInBound(chunkPos.x, chunkPos.z)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)) {
+                        cir.setReturnValue(false);
+                        return;
+                    }
+                }
             }
         }
     }

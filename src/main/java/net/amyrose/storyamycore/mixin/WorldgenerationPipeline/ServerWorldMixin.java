@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -44,19 +45,21 @@ public class ServerWorldMixin {
         if (overworld != null) {
             Registry<Biome> biomeRegistry = overworld.getRegistryManager().get(RegistryKeys.BIOME);
             if (biomeRegistry != null) {
-                for (Chapter chapter : StoryEngine.chapters) {
+                for(Story story : StoryEngine.stories) {
+                    for (Chapter chapter : story.chapters.values()) {
 
 
-                    Optional<RegistryEntry.Reference<Biome>> biomeOptional = biomeRegistry.getEntry(
-                            RegistryKey.of(RegistryKeys.BIOME, new Identifier(chapter.biomeName))
-                    );
+                        Optional<RegistryEntry.Reference<Biome>> biomeOptional = biomeRegistry.getEntry(
+                                RegistryKey.of(RegistryKeys.BIOME, new Identifier(chapter.biomeName))
+                        );
 
-                    if (biomeOptional.isEmpty()) {
-                        LOGGER.error("Non existent biome was passed to biomeName!");
-                        throw new RuntimeException("Critical error: Non existent biome was passed to biomeName"); // Crash the game
-                    } else {
-                        chapter.biome = biomeOptional.get();
-                        LOGGER.info("Biome entry loaded: {}", chapter.biome.getKey().orElse(null));
+                        if (biomeOptional.isEmpty()) {
+                            LOGGER.error("Non existent biome was passed to biomeName!");
+                            throw new RuntimeException("Critical error: Non existent biome was passed to biomeName"); // Crash the game
+                        } else {
+                            chapter.biome = biomeOptional.get();
+                            LOGGER.info("Biome entry loaded: {}", chapter.biome.getKey().orElse(null));
+                        }
                     }
                 }
             }

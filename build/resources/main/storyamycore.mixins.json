@@ -6,6 +6,7 @@
 		"WorldgenerationPipeline.MinecraftServerMixin",
 		"WorldgenerationPipeline.ServerWorldMixin",
 		"WorldgenerationPipeline.BiomeSourceMixin",
+		"WorldgenerationPipeline.NoiseSamplerMixin",
 		"WorldgenerationPipeline.SurfaceBuilderMixin",
 		"WorldgenerationPipeline.FeaturesMixin",
 		"WorldgenerationPipeline.CarverMixin"

@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -35,42 +36,43 @@ public class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
-        for (Chapter chapter : StoryEngine.chapters) {
-            if(chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-                for (int x = 0; x < 16; ++x) {
-                    for (int z = 0; z < 16; ++z) {
-                        int worldX = chunkX + x;
-                        int worldZ = chunkZ + z;
-                        int currentHeight;
-                        // Get the current surface height from the heightmap
+        for(Story story : StoryEngine.stories) {
+            if (story.area.chunkInBound(chunkX, chunkZ)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+                        for (int x = 0; x < 16; ++x) {
+                            for (int z = 0; z < 16; ++z) {
+                                int worldX = chunkX + x;
+                                int worldZ = chunkZ + z;
+                                int currentHeight;
+                                // Get the current surface height from the heightmap
+
+                                //if (isOuterBorder) {
+
+                                // Get the vanilla terrain height at this block
+                                currentHeight = chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR, x, z);
+
+                                // Calculate which "ring layer" this block is in
+                                int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
+
+                                if (ringLayer != Integer.MIN_VALUE) { // Is ring layer
+                                    int BorderY = chapter.GetBorderYPosition(worldX, worldZ);
+                                    // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
+                                    float normalized = (float) ringLayer / StoryEngine.ringRadius;
+
+                                    // Interpolate between flatY and vanilla height using the normalized value
+                                    // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight
+                                    int resultHeight = (int) (BorderY * (1 - normalized) + currentHeight * normalized);
+
+                                    // Clear all blocks above the resultHeight in this column
+                                    for (int y = resultHeight + 1; y <= currentHeight; y++) {
+                                        chunk.setBlockState(new BlockPos(worldX, y, worldZ), Blocks.AIR.getDefaultState(), false);
+                                    }
 
 
-                        //if (isOuterBorder) {
-
-                        // Get the vanilla terrain height at this block
-                        currentHeight = chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR, x, z);
-
-                        // Calculate which "ring layer" this block is in
-                        int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
-
-                        if(ringLayer != Integer.MIN_VALUE) { // Is ring layer
-                            int BorderY = chapter.GetBorderYPosition(worldX, worldZ);
-                            // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
-                            float normalized = (float) ringLayer / StoryEngine.ringRadius;
-
-                            // Interpolate between flatY and vanilla height using the normalized value
-                            // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight
-                            int resultHeight = (int) (BorderY * (1 - normalized) + currentHeight * normalized);
-
-                            // Clear all blocks above the resultHeight in this column
-                            for (int y = resultHeight + 1; y <= currentHeight; y++) {
-                                chunk.setBlockState(new BlockPos(worldX, y, worldZ), Blocks.AIR.getDefaultState(), false);
-                            }
-
-
-                            // Now do something with resultHeight — for testing, maybe set a block at that height
-                            BlockPos targetPos = new BlockPos(worldX, resultHeight, worldZ);
-                            chunk.setBlockState(targetPos, Blocks.STONE.getDefaultState(), false); // Replace with desired block
+                                    // Now do something with resultHeight — for testing, maybe set a block at that height
+                                    BlockPos targetPos = new BlockPos(worldX, resultHeight, worldZ);
+                                    chunk.setBlockState(targetPos, Blocks.STONE.getDefaultState(), false); // Replace with desired block
 
 
 //                            if (ringLayer == 1) {
@@ -80,6 +82,8 @@ public class SurfaceBuilderMixin {
 //                            if (ringLayer == 62) {
 //                                chunk.setBlockState(new BlockPos(x, resultHeight, z), Blocks.MAGENTA_WOOL.getDefaultState(), false);
 //                            }
+                                }
+                            }
                         }
                     }
                 }
@@ -97,18 +101,22 @@ public class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
-        for (Chapter chapter : StoryEngine.chapters) {
-            if(chapter.chapterArea.chunkInBound(chunkX, chunkZ)) {
-                for (int x = 0; x < 16; ++x) {
-                    for (int z = 0; z < 16; ++z) {
-                        int worldX = chunkX + x;
-                        int worldZ = chunkZ + z;
-                        for (int y = 64; y <= chapter.maxHeight; y++){
-                            BlockPos pos = new BlockPos(worldX, y, worldZ);
-                            BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
-                            if(state != Blocks.AIR.getDefaultState()){
-                                //System.out.println("maxHeight: " + chapter.maxHeight);
-                                chunk.setBlockState(pos, state, false);
+        for(Story story : StoryEngine.stories) {
+            if (story.area.chunkInBound(chunkX, chunkZ)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.chapterArea.chunkInBound(chunkX, chunkZ)) {
+                        for (int x = 0; x < 16; ++x) {
+                            for (int z = 0; z < 16; ++z) {
+                                int worldX = chunkX + x;
+                                int worldZ = chunkZ + z;
+                                for (int y = 64; y <= chapter.maxEnvironmentHeight; y++) {
+                                    BlockPos pos = new BlockPos(worldX, y, worldZ);
+                                    BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
+                                    if (state != Blocks.AIR.getDefaultState()) {
+                                        //System.out.println("maxHeight: " + chapter.maxHeight);
+                                        chunk.setBlockState(pos, state, false);
+                                    }
+                                }
                             }
                         }
                     }

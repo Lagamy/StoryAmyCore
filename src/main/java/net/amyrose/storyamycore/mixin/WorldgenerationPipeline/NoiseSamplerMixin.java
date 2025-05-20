@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -28,21 +29,25 @@ public class NoiseSamplerMixin {
         int y = sampler.blockY();
         int z = sampler.blockZ();
         // Apply existing Chapter logic for flat regions
-        for (Chapter chapter : StoryEngine.chapters) {
-            if (chapter.chapterArea.inBounds(x, z)) {
-                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
-                if (MapedY != Integer.MIN_VALUE) {
-                    if (y <= 50) {
-                        // Below or at Y=50: Preserve air (caves), otherwise use stone
-                        cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
-                    } else if (y > MapedY) {
-                        // Above Y=64: Always air
-                        cir.setReturnValue(Blocks.AIR.getDefaultState());
-                    } else {
-                        // At Y=64: Stone
-                        cir.setReturnValue(Blocks.STONE.getDefaultState());
+        for(Story story : StoryEngine.stories) {
+            if(story.area.chunkInBound(x, z)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.chapterArea.inBounds(x, z)) {
+                        int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+                        if (MapedY != Integer.MIN_VALUE) {
+                            if (y <= 50) {
+                                // Below or at Y=50: Preserve air (caves), otherwise use stone
+                                cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
+                            } else if (y > MapedY) {
+                                // Above Y=64: Always air
+                                cir.setReturnValue(Blocks.AIR.getDefaultState());
+                            } else {
+                                // At Y=64: Stone
+                                cir.setReturnValue(Blocks.STONE.getDefaultState());
+                            }
+                            return; // Exit early if in a Chapter region
+                        }
                     }
-                    return; // Exit early if in a Chapter region
                 }
             }
         }
@@ -54,12 +59,14 @@ public class NoiseSamplerMixin {
             cancellable = true
     )
     private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
-        for (Chapter chapter : StoryEngine.chapters) {
-            // Check if within flat region
-            if (chapter.chapterArea.inBounds(blockX, blockZ)) {
-                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
-                if(MapedY != Integer.MIN_VALUE) {
-                cir.setReturnValue(MapedY);
+        for(Story story : StoryEngine.stories) {
+            for (Chapter chapter : story.chapters.values()) {
+                // Check if within flat region
+                if (chapter.chapterArea.inBounds(blockX, blockZ)) {
+                    int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
+                    if (MapedY != Integer.MIN_VALUE) {
+                        cir.setReturnValue(MapedY);
+                    }
                 }
             }
         }
