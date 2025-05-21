@@ -30,7 +30,7 @@ public class FeaturesMixin {
         ConfiguredFeature<?, ?> configuredFeature = ((PlacedFeature)(Object)this).feature().value();
         MutableBoolean mutableBoolean = new MutableBoolean();
         stream.forEach(placedPos -> {
-            for(Story story : StoryEngine.stories) {
+            for(Story story : StoryEngine.stories.values()) {
                 if (story.area.inBounds(placedPos.getX(), placedPos.getZ())) {
                     for (Chapter chapter : story.chapters.values()) {
                         if (chapter.chapterArea.inBounds(placedPos.getX(), placedPos.getZ())) {

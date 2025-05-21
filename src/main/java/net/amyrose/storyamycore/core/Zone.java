@@ -1,4 +1,5 @@
 package net.amyrose.storyamycore.core;
+import net.minecraft.nbt.NbtCompound;
 
 public class Zone {
     public BlockPos2D beginning;
@@ -12,6 +13,8 @@ public class Zone {
     public Zone(int xBeginning, int zBeginning){ // To add end later on
         this.beginning = new BlockPos2D(xBeginning, zBeginning);
     }
+
+    public Zone() {}
 
     public boolean inBounds(int x, int z) {
         return x >= beginning.x && x <= end.x && z >= beginning.z && z <= end.z;
@@ -31,5 +34,19 @@ public class Zone {
         int chunkEndZ = chunkZ + 15;
 
         return !(chunkEndX < beginning.x || chunkX > end.x || chunkEndZ < beginning.z || chunkZ > end.z);
+    }
+
+    public NbtCompound SaveToNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putLong("beginning", beginning.toLong());
+        nbt.putLong("end", end.toLong());
+        return nbt;
+    }
+
+    public static Zone LoadFromNbt(NbtCompound nbt) {
+        Zone zone = new Zone();
+        zone.beginning = BlockPos2D.fromLong(nbt.getLong("beginning"));
+        zone.end = BlockPos2D.fromLong(nbt.getLong("end"));
+        return zone;
     }
 }

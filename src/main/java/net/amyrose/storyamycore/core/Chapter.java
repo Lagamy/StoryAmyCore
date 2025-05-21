@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructurePlacementData;
@@ -271,4 +272,19 @@ public class Chapter {
     }
 
 
+    public NbtCompound SaveToNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.put("ringArea", ringArea.SaveToNbt());
+        nbt.put("chapterArea", chapterArea.SaveToNbt());
+        return nbt;
+    }
+
+    public void LoadFromNbt(NbtCompound nbt) {
+        if (nbt.contains("ringArea")) {
+            this.ringArea = Zone.LoadFromNbt(nbt.getCompound("ringArea"));
+        }
+        if (nbt.contains("chapterArea")) {
+            chapterArea = Zone.LoadFromNbt(nbt.getCompound("chapterArea"));
+        }
+    }
 }

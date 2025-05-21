@@ -32,4 +32,12 @@ public class BlockPos2D {
     public String toString() {
         return new String("x: " + x + " z: " + z);
     }
+
+    public long toLong() {
+        return StoryEngine.XandZAsLong(x, z);
+    }
+
+    public static BlockPos2D fromLong(long key) {
+        return new BlockPos2D(StoryEngine.LongToX(key), StoryEngine.LongToZ(key));
+    }
 }

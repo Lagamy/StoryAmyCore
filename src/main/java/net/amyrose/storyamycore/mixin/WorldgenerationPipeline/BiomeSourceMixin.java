@@ -21,7 +21,7 @@ public class BiomeSourceMixin {
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
         int blockX = x * 4;
         int blockZ = z * 4;
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             if(story.area.chunkInBound(x, z)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if(chapter.chapterArea.chunkInBound(x, z)) {

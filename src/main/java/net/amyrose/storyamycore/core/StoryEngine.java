@@ -2,6 +2,9 @@ package net.amyrose.storyamycore.core;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -9,8 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
+
 public class StoryEngine {
-    public static List<Story> stories = new ArrayList<>();
+    public static Map<String, Story> stories = new HashMap<>();
 
     public static final int maxDistanceBetweenStories = 500;
 
@@ -66,5 +71,36 @@ public class StoryEngine {
         return new BlockPos((int) ((key >> 38) & 0x3FFFFFFL) - COORD_OFFSET, (int) ((key >> 26) & 0xFFFL) - 2048, (int) (key & 0x3FFFFFFL) - COORD_OFFSET);
     }
 
+    public static void putStory(Story story) {
+        stories.put(story.name, story);
+    }
 
+    public static void RandomizeStories(){ // When there is saved data(Fresh world)
+        for(Story story : stories.values()) {
+            story.RandomizeStory();
+        }
+    }
+
+    public static NbtCompound SaveStoriesToNBT() {
+        NbtCompound storiesNbt = new NbtCompound();
+        for (Map.Entry<String, Story> story : stories.entrySet()) {
+            NbtCompound storyNbt = story.getValue().SaveToNbt();
+            storiesNbt.put(story.getKey(), storyNbt);
+        }
+        return storiesNbt;
+    }
+
+    public static void LoadStoriesFromNBT(NbtCompound compound) {
+        for (Map.Entry<String, Story> story : stories.entrySet()) {
+            String key = story.getKey();
+            if (compound.contains(key, NbtElement.COMPOUND_TYPE)) {
+                story.getValue().LoadFromNbt(compound.getCompound(key));
+                LOGGER.info("Created {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
+            }
+            else {
+                story.getValue().RandomizeStory(); // Create user added story after map was already created.(So I don't need to handle uninitialized stories)
+                LOGGER.info("Loaded {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
+            }
+        }
+    }
 }

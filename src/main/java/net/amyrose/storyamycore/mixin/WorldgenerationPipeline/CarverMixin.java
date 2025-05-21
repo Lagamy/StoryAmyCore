@@ -26,7 +26,7 @@ public class CarverMixin {
     private void preventCaveCarving(CarverContext context, CarverConfig config, Chunk chunk, Function<BlockPos, RegistryEntry<Biome>> posToBiome, AquiferSampler aquiferSampler, double x, double y, double z, double width, double height, CarvingMask mask, Carver.SkipPredicate skipPredicate, CallbackInfoReturnable<Boolean> cir)
     {
         ChunkPos chunkPos = chunk.getPos();
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             if (story.area.chunkInBound(chunkPos.x, chunkPos.z)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)) {

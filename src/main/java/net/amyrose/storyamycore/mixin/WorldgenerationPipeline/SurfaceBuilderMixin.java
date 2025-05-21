@@ -36,7 +36,7 @@ public class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             if (story.area.chunkInBound(chunkX, chunkZ)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
@@ -101,7 +101,7 @@ public class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             if (story.area.chunkInBound(chunkX, chunkZ)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.chapterArea.chunkInBound(chunkX, chunkZ)) {

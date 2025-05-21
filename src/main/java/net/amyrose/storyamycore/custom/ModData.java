@@ -21,11 +21,11 @@ public class ModData {
         testStory4.AddFirstChapter("testChapter", new BlockPos2D(281, 188),"prologue-landscape", "prologue-environment", "minecraft:desert");
         testStory5.AddFirstChapter("testChapter", new BlockPos2D(281, 188),"prologue-landscape", "prologue-environment", "minecraft:desert");
 
-        StoryEngine.stories.add(testStory); // Safe place to put logic like this
-        StoryEngine.stories.add(testStory2); // Safe place to put logic like this
-        StoryEngine.stories.add(testStory3); // Safe place to put logic like this
-        StoryEngine.stories.add(testStory4); // Safe place to put logic like this
-        StoryEngine.stories.add(testStory5); // Safe place to put logic like this
+        StoryEngine.putStory(testStory);
+        StoryEngine.putStory(testStory2);
+        StoryEngine.putStory(testStory3);
+        StoryEngine.putStory(testStory4);
+        StoryEngine.putStory(testStory5);
 
     }
 }

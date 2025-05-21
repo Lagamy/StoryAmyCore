@@ -1,21 +1,19 @@
 package net.amyrose.storyamycore.core;
 
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.nbt.NbtCompound;
 import java.util.*;
-
-import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class Story {
     public String name;
     public Zone area;
     public String ModId;
-    public static Map<String, Chapter> chapters = new HashMap<>();
+    public Map<String, Chapter> chapters = new HashMap<>();
 
     public Story(String name, String modId) {
         this.name = name;
         this.ModId = modId;
     }
+
 
     public void RandomizeStory()
     {
@@ -30,7 +28,7 @@ public class Story {
                 int xTry = rand.nextInt(radius * 2) - radius; // range: [-radius, +radius]
                 int zTry = rand.nextInt(radius * 2) - radius;
                 boolean overlaps = false;
-                for (Story story : StoryEngine.stories) {
+                for (Story story : StoryEngine.stories.values()) {
                     if (story.area.inBounds(xTry, zTry)) {
                         overlaps = true;
                         break;
@@ -48,7 +46,7 @@ public class Story {
             // First story — safe default
             this.area = new Zone(-StoryEngine.ringRadius, -StoryEngine.ringRadius); // So chapter would start at 0
         }
-        LOGGER.info("{} starts at: {}", name, area.beginning.toString());
+
 
         for(Chapter chapter : chapters.values()) {
             chapter.initializeChapter(this);
@@ -72,6 +70,36 @@ public class Story {
             // Expand storyArea to include this chapter's area
             area.beginning.setMin(chapter.ringArea.beginning);
             area.end.setMax(chapter.ringArea.end);
+        }
+    }
+
+    public NbtCompound SaveToNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.put("storyArea", area.SaveToNbt());
+
+        // Save the chapters map
+        NbtCompound chaptersNbt = new NbtCompound();
+        for (Map.Entry<String, Chapter> entry : chapters.entrySet()) {
+            chaptersNbt.put(entry.getKey(), entry.getValue().SaveToNbt());
+        }
+        nbt.put("chapters", chaptersNbt);
+
+        return nbt;
+    }
+
+    public void LoadFromNbt(NbtCompound nbt) {
+        // Load the story area
+        if (nbt.contains("storyArea")) {
+            this.area = Zone.LoadFromNbt(nbt.getCompound("storyArea"));
+        }
+
+        // Load the chapters map
+        if (nbt.contains("chapters")) {
+            NbtCompound chaptersNbt = nbt.getCompound("chapters");
+            for (String chapterKey : chaptersNbt.getKeys()) {
+                Chapter chapter = chapters.get(chapterKey);
+                chapter.LoadFromNbt(chaptersNbt.getCompound(chapterKey)); // mutate existing
+            }
         }
     }
 }

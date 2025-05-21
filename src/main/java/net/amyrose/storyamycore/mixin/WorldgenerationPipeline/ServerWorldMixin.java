@@ -3,6 +3,7 @@ package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
+import net.amyrose.storyamycore.nbt.worldDataNBT;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -45,10 +46,8 @@ public class ServerWorldMixin {
         if (overworld != null) {
             Registry<Biome> biomeRegistry = overworld.getRegistryManager().get(RegistryKeys.BIOME);
             if (biomeRegistry != null) {
-                for(Story story : StoryEngine.stories) {
+                for(Story story : StoryEngine.stories.values()) {
                     for (Chapter chapter : story.chapters.values()) {
-
-
                         Optional<RegistryEntry.Reference<Biome>> biomeOptional = biomeRegistry.getEntry(
                                 RegistryKey.of(RegistryKeys.BIOME, new Identifier(chapter.biomeName))
                         );

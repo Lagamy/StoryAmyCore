@@ -10,7 +10,8 @@
       "generate(Lnet/minecraft/world/gen/feature/FeaturePlacementContext;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_6796;method_39648(Lnet/minecraft/class_5444;Lnet/minecraft/class_5819;Lnet/minecraft/class_2338;)Z"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
-      "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"
+      "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V",
+      "shutdown": "Lnet/minecraft/server/MinecraftServer;method_3782()V"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
       "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
@@ -35,7 +36,8 @@
         "generate(Lnet/minecraft/world/gen/feature/FeaturePlacementContext;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_6796;method_39648(Lnet/minecraft/class_5444;Lnet/minecraft/class_5819;Lnet/minecraft/class_2338;)Z"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/MinecraftServerMixin": {
-        "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V"
+        "<init>": "Lnet/minecraft/server/MinecraftServer;<init>(Ljava/lang/Thread;Lnet/minecraft/class_32$class_5143;Lnet/minecraft/class_3283;Lnet/minecraft/class_6904;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/class_7497;Lnet/minecraft/class_3950;)V",
+        "shutdown": "Lnet/minecraft/server/MinecraftServer;method_3782()V"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
         "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",

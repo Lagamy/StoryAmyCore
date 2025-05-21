@@ -29,7 +29,7 @@ public class NoiseSamplerMixin {
         int y = sampler.blockY();
         int z = sampler.blockZ();
         // Apply existing Chapter logic for flat regions
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             if(story.area.chunkInBound(x, z)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.chapterArea.inBounds(x, z)) {
@@ -59,7 +59,7 @@ public class NoiseSamplerMixin {
             cancellable = true
     )
     private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
-        for(Story story : StoryEngine.stories) {
+        for(Story story : StoryEngine.stories.values()) {
             for (Chapter chapter : story.chapters.values()) {
                 // Check if within flat region
                 if (chapter.chapterArea.inBounds(blockX, blockZ)) {
