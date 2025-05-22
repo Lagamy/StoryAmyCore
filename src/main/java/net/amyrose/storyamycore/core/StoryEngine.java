@@ -19,6 +19,8 @@ public class StoryEngine {
 
     public static final int maxDistanceBetweenStories = 500;
 
+    public static final int multiplyDistanceBetweenStories = 2;
+
     public static int ringRadius = 64;
 
     static final int COORD_OFFSET = 30_000_000; // Minecraft world limit
@@ -76,8 +78,10 @@ public class StoryEngine {
     }
 
     public static void RandomizeStories(){ // When there is saved data(Fresh world)
+        Map<String, Story> initializedStories = new HashMap<>();
         for(Story story : stories.values()) {
-            story.RandomizeStory();
+            story.RandomizeStory(initializedStories);
+            LOGGER.info("Created {} story starts at: {}", story.name, story.area.beginning.toString());
         }
     }
 
@@ -95,12 +99,22 @@ public class StoryEngine {
             String key = story.getKey();
             if (compound.contains(key, NbtElement.COMPOUND_TYPE)) {
                 story.getValue().LoadFromNbt(compound.getCompound(key));
-                LOGGER.info("Created {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
-            }
-            else {
-                story.getValue().RandomizeStory(); // Create user added story after map was already created.(So I don't need to handle uninitialized stories)
                 LOGGER.info("Loaded {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
             }
+//            else {
+//                story.getValue().RandomizeStory(); // Create user added story after map was already created.(So I don't need to handle uninitialized stories)
+//                LOGGER.info("Loaded {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
+//            }
         }
     }
+
+//    public BlockPos2D findStoriesSpawnRadius(Map<String, Story> initializedStories)
+//    {
+//        int startingPoint;
+//        int storiesXCombinedSize = 0;
+//        int storiesZCombinedSize = 0;
+//        for (Story story : initializedStories.values()) {
+//
+//        }
+//    }
 }

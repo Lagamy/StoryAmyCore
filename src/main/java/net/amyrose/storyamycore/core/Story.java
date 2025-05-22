@@ -14,13 +14,12 @@ public class Story {
         this.ModId = modId;
     }
 
-
-    public void RandomizeStory()
+    public void RandomizeStory(Map<String, Story> initializedStories)
     {
         int attempts = 0;
         int maxAttempts = 1000; // to avoid infinite loop
         Random rand = new Random();
-        if (!StoryEngine.stories.isEmpty()) {
+        if (!initializedStories.isEmpty()) {
             boolean foundValidLocation = false;
             int radius = StoryEngine.maxDistanceBetweenStories * StoryEngine.stories.size();
             while (!foundValidLocation && attempts < maxAttempts) {
@@ -28,7 +27,7 @@ public class Story {
                 int xTry = rand.nextInt(radius * 2) - radius; // range: [-radius, +radius]
                 int zTry = rand.nextInt(radius * 2) - radius;
                 boolean overlaps = false;
-                for (Story story : StoryEngine.stories.values()) {
+                for (Story story : initializedStories.values()) {
                     if (story.area.inBounds(xTry, zTry)) {
                         overlaps = true;
                         break;
@@ -46,7 +45,7 @@ public class Story {
             // First story — safe default
             this.area = new Zone(-StoryEngine.ringRadius, -StoryEngine.ringRadius); // So chapter would start at 0
         }
-
+        initializedStories.put(this.name, this);
 
         for(Chapter chapter : chapters.values()) {
             chapter.initializeChapter(this);

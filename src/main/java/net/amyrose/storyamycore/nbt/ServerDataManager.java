@@ -18,6 +18,10 @@ public class ServerDataManager {
     public ServerDataManager(MinecraftServer server, File saveDir) {
         this.server = server;
         this.dataFile = new File(saveDir, FILENAME);
+        if (!saveDir.exists()) {
+            saveDir.mkdirs(); // Create the directory if it doesn't exist
+        }
+        //System.out.println("Data file path: " + dataFile.getCanonicalPath());
     }
 
     public void load() {
@@ -51,9 +55,5 @@ public class ServerDataManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public worldDataNBT getData() {
-        return data;
     }
 }

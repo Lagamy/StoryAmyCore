@@ -28,13 +28,13 @@ public class MinecraftServerMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     void initializeChapters(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo ci) {
+        File saveDir = session.getDirectory(WorldSavePath.ROOT).toFile(); // You may need to adjust to your Minecraft version
+        serverDataManager = new ServerDataManager((MinecraftServer) (Object) this, saveDir);
+        serverDataManager.load();
         for (Story story : StoryEngine.stories.values()) {
             for (Chapter chapter : story.chapters.values()) {
                 StructureTemplate landscapeTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.landscapeName, story.ModId);
                 StructureTemplate environmentTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.environmentName, story.ModId);
-                File saveDir = session.getDirectory(WorldSavePath.ROOT).toFile(); // You may need to adjust to your Minecraft version
-                serverDataManager = new ServerDataManager((MinecraftServer) (Object) this, saveDir);
-                serverDataManager.load();
                 chapter.populateLandscapeMap(landscapeTemplate);
                 chapter.populateEnvironmentMap(environmentTemplate);
             }
