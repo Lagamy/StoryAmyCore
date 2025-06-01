@@ -21,11 +21,11 @@ public class Story {
         Random rand = new Random();
         if (!initializedStories.isEmpty()) {
             boolean foundValidLocation = false;
-            int radius = StoryEngine.maxDistanceBetweenStories * StoryEngine.stories.size();
+            BlockPos2D radius = StoryEngine.findStoriesSpawnRadius(initializedStories);
             while (!foundValidLocation && attempts < maxAttempts) {
                 attempts++;
-                int xTry = rand.nextInt(radius * 2) - radius; // range: [-radius, +radius]
-                int zTry = rand.nextInt(radius * 2) - radius;
+                int xTry = rand.nextInt(radius.x * 2) - radius.x; // range: [-radius, +radius]
+                int zTry = rand.nextInt(radius.z * 2) - radius.z;
                 boolean overlaps = false;
                 for (Story story : initializedStories.values()) {
                     if (story.area.inBounds(xTry, zTry)) {

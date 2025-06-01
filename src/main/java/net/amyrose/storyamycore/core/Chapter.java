@@ -68,6 +68,7 @@ public class Chapter {
         BlockPos2D beginning;
         if(first) {
             beginning = new BlockPos2D(story.area.beginning.x + StoryEngine.ringRadius, story.area.beginning.z + StoryEngine.ringRadius);
+            LOGGER.info("Chapter start: {}", beginning.toString() );
         }
         else {
             Chapter previousChapter = story.chapters.get(story.chapters.size() - 1);

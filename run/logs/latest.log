@@ -1,5 +1,5 @@
-[17:47:03] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 1.20.1 with Fabric Loader 0.16.14
-[17:47:04] [main/INFO] (FabricLoader) Loading 59 mods:
+[20:10:30] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 1.20.1 with Fabric Loader 0.16.14
+[20:10:30] [main/INFO] (FabricLoader) Loading 59 mods:
 	- fabric-api 0.92.5+1.20.1
 	- fabric-api-base 0.4.32+1802ada577
 	- fabric-api-lookup-api-v1 1.6.37+1802ada577
@@ -59,13 +59,14 @@
 	- minecraft 1.20.1
 	- mixinextras 0.4.1
 	- storyamycore 1.0.0
-[17:47:04] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Lagamyk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/22f9eb729e216a091673a574a5906dc1b9027fb3/sponge-mixin-0.15.5+mixin.0.8.7.jar Service=Knot/Fabric Env=CLIENT
-[17:47:04] [main/INFO] (FabricLoader/Mixin) Loaded Fabric development mappings for mixin remapper!
-[17:47:04] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_17
-[17:47:05] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
-[17:47:08] [Datafixer Bootstrap/INFO] (Minecraft) 188 Datafixer optimizations took 92 milliseconds
-[17:47:09] [Render thread/INFO] (Minecraft) Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[17:47:09] [Render thread/ERROR] (Minecraft) Failed to verify authentication
+[20:10:30] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Lagamyk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/22f9eb729e216a091673a574a5906dc1b9027fb3/sponge-mixin-0.15.5+mixin.0.8.7.jar Service=Knot/Fabric Env=CLIENT
+[20:10:30] [main/INFO] (FabricLoader/Mixin) Loaded Fabric development mappings for mixin remapper!
+[20:10:30] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_16
+[20:10:30] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_17
+[20:10:31] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
+[20:10:35] [Datafixer Bootstrap/INFO] (Minecraft) 188 Datafixer optimizations took 83 milliseconds
+[20:10:36] [Render thread/INFO] (Minecraft) Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[20:10:36] [Render thread/ERROR] (Minecraft) Failed to verify authentication
 com.mojang.authlib.exceptions.InvalidCredentialsException: Status: 401
 	at com.mojang.authlib.exceptions.MinecraftClientHttpException.toAuthenticationException(MinecraftClientHttpException.java:56) ~[authlib-4.0.43.jar:?]
 	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:156) ~[authlib-4.0.43.jar:?]
@@ -83,300 +84,105 @@ Caused by: com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 4
 	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:48) ~[authlib-4.0.43.jar:?]
 	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:129) ~[authlib-4.0.43.jar:?]
 	... 9 more
-[17:47:09] [Render thread/INFO] (Minecraft) Setting user: Player852
-[17:47:09] [Render thread/INFO] (Minecraft) [STDOUT]: StoryAmy Core initialized!
-[17:47:10] [Render thread/INFO] (Indigo) [Indigo] Registering Indigo renderer!
-[17:47:10] [Render thread/INFO] (Minecraft) Backend library: LWJGL version 3.3.1 SNAPSHOT
-[17:47:11] [Render thread/INFO] (Minecraft) Reloading ResourceManager: vanilla, fabric (fabric-command-api-v1, fabric-rendering-data-attachment-v1, fabric-entity-events-v1, fabric-api-lookup-api-v1, fabric-data-generation-api-v1, fabric-convention-tags-v1, fabric-transitive-access-wideners-v1, storyamycore, fabric-content-registries-v0, fabric-lifecycle-events-v1, fabric-rendering-v1, fabric-message-api-v1, fabric-game-rule-api-v1, fabric-containers-v0, fabric-sound-api-v1, fabric-block-view-api-v2, fabric-rendering-v0, fabric-dimensions-v1, fabric-biome-api-v1, fabric-object-builder-api-v1, fabric-renderer-api-v1, fabricloader, fabric-rendering-fluids-v1, fabric-resource-loader-v0, fabric-commands-v0, fabric-loot-tables-v1, fabric-events-lifecycle-v0, fabric-crash-report-info-v1, fabric-events-interaction-v0, fabric-screen-handler-api-v1, fabric-mining-level-api-v1, fabric-recipe-api-v1, fabric-item-api-v1, fabric-screen-api-v1, fabric-client-tags-api-v1, fabric-keybindings-v0, fabric-command-api-v2, fabric-block-api-v1, fabric-blockrenderlayer-v1, fabric-item-group-api-v1, fabric-networking-api-v1, fabric-networking-v0, fabric-gametest-api-v1, fabric-models-v0, fabric-loot-api-v2, fabric-data-attachment-api-v1, fabric-api, fabric-api-base, fabric-particles-v1, fabric-renderer-registries-v1, fabric-model-loading-api-v1, fabric-key-binding-api-v1, fabric-registry-sync-v0, fabric-renderer-indigo, fabric-transfer-api-v1, fabric-resource-conditions-api-v1)
-[17:47:11] [Worker-Main-13/INFO] (Minecraft) Found unifont_all_no_pua-15.0.06.hex, loading
-[17:47:12] [Realms Notification Availability checker #1/INFO] (Minecraft) Could not authorize you against Realms server: Invalid session id
-[17:47:12] [Worker-Main-5/WARN] (Minecraft) Exception loading blockstate definition: 'storyamycore:blockstates/landscape_block.json' in resourcepack: 'fabric' for variant: 'all': Unknown blockstate property: 'all'
-[17:47:12] [Worker-Main-5/WARN] (Minecraft) Exception loading blockstate definition: 'storyamycore:blockstates/landscape_block.json' missing model for variant: 'storyamycore:landscape_block#'
-[17:47:12] [Render thread/WARN] (Minecraft) Missing sound for event: minecraft:item.goat_horn.play
-[17:47:12] [Render thread/WARN] (Minecraft) Missing sound for event: minecraft:entity.goat.screaming.horn_break
-[17:47:12] [Render thread/INFO] (Minecraft) OpenAL initialized on device OpenAL Soft on Speakers (G432 Gaming Headset)
-[17:47:12] [Render thread/INFO] (Minecraft) Sound engine started
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
-[17:47:12] [Render thread/INFO] (Minecraft) Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
-[17:47:13] [Render thread/WARN] (Minecraft) Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
-[17:47:13] [Render thread/INFO] (Minecraft) Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
-[17:47:13] [Render thread/INFO] (Minecraft) Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
-[17:47:13] [Render thread/INFO] (Minecraft) Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
-[17:47:24] [Render thread/INFO] (Minecraft) Deleting level New World (44)
-[17:47:24] [Render thread/INFO] (Minecraft) Attempt 1...
-[17:47:32] [Render thread/INFO] (Minecraft) Loaded 7 recipes
-[17:47:32] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
-[17:47:36] [Render thread/INFO] (Minecraft) [STDOUT]: Data file path: G:\GitHub\StoryAmyCore\run\saves\New World (44)\.\story_data.dat
-[17:47:36] [Render thread/INFO] (Minecraft) Loaded test4 story starts at: x: -64 z: -64
-[17:47:36] [Render thread/INFO] (Minecraft) Loaded test5 story starts at: x: -952 z: -346
-[17:47:36] [Render thread/INFO] (Minecraft) Loaded test2 story starts at: x: 716 z: -520
-[17:47:36] [Render thread/INFO] (Minecraft) Loaded test3 story starts at: x: 1664 z: -2268
-[17:47:36] [Render thread/INFO] (Minecraft) Loaded test story starts at: x: 311 z: 1261
-[17:47:37] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 827.4 μs
-[17:47:37] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
-[17:47:37] [Server thread/INFO] (Minecraft) Generating keypair
-[17:47:37] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:47:37] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:47:37] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:47:37] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:47:37] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:47:39] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
-[17:47:40] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:47:40] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:47:40] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:47:41] [Render thread/INFO] (Minecraft) Preparing spawn area: 1%
-[17:47:41] [Render thread/INFO] (Minecraft) Preparing spawn area: 2%
-[17:47:42] [Render thread/INFO] (Minecraft) Preparing spawn area: 4%
-[17:47:42] [Render thread/INFO] (Minecraft) Preparing spawn area: 7%
-[17:47:43] [Render thread/INFO] (Minecraft) Preparing spawn area: 11%
-[17:47:43] [Render thread/INFO] (Minecraft) Preparing spawn area: 17%
-[17:47:44] [Render thread/INFO] (Minecraft) Preparing spawn area: 21%
-[17:47:44] [Render thread/INFO] (Minecraft) Preparing spawn area: 25%
-[17:47:45] [Render thread/INFO] (Minecraft) Preparing spawn area: 31%
-[17:47:45] [Render thread/INFO] (Minecraft) Preparing spawn area: 36%
-[17:47:46] [Render thread/INFO] (Minecraft) Preparing spawn area: 41%
-[17:47:46] [Render thread/INFO] (Minecraft) Preparing spawn area: 46%
-[17:47:47] [Render thread/INFO] (Minecraft) Preparing spawn area: 52%
-[17:47:47] [Render thread/INFO] (Minecraft) Preparing spawn area: 57%
-[17:47:48] [Render thread/INFO] (Minecraft) Preparing spawn area: 62%
-[17:47:48] [Render thread/INFO] (Minecraft) Preparing spawn area: 68%
-[17:47:49] [Render thread/INFO] (Minecraft) Preparing spawn area: 72%
-[17:47:49] [Render thread/INFO] (Minecraft) Preparing spawn area: 79%
-[17:47:50] [Render thread/INFO] (Minecraft) Preparing spawn area: 85%
-[17:47:50] [Render thread/INFO] (Minecraft) Preparing spawn area: 90%
-[17:47:51] [Render thread/INFO] (Minecraft) Preparing spawn area: 95%
-[17:47:51] [Render thread/INFO] (Minecraft) Time elapsed: 11606 ms
-[17:47:51] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
-[17:47:51] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
-[17:47:52] [Server thread/INFO] (Minecraft) Player852[local:E:8ed909a4] logged in with entity id 1008 at (0.5, 106.0, 6.5)
-[17:47:52] [Server thread/INFO] (Minecraft) Player852 joined the game
-[17:47:52] [Render thread/INFO] (Minecraft) Loaded 2 advancements
-[17:47:55] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:47:55] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:47:55] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:47:55] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:48:08] [Server thread/INFO] (Minecraft) Player852 lost connection: Disconnected
-[17:48:08] [Server thread/INFO] (Minecraft) Player852 left the game
-[17:48:08] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
-[17:48:08] [Server thread/INFO] (Minecraft) Stopping server
-[17:48:08] [Server thread/INFO] (Minecraft) Saving players
-[17:48:08] [Server thread/INFO] (Minecraft) Saving worlds
-[17:48:08] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:48:20] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:48:20] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:48:20] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (44)): All chunks are saved
-[17:48:20] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[17:48:20] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[17:48:20] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved
-[17:48:31] [Render thread/INFO] (Minecraft) Loaded 7 recipes
-[17:48:31] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
-[17:48:31] [Render thread/INFO] (Minecraft) [STDOUT]: Data file path: G:\GitHub\StoryAmyCore\run\saves\New World (44)\.\story_data.dat
-[17:48:31] [Render thread/INFO] (Minecraft) Created test4 story starts at: x: -64 z: -64
-[17:48:31] [Render thread/INFO] (Minecraft) Created test5 story starts at: x: -952 z: -346
-[17:48:31] [Render thread/INFO] (Minecraft) Created test2 story starts at: x: 716 z: -520
-[17:48:31] [Render thread/INFO] (Minecraft) Created test3 story starts at: x: 1664 z: -2268
-[17:48:31] [Render thread/INFO] (Minecraft) Created test story starts at: x: 311 z: 1261
-[17:48:32] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 144.9 μs
-[17:48:32] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
-[17:48:32] [Server thread/INFO] (Minecraft) Generating keypair
-[17:48:32] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:32] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:32] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:32] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:32] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:32] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
-[17:48:34] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:48:34] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:48:34] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:48:34] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:48:34] [Render thread/INFO] (Minecraft) Time elapsed: 1876 ms
-[17:48:34] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
-[17:48:34] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
-[17:48:35] [Server thread/INFO] (Minecraft) Player852[local:E:bd42d3ed] logged in with entity id 2390 at (0.5, 106.0, 6.5)
-[17:48:35] [Server thread/INFO] (Minecraft) Player852 joined the game
-[17:48:35] [Render thread/INFO] (Minecraft) Loaded 2 advancements
-[17:48:35] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:48:35] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:48:36] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:48:36] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:48:46] [Server thread/INFO] (Minecraft) Player852 lost connection: Disconnected
-[17:48:46] [Server thread/INFO] (Minecraft) Player852 left the game
-[17:48:46] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
-[17:48:46] [Server thread/INFO] (Minecraft) Stopping server
-[17:48:46] [Server thread/INFO] (Minecraft) Saving players
-[17:48:46] [Server thread/INFO] (Minecraft) Saving worlds
-[17:48:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:48:48] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:48:48] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:48:48] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (44)): All chunks are saved
-[17:48:48] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[17:48:48] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[17:48:48] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved
-[17:48:51] [Render thread/INFO] (Minecraft) Loaded 7 recipes
-[17:48:51] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
-[17:48:54] [Render thread/INFO] (Minecraft) [STDOUT]: Data file path: G:\GitHub\StoryAmyCore\run\saves\New World (46)\.\story_data.dat
-[17:48:54] [Render thread/INFO] (Minecraft) Loaded test4 story starts at: x: -64 z: -64
-[17:48:54] [Render thread/INFO] (Minecraft) Loaded test5 story starts at: x: 174 z: -1020
-[17:48:54] [Render thread/INFO] (Minecraft) Loaded test2 story starts at: x: -1933 z: 2323
-[17:48:54] [Render thread/INFO] (Minecraft) Loaded test3 story starts at: x: -1354 z: -113
-[17:48:54] [Render thread/INFO] (Minecraft) Loaded test story starts at: x: -749 z: 2372
-[17:48:55] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 198.0 μs
-[17:48:55] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
-[17:48:55] [Server thread/INFO] (Minecraft) Generating keypair
-[17:48:55] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:55] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:55] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:55] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:55] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:48:56] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
-[17:48:56] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:48:57] [Render thread/INFO] (Minecraft) Preparing spawn area: 1%
-[17:48:57] [Render thread/INFO] (Minecraft) Preparing spawn area: 4%
-[17:48:58] [Render thread/INFO] (Minecraft) Preparing spawn area: 8%
-[17:48:58] [Render thread/INFO] (Minecraft) Preparing spawn area: 11%
-[17:48:59] [Render thread/INFO] (Minecraft) Preparing spawn area: 16%
-[17:48:59] [Render thread/INFO] (Minecraft) Preparing spawn area: 22%
-[17:49:00] [Render thread/INFO] (Minecraft) Preparing spawn area: 25%
-[17:49:00] [Render thread/INFO] (Minecraft) Preparing spawn area: 31%
-[17:49:01] [Render thread/INFO] (Minecraft) Preparing spawn area: 34%
-[17:49:01] [Render thread/INFO] (Minecraft) Preparing spawn area: 41%
-[17:49:02] [Render thread/INFO] (Minecraft) Preparing spawn area: 44%
-[17:49:02] [Render thread/INFO] (Minecraft) Preparing spawn area: 51%
-[17:49:03] [Render thread/INFO] (Minecraft) Preparing spawn area: 54%
-[17:49:03] [Render thread/INFO] (Minecraft) Preparing spawn area: 61%
-[17:49:04] [Render thread/INFO] (Minecraft) Preparing spawn area: 68%
-[17:49:04] [Render thread/INFO] (Minecraft) Preparing spawn area: 73%
-[17:49:05] [Render thread/INFO] (Minecraft) Preparing spawn area: 77%
-[17:49:05] [Render thread/INFO] (Minecraft) Preparing spawn area: 84%
-[17:49:06] [Render thread/INFO] (Minecraft) Preparing spawn area: 88%
-[17:49:06] [Render thread/INFO] (Minecraft) Preparing spawn area: 96%
-[17:49:06] [Render thread/INFO] (Minecraft) Time elapsed: 10273 ms
-[17:49:06] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
-[17:49:06] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
-[17:49:06] [Server thread/INFO] (Minecraft) Player852[local:E:4ea45a76] logged in with entity id 3683 at (-31.5, 67.0, 1.5)
-[17:49:06] [Server thread/INFO] (Minecraft) Player852 joined the game
-[17:49:07] [Render thread/INFO] (Minecraft) Loaded 2 advancements
-[17:49:07] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:49:07] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:07] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:07] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:09] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:49:09] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:09] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:09] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:10] [Server thread/INFO] (Minecraft) Player852 lost connection: Disconnected
-[17:49:10] [Server thread/INFO] (Minecraft) Player852 left the game
-[17:49:10] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
-[17:49:10] [Server thread/INFO] (Minecraft) Stopping server
-[17:49:10] [Server thread/INFO] (Minecraft) Saving players
-[17:49:10] [Server thread/INFO] (Minecraft) Saving worlds
-[17:49:11] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:15] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:15] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:15] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (46)): All chunks are saved
-[17:49:15] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[17:49:15] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[17:49:15] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved
-[17:49:18] [Render thread/INFO] (Minecraft) Loaded 7 recipes
-[17:49:18] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
-[17:49:18] [Render thread/INFO] (Minecraft) [STDOUT]: Data file path: G:\GitHub\StoryAmyCore\run\saves\New World (46)\.\story_data.dat
-[17:49:18] [Render thread/INFO] (Minecraft) Created test4 story starts at: x: -64 z: -64
-[17:49:18] [Render thread/INFO] (Minecraft) Created test5 story starts at: x: 174 z: -1020
-[17:49:18] [Render thread/INFO] (Minecraft) Created test2 story starts at: x: -1933 z: 2323
-[17:49:18] [Render thread/INFO] (Minecraft) Created test3 story starts at: x: -1354 z: -113
-[17:49:18] [Render thread/INFO] (Minecraft) Created test story starts at: x: -749 z: 2372
-[17:49:19] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 166.7 μs
-[17:49:19] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
-[17:49:19] [Server thread/INFO] (Minecraft) Generating keypair
-[17:49:19] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:19] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:19] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:19] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:19] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:19] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
-[17:49:20] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:49:20] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:49:20] [Render thread/INFO] (Minecraft) Preparing spawn area: 9%
-[17:49:21] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
-[17:49:21] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
-[17:49:21] [Render thread/INFO] (Minecraft) Time elapsed: 1334 ms
-[17:49:21] [Server thread/INFO] (Minecraft) Player852[local:E:4b1110d3] logged in with entity id 4946 at (-28.061262240187695, 72.45516406215395, 5.643718506880835)
-[17:49:21] [Server thread/INFO] (Minecraft) Player852 joined the game
-[17:49:21] [Render thread/INFO] (Minecraft) Loaded 2 advancements
-[17:49:21] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:49:22] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:22] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:22] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:22] [Server thread/INFO] (Minecraft) Player852 lost connection: Disconnected
-[17:49:22] [Server thread/INFO] (Minecraft) Player852 left the game
-[17:49:22] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
-[17:49:22] [Server thread/INFO] (Minecraft) Stopping server
-[17:49:22] [Server thread/INFO] (Minecraft) Saving players
-[17:49:22] [Server thread/INFO] (Minecraft) Saving worlds
-[17:49:27] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:32] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:32] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:32] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (46)): All chunks are saved
-[17:49:32] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[17:49:32] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[17:49:32] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved
-[17:49:42] [Render thread/INFO] (Minecraft) Loaded 7 recipes
-[17:49:42] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
-[17:49:42] [Render thread/INFO] (Minecraft) [STDOUT]: Data file path: G:\GitHub\StoryAmyCore\run\saves\New World (44)\.\story_data.dat
-[17:49:42] [Render thread/INFO] (Minecraft) Created test4 story starts at: x: -64 z: -64
-[17:49:42] [Render thread/INFO] (Minecraft) Created test5 story starts at: x: -952 z: -346
-[17:49:42] [Render thread/INFO] (Minecraft) Created test2 story starts at: x: 716 z: -520
-[17:49:42] [Render thread/INFO] (Minecraft) Created test3 story starts at: x: 1664 z: -2268
-[17:49:42] [Render thread/INFO] (Minecraft) Created test story starts at: x: 311 z: 1261
-[17:49:43] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 150.8 μs
-[17:49:43] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
-[17:49:43] [Server thread/INFO] (Minecraft) Generating keypair
-[17:49:43] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:43] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:43] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:43] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:43] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
-[17:49:43] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
-[17:49:44] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:49:44] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:49:44] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
-[17:49:45] [Render thread/INFO] (Minecraft) Preparing spawn area: 83%
-[17:49:45] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
-[17:49:45] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
-[17:49:45] [Render thread/INFO] (Minecraft) Time elapsed: 1560 ms
-[17:49:45] [Server thread/INFO] (Minecraft) Player852[local:E:f0fd8a09] logged in with entity id 5405 at (0.5, 106.0, 6.5)
-[17:49:45] [Server thread/INFO] (Minecraft) Player852 joined the game
-[17:49:45] [Render thread/INFO] (Minecraft) Loaded 2 advancements
-[17:49:45] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:49:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:49:51] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:49:51] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:49:51] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:49:51] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:50:46] [Server thread/INFO] (Minecraft) Saving and pausing game...
-[17:50:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:50:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:50:46] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:50:47] [Render thread/INFO] (Minecraft) Stopping!
-[17:50:47] [Server thread/INFO] (Minecraft) Player852 lost connection: Disconnected
-[17:50:47] [Server thread/INFO] (Minecraft) Player852 left the game
-[17:50:47] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
-[17:50:47] [Server thread/INFO] (Minecraft) Stopping server
-[17:50:47] [Server thread/INFO] (Minecraft) Saving players
-[17:50:47] [Server thread/INFO] (Minecraft) Saving worlds
-[17:50:47] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[17:50:51] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[17:50:51] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[17:50:51] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (44)): All chunks are saved
-[17:50:51] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[17:50:51] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[17:50:51] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved
+[20:10:36] [Render thread/INFO] (Minecraft) Setting user: Player466
+[20:10:36] [Render thread/INFO] (Minecraft) [STDOUT]: StoryAmy Core initialized!
+[20:10:36] [Render thread/INFO] (Indigo) [Indigo] Registering Indigo renderer!
+[20:10:37] [Render thread/INFO] (Minecraft) Backend library: LWJGL version 3.3.1 SNAPSHOT
+[20:10:38] [Render thread/INFO] (Minecraft) Reloading ResourceManager: vanilla, fabric (fabric-renderer-registries-v1, fabric-registry-sync-v0, fabric-rendering-data-attachment-v1, fabric-blockrenderlayer-v1, fabric-renderer-indigo, fabric-particles-v1, fabric-events-lifecycle-v0, fabric-networking-v0, fabric-models-v0, fabric-content-registries-v0, fabric-item-group-api-v1, fabric-entity-events-v1, fabric-data-attachment-api-v1, fabricloader, fabric-command-api-v1, fabric-loot-tables-v1, fabric-client-tags-api-v1, fabric-api-lookup-api-v1, fabric-commands-v0, fabric-renderer-api-v1, fabric-api, fabric-resource-loader-v0, fabric-mining-level-api-v1, fabric-events-interaction-v0, fabric-containers-v0, fabric-api-base, fabric-rendering-v0, fabric-dimensions-v1, fabric-key-binding-api-v1, fabric-object-builder-api-v1, fabric-transfer-api-v1, fabric-message-api-v1, fabric-model-loading-api-v1, fabric-item-api-v1, fabric-crash-report-info-v1, fabric-transitive-access-wideners-v1, fabric-convention-tags-v1, fabric-rendering-v1, fabric-rendering-fluids-v1, fabric-lifecycle-events-v1, fabric-data-generation-api-v1, fabric-networking-api-v1, fabric-gametest-api-v1, fabric-biome-api-v1, fabric-block-view-api-v2, fabric-loot-api-v2, fabric-screen-handler-api-v1, fabric-recipe-api-v1, fabric-screen-api-v1, fabric-sound-api-v1, fabric-command-api-v2, fabric-keybindings-v0, fabric-block-api-v1, storyamycore, fabric-resource-conditions-api-v1, fabric-game-rule-api-v1)
+[20:10:38] [Worker-Main-12/INFO] (Minecraft) Found unifont_all_no_pua-15.0.06.hex, loading
+[20:10:39] [Worker-Main-18/WARN] (Minecraft) Exception loading blockstate definition: 'storyamycore:blockstates/landscape_block.json' in resourcepack: 'fabric' for variant: 'all': Unknown blockstate property: 'all'
+[20:10:39] [Worker-Main-18/WARN] (Minecraft) Exception loading blockstate definition: 'storyamycore:blockstates/landscape_block.json' missing model for variant: 'storyamycore:landscape_block#'
+[20:10:39] [Realms Notification Availability checker #1/INFO] (Minecraft) Could not authorize you against Realms server: Invalid session id
+[20:10:39] [Render thread/WARN] (Minecraft) Missing sound for event: minecraft:item.goat_horn.play
+[20:10:39] [Render thread/WARN] (Minecraft) Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[20:10:39] [Render thread/INFO] (Minecraft) OpenAL initialized on device OpenAL Soft on Speakers (G432 Gaming Headset)
+[20:10:39] [Render thread/INFO] (Minecraft) Sound engine started
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[20:10:39] [Render thread/INFO] (Minecraft) Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[20:10:39] [Render thread/WARN] (Minecraft) Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[20:10:40] [Render thread/INFO] (Minecraft) Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[20:10:40] [Render thread/INFO] (Minecraft) Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[20:10:40] [Render thread/INFO] (Minecraft) Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[20:11:04] [Render thread/INFO] (Minecraft) Deleting level New World (44)
+[20:11:04] [Render thread/INFO] (Minecraft) Attempt 1...
+[20:11:07] [Render thread/INFO] (Minecraft) Loaded 7 recipes
+[20:11:07] [Render thread/INFO] (Minecraft) Loaded 1271 advancements
+[20:11:09] [Render thread/INFO] (BiomeModificationImpl) Applied 0 biome modifications to 0 of 64 new biomes in 797.2 μs
+[20:11:09] [Render thread/INFO] (Minecraft) Chapter start: x: 0 z: 0
+[20:11:09] [Render thread/INFO] (Minecraft) Created test4 story starts at: x: -64 z: -64. Ends at: x: 345 z: 252
+[20:11:09] [Render thread/INFO] (Minecraft) Chapter start: x: 604 z: 36
+[20:11:09] [Render thread/INFO] (Minecraft) Created test5 story starts at: x: 540 z: -28. Ends at: x: 949 z: 288
+[20:11:09] [Render thread/INFO] (Minecraft) Chapter start: x: 1094 z: 515
+[20:11:09] [Render thread/INFO] (Minecraft) Created test2 story starts at: x: 1030 z: 451. Ends at: x: 1439 z: 767
+[20:11:09] [Render thread/INFO] (Minecraft) Chapter start: x: -1221 z: -530
+[20:11:09] [Render thread/INFO] (Minecraft) Created test3 story starts at: x: -1285 z: -594. Ends at: x: -876 z: -278
+[20:11:09] [Render thread/INFO] (Minecraft) Chapter start: x: -948 z: -578
+[20:11:09] [Render thread/INFO] (Minecraft) Created test story starts at: x: -1012 z: -642. Ends at: x: -603 z: -326
+[20:11:11] [Server thread/INFO] (Minecraft) Starting integrated minecraft server version 1.20.1
+[20:11:11] [Server thread/INFO] (Minecraft) Generating keypair
+[20:11:11] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
+[20:11:11] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
+[20:11:11] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
+[20:11:11] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
+[20:11:11] [Server thread/INFO] (Minecraft) Biome entry loaded: ResourceKey[minecraft:worldgen/biome / minecraft:desert]
+[20:11:13] [Server thread/INFO] (Minecraft) Preparing start region for dimension minecraft:overworld
+[20:11:13] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
+[20:11:14] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
+[20:11:14] [Render thread/INFO] (Minecraft) Preparing spawn area: 0%
+[20:11:14] [Render thread/INFO] (Minecraft) Preparing spawn area: 1%
+[20:11:15] [Render thread/INFO] (Minecraft) Preparing spawn area: 3%
+[20:11:15] [Render thread/INFO] (Minecraft) Preparing spawn area: 4%
+[20:11:16] [Render thread/INFO] (Minecraft) Preparing spawn area: 8%
+[20:11:16] [Render thread/INFO] (Minecraft) Preparing spawn area: 11%
+[20:11:17] [Render thread/INFO] (Minecraft) Preparing spawn area: 16%
+[20:11:17] [Render thread/INFO] (Minecraft) Preparing spawn area: 21%
+[20:11:18] [Render thread/INFO] (Minecraft) Preparing spawn area: 25%
+[20:11:18] [Render thread/INFO] (Minecraft) Preparing spawn area: 31%
+[20:11:19] [Render thread/INFO] (Minecraft) Preparing spawn area: 35%
+[20:11:19] [Render thread/INFO] (Minecraft) Preparing spawn area: 39%
+[20:11:20] [Render thread/INFO] (Minecraft) Preparing spawn area: 44%
+[20:11:20] [Render thread/INFO] (Minecraft) Preparing spawn area: 50%
+[20:11:21] [Render thread/INFO] (Minecraft) Preparing spawn area: 56%
+[20:11:21] [Render thread/INFO] (Minecraft) Preparing spawn area: 62%
+[20:11:22] [Render thread/INFO] (Minecraft) Preparing spawn area: 68%
+[20:11:22] [Render thread/INFO] (Minecraft) Preparing spawn area: 72%
+[20:11:23] [Render thread/INFO] (Minecraft) Preparing spawn area: 79%
+[20:11:23] [Render thread/INFO] (Minecraft) Preparing spawn area: 83%
+[20:11:24] [Render thread/INFO] (Minecraft) Preparing spawn area: 89%
+[20:11:24] [Render thread/INFO] (Minecraft) Preparing spawn area: 97%
+[20:11:25] [Render thread/INFO] (Minecraft) Time elapsed: 11651 ms
+[20:11:25] [Server thread/INFO] (Minecraft) Changing view distance to 12, from 10
+[20:11:25] [Server thread/INFO] (Minecraft) Changing simulation distance to 12, from 0
+[20:11:25] [Server thread/INFO] (Minecraft) Player466[local:E:d73f66f4] logged in with entity id 1032 at (-1.5, 107.0, 8.5)
+[20:11:25] [Server thread/INFO] (Minecraft) Player466 joined the game
+[20:11:26] [Render thread/INFO] (Minecraft) Loaded 2 advancements
+[20:11:41] [Server thread/INFO] (Minecraft) [Player466: Teleported Player466 to 604.500000, 64.000000, 36.500000]
+[20:11:41] [Render thread/INFO] (Minecraft) [System] [CHAT] Teleported Player466 to 604.500000, 64.000000, 36.500000
+[20:11:50] [Server thread/WARN] (Minecraft) Can't keep up! Is the server overloaded? Running 9220ms or 184 ticks behind
+[20:11:50] [Render thread/INFO] (Minecraft) Loaded 11 advancements
+[20:12:00] [Render thread/WARN] (Minecraft) Unable to play empty soundEvent: minecraft:entity.cod.ambient
+[20:13:11] [Server thread/INFO] (Minecraft) Saving and pausing game...
+[20:13:11] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[20:13:11] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[20:13:11] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[20:13:12] [Render thread/INFO] (Minecraft) Stopping!
+[20:13:12] [Server thread/INFO] (Minecraft) Player466 lost connection: Disconnected
+[20:13:12] [Server thread/INFO] (Minecraft) Player466 left the game
+[20:13:12] [Server thread/INFO] (Minecraft) Stopping singleplayer server as player logged out
+[20:13:12] [Server thread/INFO] (Minecraft) Stopping server
+[20:13:12] [Server thread/INFO] (Minecraft) Saving players
+[20:13:12] [Server thread/INFO] (Minecraft) Saving worlds
+[20:13:12] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[20:13:17] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[20:13:17] [Server thread/INFO] (Minecraft) Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[20:13:17] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (New World (44)): All chunks are saved
+[20:13:17] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[20:13:17] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[20:13:17] [Server thread/INFO] (Minecraft) ThreadedAnvilChunkStorage: All dimensions are saved

@@ -30,7 +30,7 @@ public class NoiseSamplerMixin {
         int z = sampler.blockZ();
         // Apply existing Chapter logic for flat regions
         for(Story story : StoryEngine.stories.values()) {
-            if(story.area.chunkInBound(x, z)) {
+            if(story.area.inBounds(x, z)) {
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.chapterArea.inBounds(x, z)) {
                         int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);

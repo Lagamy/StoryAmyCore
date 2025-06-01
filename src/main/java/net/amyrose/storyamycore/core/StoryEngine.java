@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.core;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -19,7 +20,7 @@ public class StoryEngine {
 
     public static final int maxDistanceBetweenStories = 500;
 
-    public static final int multiplyDistanceBetweenStories = 2;
+    public static final float multiplyDistanceBetweenStories = 1.5f;
 
     public static int ringRadius = 64;
 
@@ -81,7 +82,7 @@ public class StoryEngine {
         Map<String, Story> initializedStories = new HashMap<>();
         for(Story story : stories.values()) {
             story.RandomizeStory(initializedStories);
-            LOGGER.info("Created {} story starts at: {}", story.name, story.area.beginning.toString());
+            LOGGER.info("Created {} story starts at: {}. Ends at: {}", story.name, story.area.beginning.toString(), story.area.end.toString());
         }
     }
 
@@ -108,13 +109,14 @@ public class StoryEngine {
         }
     }
 
-//    public BlockPos2D findStoriesSpawnRadius(Map<String, Story> initializedStories)
-//    {
-//        int startingPoint;
-//        int storiesXCombinedSize = 0;
-//        int storiesZCombinedSize = 0;
-//        for (Story story : initializedStories.values()) {
-//
-//        }
-//    }
+    public static BlockPos2D findStoriesSpawnRadius(Map<String, Story> initializedStories)
+    {
+        int storiesXCombinedSize = 0;
+        int storiesZCombinedSize = 0;
+        for (Story story : initializedStories.values()) {
+            storiesXCombinedSize += story.area.end.x - story.area.beginning.x;
+            storiesZCombinedSize += story.area.end.z - story.area.beginning.z;
+        }
+        return new BlockPos2D((int) (storiesXCombinedSize * multiplyDistanceBetweenStories), (int) (storiesZCombinedSize * multiplyDistanceBetweenStories));
+    }
 }
