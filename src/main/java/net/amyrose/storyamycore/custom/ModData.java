@@ -8,11 +8,11 @@ import net.amyrose.storyamycore.core.StoryEngine;
 import static net.amyrose.storyamycore.StoryAmyCoreMod.MOD_ID;
 
 public class ModData {
-    public static Story testStory = new Story("test", MOD_ID);
-    public static Story testStory2 = new Story("test2", MOD_ID);
-    public static Story testStory3 = new Story("test3", MOD_ID);
-    public static Story testStory4 = new Story("test4", MOD_ID);
-    public static Story testStory5 = new Story("test5", MOD_ID);
+    public static Story testStory = new Story("Story1", MOD_ID);
+    public static Story testStory2 = new Story("Story2", MOD_ID);
+    public static Story testStory3 = new Story("Story3", MOD_ID);
+    public static Story testStory4 = new Story("Story4", MOD_ID);
+    public static Story testStory5 = new Story("Story5", MOD_ID);
 
     public static void LoadChapters() {
         testStory.AddFirstChapter("testChapter", new BlockPos2D(281, 188),"prologue-landscape", "prologue-environment", "minecraft:desert");

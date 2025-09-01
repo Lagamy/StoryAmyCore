@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.XYZasLong;
 
 @Mixin(SurfaceBuilder.class)
@@ -103,15 +104,23 @@ public class SurfaceBuilderMixin {
         // Iterate over the 16x16 chunk
         for(Story story : StoryEngine.stories.values()) {
             if (story.area.chunkInBound(chunkX, chunkZ)) {
+                //Working
+                //LOGGER.info("name: {}", story.name);
                 for (Chapter chapter : story.chapters.values()) {
                     if (chapter.chapterArea.chunkInBound(chunkX, chunkZ)) {
+                        //Working
+                        //LOGGER.info("name: {}", story.name);
                         for (int x = 0; x < 16; ++x) {
                             for (int z = 0; z < 16; ++z) {
                                 int worldX = chunkX + x;
                                 int worldZ = chunkZ + z;
                                 for (int y = 64; y <= chapter.maxEnvironmentHeight; y++) {
                                     BlockPos pos = new BlockPos(worldX, y, worldZ);
+
+                                    // Here is the problem
                                     BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
+                                    //LOGGER.info("name: {}, block: {}",story.name, state);
+
                                     if (state != Blocks.AIR.getDefaultState()) {
                                         //System.out.println("maxHeight: " + chapter.maxHeight);
                                         chunk.setBlockState(pos, state, false);

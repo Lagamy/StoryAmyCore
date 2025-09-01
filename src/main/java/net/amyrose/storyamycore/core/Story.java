@@ -3,6 +3,8 @@ package net.amyrose.storyamycore.core;
 import net.minecraft.nbt.NbtCompound;
 import java.util.*;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
+
 public class Story {
     public String name;
     public Zone area;
@@ -41,6 +43,10 @@ public class Story {
             if (!foundValidLocation) {
                 throw new RuntimeException("Couldn't find a free location for new Story.");
             }
+            // Working
+//            else {
+//                LOGGER.info("Success");
+//            }
         } else {
             // First story — safe default
             this.area = new Zone(-StoryEngine.ringRadius, -StoryEngine.ringRadius); // So chapter would start at 0

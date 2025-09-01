@@ -117,6 +117,7 @@ public class StoryEngine {
             storiesXCombinedSize += story.area.end.x - story.area.beginning.x;
             storiesZCombinedSize += story.area.end.z - story.area.beginning.z;
         }
+
         return new BlockPos2D((int) (storiesXCombinedSize * multiplyDistanceBetweenStories), (int) (storiesZCombinedSize * multiplyDistanceBetweenStories));
     }
 }
