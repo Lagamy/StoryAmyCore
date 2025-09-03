@@ -25,6 +25,7 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 public class Chapter {
+    public Story parentStory;
     public boolean first = false;
     BlockPos2D offsetFromPrevious;
     BlockPos2D size;
@@ -41,7 +42,6 @@ public class Chapter {
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
     public Long2ObjectOpenHashMap<BlockState> environmentMap = new Long2ObjectOpenHashMap<>();
-
 
     public RegistryEntry<Biome> biome;
 
@@ -65,21 +65,33 @@ public class Chapter {
 
     public void initializeChapter(Story story)
     {
+        parentStory = story; // saves reference to story.
         BlockPos2D beginning;
         if(first) {
-            beginning = new BlockPos2D(story.area.beginning.x + StoryEngine.ringRadius, story.area.beginning.z + StoryEngine.ringRadius);
-            LOGGER.info("Chapter start: {}", beginning.toString() );
+            beginning = new BlockPos2D(0, 0);
         }
         else {
             Chapter previousChapter = story.chapters.get(story.chapters.size() - 1);
-            beginning = previousChapter.chapterArea.end;
+            beginning = new BlockPos2D(previousChapter.chapterArea.end.x, previousChapter.chapterArea.end.z);
             beginning.add(offsetFromPrevious);
         }
-        chapterArea = new Zone(beginning, new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
+        chapterArea = new Zone(new BlockPos2D(beginning.x, beginning.z), new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
         ringArea = new Zone(
                 new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
                 new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
         );
+    }
+
+    public void addStoryCoords() {
+        // Shift chapterArea relative to the story’s world position
+        chapterArea.beginning.add(parentStory.area.beginning);
+        chapterArea.end.add(parentStory.area.beginning);
+
+        // ringArea follows the same world offset
+        ringArea.beginning.add(parentStory.area.beginning);
+        ringArea.end.add(parentStory.area.beginning);
+
+        LOGGER.info("{}. Chapter start: {}. Chapter end: {}", parentStory.name, chapterArea.beginning, chapterArea.end);
     }
 
     public int WhatRingLayerIsIt(int x, int z) {

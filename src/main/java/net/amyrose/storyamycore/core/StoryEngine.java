@@ -82,7 +82,8 @@ public class StoryEngine {
         Map<String, Story> initializedStories = new HashMap<>();
         for(Story story : stories.values()) {
             story.RandomizeStory(initializedStories);
-            LOGGER.info("Created {} story starts at: {}. Ends at: {}", story.name, story.area.beginning.toString(), story.area.end.toString());
+            //LOGGER.info("Created {} story starts at: {}. Ends at: {}", story.name, story.area.beginning.toString(), story.area.end.toString());
+            //LOGGER.info("Randomize");
         }
     }
 
@@ -100,7 +101,7 @@ public class StoryEngine {
             String key = story.getKey();
             if (compound.contains(key, NbtElement.COMPOUND_TYPE)) {
                 story.getValue().LoadFromNbt(compound.getCompound(key));
-                LOGGER.info("Loaded {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
+                //LOGGER.info("Loaded {} story starts at: {}", story.getValue().name, story.getValue().area.beginning.toString());
             }
 //            else {
 //                story.getValue().RandomizeStory(); // Create user added story after map was already created.(So I don't need to handle uninitialized stories)

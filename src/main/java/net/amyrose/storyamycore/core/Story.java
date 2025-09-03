@@ -18,6 +18,16 @@ public class Story {
 
     public void RandomizeStory(Map<String, Story> initializedStories)
     {
+        //LOGGER.info("Story {}", this.name);
+        // Initialize every story at 0, 0 coords first.
+        this.area = new Zone(0, 0);
+
+        // Initialize chapters and define its shape
+        for(Chapter chapter : chapters.values()) {
+            chapter.initializeChapter(this);
+            updateStoryBounds(chapter);
+        }
+
         int attempts = 0;
         int maxAttempts = 1000; // to avoid infinite loop
         Random rand = new Random();
@@ -30,13 +40,15 @@ public class Story {
                 int zTry = rand.nextInt(radius.z * 2) - radius.z;
                 boolean overlaps = false;
                 for (Story story : initializedStories.values()) {
-                    if (story.area.inBounds(xTry, zTry)) {
+                    if (story.area.CheckCollision(xTry + this.area.beginning.x, zTry + this.area.beginning.z, xTry + this.area.end.x, zTry + this.area.end.z)) {
                         overlaps = true;
                         break;
                     }
                 }
                 if (!overlaps) {
-                    this.area = new Zone(xTry, zTry);
+                    this.area.beginning.add(xTry, zTry);
+                    this.area.end.add(xTry, zTry);
+
                     foundValidLocation = true;
                 }
             }
@@ -47,16 +59,17 @@ public class Story {
 //            else {
 //                LOGGER.info("Success");
 //            }
-        } else {
-            // First story — safe default
-            this.area = new Zone(-StoryEngine.ringRadius, -StoryEngine.ringRadius); // So chapter would start at 0
         }
-        initializedStories.put(this.name, this);
-
+        LOGGER.info("Story {} starts at: {}. Ends at: {}. Amount of chapters: {}", this.name, this.area.beginning.toString(), this.area.end.toString(), chapters.size());
         for(Chapter chapter : chapters.values()) {
-            chapter.initializeChapter(this);
-            updateStoryBounds(chapter);
+            chapter.addStoryCoords();
+            LOGGER.info("Story: {}. Chapter start: {}. Chapter end: {}", this.name, chapter.ringArea.beginning, chapter.ringArea.end);
+            //            chapter.populateLandscapeMap(chapter.landscapeTemplate);
+//            chapter.populateEnvironmentMap(chapter.environmentTemplate);
+
         }
+
+        initializedStories.put(this.name, this);
     }
 
     public void AddFirstChapter(String name, BlockPos2D size, String landscapeName, String environmentName,  String biomeName) {

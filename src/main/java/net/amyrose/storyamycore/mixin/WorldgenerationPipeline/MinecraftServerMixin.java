@@ -22,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.io.File;
 import java.net.Proxy;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
+
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     private ServerDataManager serverDataManager;
@@ -32,6 +34,7 @@ public class MinecraftServerMixin {
         serverDataManager = new ServerDataManager((MinecraftServer) (Object) this, saveDir);
         serverDataManager.load();
         for (Story story : StoryEngine.stories.values()) {
+            //LOGGER.info("Populate Maps");
             for (Chapter chapter : story.chapters.values()) {
                 StructureTemplate landscapeTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.landscapeName, story.ModId);
                 StructureTemplate environmentTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.environmentName, story.ModId);
