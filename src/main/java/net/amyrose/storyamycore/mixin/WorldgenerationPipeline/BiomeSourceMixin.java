@@ -20,6 +20,7 @@ public class BiomeSourceMixin {
 
     @Inject(method = "getBiome", at = @At("HEAD"), cancellable = true)
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
+        //LOGGER.info("BiomeSource");
         int blockX = x * 4;
         int blockZ = z * 4;
         for(Story story : StoryEngine.stories.values()) {

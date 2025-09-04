@@ -60,14 +60,15 @@ public class Story {
 //                LOGGER.info("Success");
 //            }
         }
-        LOGGER.info("Story {} starts at: {}. Ends at: {}. Amount of chapters: {}", this.name, this.area.beginning.toString(), this.area.end.toString(), chapters.size());
-        for(Chapter chapter : chapters.values()) {
-            chapter.addStoryCoords();
-            LOGGER.info("Story: {}. Chapter start: {}. Chapter end: {}", this.name, chapter.ringArea.beginning, chapter.ringArea.end);
-            //            chapter.populateLandscapeMap(chapter.landscapeTemplate);
-//            chapter.populateEnvironmentMap(chapter.environmentTemplate);
-
-        }
+        //LOGGER.info("Story {} starts at: {}. Ends at: {}. Amount of chapters: {}", this.name, this.area.beginning.toString(), this.area.end.toString(), chapters.size());
+//        for(Chapter chapter : chapters.values()) {
+//            chapter.addStoryCoords();
+//            //LOGGER.info("Chapter Area start: {}. Chapter Area end: {}",chapter.ringArea.beginning, chapter.ringArea.end);
+//            //LOGGER.info("Chapter start: {}. Chapter end: {}", chapter.chapterArea.beginning,  chapter.chapterArea.end);
+//            //            chapter.populateLandscapeMap(chapter.landscapeTemplate);
+////            chapter.populateEnvironmentMap(chapter.environmentTemplate);
+//
+//        }
 
         initializedStories.put(this.name, this);
     }
@@ -82,15 +83,17 @@ public class Story {
 
     public void updateStoryBounds(Chapter chapter) {
         if (chapter.first) {
-            // First chapter: initialize the bounding area directly
-                area = chapter.ringArea;
+            // First chapter: initialize the bounding area as a copy
+            area = new Zone(
+                    new BlockPos2D(chapter.ringArea.beginning.x, chapter.ringArea.beginning.z),
+                    new BlockPos2D(chapter.ringArea.end.x, chapter.ringArea.end.z)
+            );
         } else {
             // Expand storyArea to include this chapter's area
             area.beginning.setMin(chapter.ringArea.beginning);
             area.end.setMax(chapter.ringArea.end);
         }
     }
-
     public NbtCompound SaveToNbt() {
         NbtCompound nbt = new NbtCompound();
         nbt.put("storyArea", area.SaveToNbt());

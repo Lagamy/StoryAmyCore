@@ -25,7 +25,7 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 public class Chapter {
-    public Story parentStory;
+    public Story parentStory; // reference to parent story.
     public boolean first = false;
     BlockPos2D offsetFromPrevious;
     BlockPos2D size;
@@ -84,14 +84,13 @@ public class Chapter {
 
     public void addStoryCoords() {
         // Shift chapterArea relative to the story’s world position
-        chapterArea.beginning.add(parentStory.area.beginning);
-        chapterArea.end.add(parentStory.area.beginning);
+        BlockPos2D storyBeginningMinusRingRadius = new BlockPos2D(parentStory.area.beginning.x + StoryEngine.ringRadius, parentStory.area.beginning.z + StoryEngine.ringRadius);
+        chapterArea.beginning.add(storyBeginningMinusRingRadius);
+        chapterArea.end.add(storyBeginningMinusRingRadius);
 
         // ringArea follows the same world offset
-        ringArea.beginning.add(parentStory.area.beginning);
-        ringArea.end.add(parentStory.area.beginning);
-
-        LOGGER.info("{}. Chapter start: {}. Chapter end: {}", parentStory.name, chapterArea.beginning, chapterArea.end);
+        ringArea.beginning.add(storyBeginningMinusRingRadius);
+        ringArea.end.add(storyBeginningMinusRingRadius);
     }
 
     public int WhatRingLayerIsIt(int x, int z) {
@@ -112,21 +111,24 @@ public class Chapter {
         }
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, maxHeight, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = new BlockPos(chapterArea.beginning.x, 0, chapterArea.beginning.z); // y=64 for flat terrain
+
+        BlockPos placeholder = new BlockPos(0, 0, 0);
+        LOGGER.info("{}. Chapter Area start: {}. Chapter Area end: {}",this.parentStory.name, this.chapterArea.beginning, this.chapterArea.end);
 
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
                 .setMirror(BlockMirror.NONE)
                 .setRotation(BlockRotation.NONE)
-                .setPosition(origin);
+                .setPosition(placeholder);
 
         // Get transformed block infos
-        List<StructureTemplate.StructureBlockInfo> blockInfos = placementData.getRandomBlockInfos(landscapeTemplate.blockInfoLists, origin).getAll();
+        List<StructureTemplate.StructureBlockInfo> blockInfos = placementData.getRandomBlockInfos(landscapeTemplate.blockInfoLists, placeholder).getAll();
 
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
             if (!info.state().isAir()) {
-                BlockPos worldPos = info.pos(); // Absolute world position
+                BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
                 int y = worldPos.getY() + maxHeight;
 
@@ -155,23 +157,24 @@ public class Chapter {
         maxEnvironmentHeight = environmentTemplate.getSize().getY() + maxHeight;
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, maxHeight, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = new BlockPos(chapterArea.beginning.x, 0, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos placeholder = new BlockPos(0, 0, 0);
 
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
                 .setMirror(BlockMirror.NONE)
                 .setRotation(BlockRotation.NONE)
-                .setPosition(origin);
+                .setPosition(placeholder);
 
         // Get transformed block infos
-        List<StructureTemplate.StructureBlockInfo> blockInfos = placementData.getRandomBlockInfos(environmentTemplate.blockInfoLists, origin).getAll();
+        List<StructureTemplate.StructureBlockInfo> blockInfos = placementData.getRandomBlockInfos(environmentTemplate.blockInfoLists, placeholder).getAll();
 
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
             BlockState blockState = info.state();
             if (!blockState.isAir()) {
 
-                BlockPos worldPos = info.pos(); // Absolute world position
+                BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 //System.out.println(worldPos);
                 long key = XYZasLong(worldPos.getX(), worldPos.getY() + maxHeight, worldPos.getZ());
                 noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
