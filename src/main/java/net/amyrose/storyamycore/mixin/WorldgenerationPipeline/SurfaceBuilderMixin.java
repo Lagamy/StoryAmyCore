@@ -39,7 +39,7 @@ public abstract class SurfaceBuilderMixin {
 
     // Place everything here:
     @Inject(method = "buildSurface", at = @At("TAIL"))
-    private void createEnvironment(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
+    private void createChapter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
                                    boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
                                    ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule,
                                    CallbackInfo ci) {
@@ -48,7 +48,6 @@ public abstract class SurfaceBuilderMixin {
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
         IChunkChapters Ichunk = (IChunkChapters) chunk;
-        Heightmap heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
         if (Ichunk.getSize() != 0)
         {
             for (Chapter chapter : Ichunk.getPresentChapters())
@@ -60,26 +59,45 @@ public abstract class SurfaceBuilderMixin {
                         int worldX = chunkX + x;
                         int worldZ = chunkZ + z;
 
-                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, worldX, worldZ), worldZ);
+                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z), worldZ);
                         BlockState topmostBlockstate = chunk.getBlockState(topmostBlockpos); // For biome aware landscape.
 
-                        for (int y = 64; y <= chapter.maxEnvironmentHeight; y++)
+                        //Generate Blending Rings
+                        int ringLayerBlockHeight = CalculateBlendedHighestBlock(chapter, worldX, worldZ, topmostBlockpos.getY());
+
+                        for (int y = 0; y <= 256; y++) // nuke it, since most of it is air(replace with code that will just clear above section
                         {
                             BlockPos pos = new BlockPos(worldX, y, worldZ);
+                            if (y == ringLayerBlockHeight)
+                            {
+                                chunk.setBlockState(pos, topmostBlockstate, false);
+                                chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
+                                chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
+                            }
+                            else if(y < ringLayerBlockHeight)
+                            {
+                                chunk.setBlockState(pos, topmostBlockstate, true);
+                            }
+                            else if (ringLayerBlockHeight != Integer.MIN_VALUE && y > ringLayerBlockHeight && chunk.getBlockState(pos).getFluidState().isEmpty())
+                            {
+                                    chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
+                            }
 
+                            //Generate Landscape
                             int landscapeY = chapter.landscapeMap.getOrDefault(XandZAsLong(worldX, worldZ), Integer.MIN_VALUE);
                             if (y == landscapeY)
                             {
                                 chunk.setBlockState(pos, topmostBlockstate, false);
                                 chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
                                 chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
-                                chunk.setNeedsSaving(true);
                             }
-                            else if(y > landscapeY)
+                            else if(landscapeY != Integer.MIN_VALUE && y > landscapeY)
                             {
                                 chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
                             }
 
+
+                            // Generate Environment
                             BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
                             //LOGGER.info("name: {}, block: {}",story.name, state);
 
@@ -92,6 +110,23 @@ public abstract class SurfaceBuilderMixin {
                     }
                 }
             }
+            chunk.setNeedsSaving(true);
         }
+    }
+
+    int CalculateBlendedHighestBlock(Chapter chapter, int worldX, int worldZ, int highestBlock){
+        int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
+        if(ringLayer != Integer.MIN_VALUE) { // Is ring layer
+            int BorderY = chapter.GetBorderYPosition(worldX, worldZ);
+
+            // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
+            float normalized = (float) ringLayer / StoryEngine.ringRadius;
+
+            // Interpolate between flatY and vanilla height using the normalized value
+            // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight
+            float blended = BorderY * (1 - normalized) + highestBlock * normalized;
+            return Math.round(blended);
+        }
+        return Integer.MIN_VALUE;
     }
 }
