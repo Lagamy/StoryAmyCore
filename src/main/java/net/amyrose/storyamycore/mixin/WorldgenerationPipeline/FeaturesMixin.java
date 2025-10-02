@@ -45,22 +45,27 @@ public class FeaturesMixin {
             )
     )
     private void redirectForEach(Stream<BlockPos> stream, Consumer<BlockPos> consumer, FeaturePlacementContext context, Random random, BlockPos pos) {
-        ConfiguredFeature<?, ?> configuredFeature = ((PlacedFeature)(Object)this).feature().value();
-        MutableBoolean mutableBoolean = new MutableBoolean();
-        stream.forEach(placedPos -> {
-            for (Chapter chapter : Ichunk.getPresentChapters()) {
 
-                if (chapter.chapterArea.inBounds(placedPos.getX(), placedPos.getZ())) {
-                    if (chapter.noFoliageMask.contains(XandZAsLong(placedPos.getX(), placedPos.getZ()))) {
-                        return; // Skip generation
+            ConfiguredFeature<?, ?> configuredFeature = ((PlacedFeature) (Object) this).feature().value();
+            MutableBoolean mutableBoolean = new MutableBoolean();
+            stream.forEach(placedPos -> {
+                if(Ichunk.getSize() != 0) {
+                for (Chapter chapter : Ichunk.getPresentChapters()) {
+
+                    if (chapter.chapterArea.inBounds(placedPos.getX(), placedPos.getZ())) {
+                        if (chapter.noFoliageMask.contains(XandZAsLong(placedPos.getX(), placedPos.getZ()))) {
+                            return; // Skip generation
+                        }
+                        break; // Apply first chapter's mask and exit
                     }
-                    break; // Apply first chapter's mask and exit
                 }
-            }
-            if (configuredFeature.generate(context.getWorld(), context.getChunkGenerator(), random, placedPos)) {
-                mutableBoolean.setTrue();
-            }
-        });
-        // LOGGER.debug("Feature checks took {} µs", (System.nanoTime() - start) / 1_000.0);
+                }
+                if (configuredFeature.generate(context.getWorld(), context.getChunkGenerator(), random, placedPos)) {
+                    mutableBoolean.setTrue();
+                }
+
+            });
+            // LOGGER.debug("Feature checks took {} µs", (System.nanoTime() - start) / 1_000.0);
+
     }
 }

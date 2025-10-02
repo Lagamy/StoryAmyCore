@@ -36,7 +36,6 @@ public class MinecraftServerMixin {
         for (Story story : StoryEngine.stories.values()) {
             //LOGGER.info("Populate Maps");
             for (Chapter chapter : story.chapters.values()) {
-                chapter.addStoryCoords();
                 StructureTemplate landscapeTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.landscapeName, story.ModId);
                 StructureTemplate environmentTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.environmentName, story.ModId);
                 chapter.populateLandscapeMap(landscapeTemplate);

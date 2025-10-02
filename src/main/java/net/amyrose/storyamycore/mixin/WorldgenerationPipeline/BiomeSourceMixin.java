@@ -14,13 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
+import static net.amyrose.storyamycore.core.StoryEngine.serverWorld;
 
 @Mixin(MultiNoiseBiomeSource.class)
 public class BiomeSourceMixin {
 
     @Inject(method = "getBiome", at = @At("HEAD"), cancellable = true)
     private void overrideBiome(int x, int y, int z, MultiNoiseUtil.MultiNoiseSampler noise, CallbackInfoReturnable<RegistryEntry<Biome>> cir) {
-        //LOGGER.info("BiomeSource");
+
         int blockX = x * 4;
         int blockZ = z * 4;
         for(Story story : StoryEngine.stories.values()) {

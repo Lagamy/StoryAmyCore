@@ -26,10 +26,12 @@ public class CarverMixin {
     {
         ChunkPos chunkPos = chunk.getPos();
         IChunkChapters Ichunk = (IChunkChapters) chunk;
-        for (Chapter chapter : Ichunk.getPresentChapters()) {
-            if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)) {
-                cir.setReturnValue(false);
-                return;
+        if(Ichunk.getSize() != 0) {
+            for (Chapter chapter : Ichunk.getPresentChapters()) {
+                if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)) {
+                    cir.setReturnValue(false);
+                    return;
+                }
             }
         }
     }

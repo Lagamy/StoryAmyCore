@@ -1,13 +1,21 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
-import net.amyrose.storyamycore.core.Chapter;
-import net.amyrose.storyamycore.core.IChunkChapters;
+import net.amyrose.storyamycore.core.*;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
+import net.minecraft.world.gen.chunk.NoiseChunkGenerator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+
+import static com.mojang.text2speech.Narrator.LOGGER;
 
 @Mixin(Chunk.class)
 public abstract class ChunkMixin implements IChunkChapters {
@@ -22,4 +30,37 @@ public abstract class ChunkMixin implements IChunkChapters {
 
     @Override
     public void addChapter(Chapter chapter){ presentChapters.add(chapter); }
+
+    @Override
+    public boolean isChaptersPresentEmpty(){ return presentChapters.isEmpty(); }
+
+    @Override
+    public int getSize() { return presentChapters.size();}
+//    @Inject(
+//            method = "getOrCreateChunkNoiseSampler",
+//            at = @At("RETURN")
+//    )
+//    private void afterCreateChunkNoiseSampler(Function<Chunk, ChunkNoiseSampler> chunkNoiseSamplerCreator,
+//                                              CallbackInfoReturnable<ChunkNoiseSampler> cir) {
+//        ChunkNoiseSampler sampler = cir.getReturnValue();
+//        Chunk chunk = (Chunk) (Object) this;
+//        LOGGER.info("getOrCreateChunkNoiseSampler");
+//        ChunkPos pos = chunk.getPos();
+//        int chunkX = pos.getStartX();
+//        int chunkZ = pos.getStartZ();
+//
+//        // Filter your chapters here
+//        IChunkChapters iChunk = (IChunkChapters) chunk;
+//        iChunk.clearPresentChapters();
+//
+//        for (Story story : StoryEngine.stories.values()) {
+//            if (story.area.chunkInBound(chunkX, chunkZ)) {
+//                for (Chapter chapter : story.chapters.values()) {
+//                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+//                        iChunk.addChapter(chapter);
+//                    }
+//                }
+//            }
+//        }
+//    }
 }

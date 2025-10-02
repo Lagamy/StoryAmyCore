@@ -6,6 +6,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class StoryEngine {
     public static Map<String, Story> stories = new HashMap<>();
+
+    public static ServerWorld serverWorld;
 
     public static final int maxDistanceBetweenStories = 500;
 

@@ -33,14 +33,13 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 public class ServerWorldMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void asignChapterBiomes(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
+    private void asignChapterBiomesAndInitializeServerWorld(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
         if (worldKey == World.OVERWORLD) {
             setChapterBiomes();
         }
     }
 
-    void setChapterBiomes()
-    {
+    void setChapterBiomes() {
         ServerWorld overworld = (ServerWorld)(Object)this;
 
         if (overworld != null) {

@@ -172,7 +172,7 @@ public class Chapter {
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
             BlockState blockState = info.state();
-            if (!blockState.isAir()) {
+            //if (!blockState.isAir()) {
 
                 BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 //System.out.println(worldPos);
@@ -181,7 +181,7 @@ public class Chapter {
                 if (!(blockState == Blocks.PINK_WOOL.getDefaultState())) {
                     environmentMap.put(key, blockState);
                 }
-            }
+            //}
         }
 
         //LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);

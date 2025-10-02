@@ -3,94 +3,41 @@ package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.IChunkChapters;
 import net.amyrose.storyamycore.core.StoryEngine;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.HeightContext;
+import net.minecraft.world.gen.chunk.BlockColumn;
 import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.world.gen.surfacebuilder.MaterialRules;
 import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.XYZasLong;
+import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
 
 @Mixin(SurfaceBuilder.class)
-public class SurfaceBuilderMixin {
-
-    @Inject(method = "buildSurface", at = @At("HEAD"))
-    private void modifySurfaceHeight(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
-                                     boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
-                                     ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule,
-                                     CallbackInfo ci) {
-        final ChunkPos chunkPos = chunk.getPos();
-        int chunkX = chunkPos.getStartX();
-        int chunkZ = chunkPos.getStartZ();
-        // Iterate over the 16x16 chunk
-        IChunkChapters Ichunk = (IChunkChapters) chunk;
-        for (Chapter chapter : Ichunk.getPresentChapters()) {
-            if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-                for (int x = 0; x < 16; ++x) {
-                    for (int z = 0; z < 16; ++z) {
-                        int worldX = chunkX + x;
-                        int worldZ = chunkZ + z;
-                        int currentHeight;
-                        // Get the current surface height from the heightmap
-
-                        //if (isOuterBorder) {
-
-                        // Get the vanilla terrain height at this block
-                        currentHeight = chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR, x, z);
-
-                        // Calculate which "ring layer" this block is in
-                        int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
-
-                        if (ringLayer != Integer.MIN_VALUE) { // Is ring layer
-                            int BorderY = chapter.GetBorderYPosition(worldX, worldZ);
-                            // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
-                            float normalized = (float) ringLayer / StoryEngine.ringRadius;
-
-                            // Interpolate between flatY and vanilla height using the normalized value
-                            // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight
-                            int resultHeight = (int) (BorderY * (1 - normalized) + currentHeight * normalized);
-
-                            // Clear all blocks above the resultHeight in this column
-                            for (int y = resultHeight + 1; y <= currentHeight; y++) {
-                                chunk.setBlockState(new BlockPos(worldX, y, worldZ), Blocks.AIR.getDefaultState(), false);
-                            }
+public abstract class SurfaceBuilderMixin {
 
 
-                            // Now do something with resultHeight — for testing, maybe set a block at that height
-                            BlockPos targetPos = new BlockPos(worldX, resultHeight, worldZ);
-                            chunk.setBlockState(targetPos, Blocks.STONE.getDefaultState(), false); // Replace with desired block
-
-
-//                    if (ringLayer == 1) {
-//                        // System.out.println("border Y: " + BorderY);
-//                        chunk.setBlockState(new BlockPos(x, BorderY, z), Blocks.RED_WOOL.getDefaultState(), false);
-//                    }
-//                    if (ringLayer == 62) {
-//                        chunk.setBlockState(new BlockPos(x, resultHeight, z), Blocks.MAGENTA_WOOL.getDefaultState(), false);
-//                    }
-                        }
-                    }
-                }
-            }
-
-
-        }
-    }
-
-
+    // Place everything here:
     @Inject(method = "buildSurface", at = @At("TAIL"))
     private void createEnvironment(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
                                    boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
@@ -101,21 +48,46 @@ public class SurfaceBuilderMixin {
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
         IChunkChapters Ichunk = (IChunkChapters) chunk;
-        for (Chapter chapter : Ichunk.getPresentChapters()) {
-            for (int x = 0; x < 16; ++x) {
-                for (int z = 0; z < 16; ++z) {
-                    int worldX = chunkX + x;
-                    int worldZ = chunkZ + z;
-                    for (int y = 64; y <= chapter.maxEnvironmentHeight; y++) {
-                        BlockPos pos = new BlockPos(worldX, y, worldZ);
+        Heightmap heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
+        if (Ichunk.getSize() != 0)
+        {
+            for (Chapter chapter : Ichunk.getPresentChapters())
+            {
+                for (int x = 0; x < 16; ++x)
+                {
+                    for (int z = 0; z < 16; ++z)
+                    {
+                        int worldX = chunkX + x;
+                        int worldZ = chunkZ + z;
 
-                        // Here is the problem
-                        BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
-                        //LOGGER.info("name: {}, block: {}",story.name, state);
+                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, worldX, worldZ), worldZ);
+                        BlockState topmostBlockstate = chunk.getBlockState(topmostBlockpos); // For biome aware landscape.
 
-                        if (state != Blocks.AIR.getDefaultState()) {
-                            //System.out.println("maxHeight: " + chapter.maxHeight);
-                            chunk.setBlockState(pos, state, false);
+                        for (int y = 64; y <= chapter.maxEnvironmentHeight; y++)
+                        {
+                            BlockPos pos = new BlockPos(worldX, y, worldZ);
+
+                            int landscapeY = chapter.landscapeMap.getOrDefault(XandZAsLong(worldX, worldZ), Integer.MIN_VALUE);
+                            if (y == landscapeY)
+                            {
+                                chunk.setBlockState(pos, topmostBlockstate, false);
+                                chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
+                                chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
+                                chunk.setNeedsSaving(true);
+                            }
+                            else if(y > landscapeY)
+                            {
+                                chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
+                            }
+
+                            BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
+                            //LOGGER.info("name: {}, block: {}",story.name, state);
+
+                            if (state != Blocks.AIR.getDefaultState())
+                            {
+                                //System.out.println("maxHeight: " + chapter.maxHeight);
+                                chunk.setBlockState(pos, state, false);
+                            }
                         }
                     }
                 }

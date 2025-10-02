@@ -61,14 +61,14 @@ public class Story {
 //            }
         }
         //LOGGER.info("Story {} starts at: {}. Ends at: {}. Amount of chapters: {}", this.name, this.area.beginning.toString(), this.area.end.toString(), chapters.size());
-//        for(Chapter chapter : chapters.values()) {
-//            chapter.addStoryCoords();
+        for(Chapter chapter : chapters.values()) {
+            chapter.addStoryCoords();
 //            //LOGGER.info("Chapter Area start: {}. Chapter Area end: {}",chapter.ringArea.beginning, chapter.ringArea.end);
 //            //LOGGER.info("Chapter start: {}. Chapter end: {}", chapter.chapterArea.beginning,  chapter.chapterArea.end);
 //            //            chapter.populateLandscapeMap(chapter.landscapeTemplate);
 ////            chapter.populateEnvironmentMap(chapter.environmentTemplate);
 //
-//        }
+        }
 
         initializedStories.put(this.name, this);
     }

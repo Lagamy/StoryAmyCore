@@ -6,4 +6,6 @@ public interface IChunkChapters {
     List<Chapter> getPresentChapters();
     void addChapter(Chapter chapter);
     void clearPresentChapters();
+    boolean isChaptersPresentEmpty();
+    int getSize();
 }

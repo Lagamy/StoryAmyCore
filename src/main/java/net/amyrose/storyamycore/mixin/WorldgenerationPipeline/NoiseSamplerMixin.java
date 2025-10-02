@@ -3,11 +3,9 @@ package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 import net.amyrose.storyamycore.core.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.chunk.AquiferSampler;
-import net.minecraft.world.gen.chunk.Blender;
-import net.minecraft.world.gen.chunk.ChunkGeneratorSettings;
-import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
+import net.minecraft.world.gen.chunk.*;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,30 +13,17 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
+import static net.amyrose.storyamycore.core.StoryEngine.serverWorld;
 
 @Mixin(ChunkNoiseSampler.class)
-public class NoiseSamplerMixin {
+public class NoiseSamplerMixin{
     // Define flat region coordinates
     @Unique
     public IChunkChapters Ichunk; // not static, per-instance
 
-    @Inject(
-            method = "create(Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/gen/densityfunction/DensityFunctionTypes$Beardifying;Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/world/gen/chunk/AquiferSampler$FluidLevelSampler;Lnet/minecraft/world/gen/chunk/Blender;)Lnet/minecraft/world/gen/chunk/ChunkNoiseSampler;",
-            at = @At("RETURN")
-    )
-    private static void onCreate(
-            Chunk chunk,
-            NoiseConfig noiseConfig,
-            DensityFunctionTypes.Beardifying beardifying,
-            ChunkGeneratorSettings chunkGeneratorSettings,
-            AquiferSampler.FluidLevelSampler fluidLevelSampler,
-            Blender blender,
-            CallbackInfoReturnable<ChunkNoiseSampler> cir
-    ) {
-        ChunkNoiseSampler sampler = cir.getReturnValue(); // not static, since returned info.
-        ((NoiseSamplerMixin)(Object) sampler).Ichunk = (IChunkChapters) chunk;
-    }
 
     @Inject(
             method = "sampleBlockState()Lnet/minecraft/block/BlockState;",
@@ -53,6 +38,7 @@ public class NoiseSamplerMixin {
         int y = sampler.blockY();
         int z = sampler.blockZ();
 
+        LOGGER.info("modifyBlockState");
         // Apply existing Chapter logic for flat regions
         for (Chapter chapter : Ichunk.getPresentChapters()) {
             if (chapter.chapterArea.inBounds(x, z)) {
@@ -74,7 +60,6 @@ public class NoiseSamplerMixin {
         }
     }
 
-
     @Inject(
             method = "estimateSurfaceHeight(II)I",
             at = @At("HEAD"),
@@ -82,6 +67,26 @@ public class NoiseSamplerMixin {
     )
     private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
 
+        Chunk chunk = serverWorld.getChunk(blockX, blockZ);
+        LOGGER.info("getChunk");
+        ChunkPos pos = chunk.getPos();
+        int chunkX = pos.getStartX();
+        int chunkZ = pos.getStartZ();
+
+        // Filter your chapters here
+        IChunkChapters ichunk = (IChunkChapters) chunk;
+        ichunk.clearPresentChapters();
+
+        for (Story story : StoryEngine.stories.values()) {
+            if (story.area.chunkInBound(chunkX, chunkZ)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+                        ichunk.addChapter(chapter);
+                    }
+                }
+            }
+        }
+        LOGGER.info("modifySurfaceHeight");
         for (Chapter chapter : Ichunk.getPresentChapters()) {
             if (chapter.chapterArea.inBounds(blockX, blockZ)) {
                 int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
@@ -92,4 +97,6 @@ public class NoiseSamplerMixin {
         }
 
     }
+
+
 }
