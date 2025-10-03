@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.Proxy;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
+import static net.amyrose.storyamycore.core.StoryEngine.storiesInitialized;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
@@ -31,15 +32,23 @@ public class MinecraftServerMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     void initializeChapters(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo ci) {
         File saveDir = session.getDirectory(WorldSavePath.ROOT).toFile(); // You may need to adjust to your Minecraft version
-        serverDataManager = new ServerDataManager((MinecraftServer) (Object) this, saveDir);
+        MinecraftServer server = (MinecraftServer) (Object) this;
+        serverDataManager = new ServerDataManager(server, saveDir);
+
+
         serverDataManager.load();
+
         for (Story story : StoryEngine.stories.values()) {
             //LOGGER.info("Populate Maps");
-            for (Chapter chapter : story.chapters.values()) {
-                StructureTemplate landscapeTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.landscapeName, story.ModId);
-                StructureTemplate environmentTemplate = chapter.loadStructureTemplate((MinecraftServer) (Object) this, chapter.environmentName, story.ModId);
-                chapter.populateLandscapeMap(landscapeTemplate);
-                chapter.populateEnvironmentMap(environmentTemplate);
+            for (Chapter chapter : story.chapters.values())
+            {
+                chapter.LoadLandscapeTemplate(server);
+                chapter.LoadEnvironmentTemplate(server);
+                if(storiesInitialized)
+                {
+                    chapter.populateLandscapeMap();
+                    chapter.populateEnvironmentMap();
+                }
             }
         }
     }

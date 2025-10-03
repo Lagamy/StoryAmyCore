@@ -7,8 +7,6 @@
 		"WorldgenerationPipeline.ChunkChapterFilterMixin",
 		"WorldgenerationPipeline.MinecraftServerMixin",
 		"WorldgenerationPipeline.ServerWorldMixin",
-		"WorldgenerationPipeline.BiomeSourceMixin",
-		"WorldgenerationPipeline.FeaturesMixin",
 		"WorldgenerationPipeline.CarverMixin",
 		"WorldgenerationPipeline.SurfaceBuilderMixin"
 	],

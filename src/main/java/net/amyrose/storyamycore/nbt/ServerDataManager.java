@@ -4,6 +4,7 @@ import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
+import static net.amyrose.storyamycore.core.StoryEngine.storiesInitialized;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,16 +35,18 @@ public class ServerDataManager {
                 e.printStackTrace();
                 data = new worldDataNBT();
                 data.wasCreated = true;
+                storiesInitialized = false;
             }
         } else {
             data = new worldDataNBT();
             data.wasCreated = true;
+            storiesInitialized = false;
         }
-
-        if (data.wasCreated) {
-            StoryEngine.RandomizeStories();
-            save(); // save new data immediately
-        }
+// Moved to SurfaceBuilding
+//        if (data.wasCreated) {
+//            StoryEngine.RandomizeStories();
+//            save(); // save new data immediately
+//        }
     }
 
     public void save() {

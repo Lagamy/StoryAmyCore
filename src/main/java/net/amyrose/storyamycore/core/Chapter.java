@@ -16,10 +16,9 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeAccess;
 
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.*;
@@ -35,38 +34,47 @@ public class Chapter {
     public String biomeName;
     public String landscapeName;
     public String environmentName;
-    public int maxHeight = 64;
+    public StructureTemplate landscapeTemplate;
+    public StructureTemplate environmentTemplate;
+
+    public int chaptersBaseHeight = 64;
     public int maxEnvironmentHeight;
     public LongOpenHashSet noFoliageMask = new LongOpenHashSet();
     public Long2IntOpenHashMap landscapeMap = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
     public Long2ObjectOpenHashMap<BlockState> environmentMap = new Long2ObjectOpenHashMap<>();
+    public Set<String> forbiddenBiomes;
 
     public RegistryEntry<Biome> biome;
 
 
-    public Chapter(BlockPos2D size, String landscapeName, String environmentName,  String biomeName) {
+    public Chapter(BlockPos2D size, String landscapeName, String environmentName, String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
         this.landscapeName = landscapeName;
         this.environmentName = environmentName;
         this.biomeName = biomeName;
         this.size = size;
+        this.chaptersBaseHeight = chaptersBaseHeight;
+        this.forbiddenBiomes = forbiddenBiomes;
         first = true;
     }
 
-    public Chapter(BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName,  String biomeName) {
+    public Chapter(BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName, String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
         this.landscapeName = landscapeName;
         this.environmentName = environmentName;
         this.biomeName = biomeName;
         this.size = size;
         this.offsetFromPrevious = offsetFromPrevious;
+        this.chaptersBaseHeight = chaptersBaseHeight;
+        this.forbiddenBiomes = forbiddenBiomes;
     }
 
 
-    public void initializeChapter(Story story)
+    public void initializeChapter(Story story, BiomeAccess biomeAccess)
     {
         parentStory = story; // saves reference to story.
         BlockPos2D beginning;
+
         if(first) {
             beginning = new BlockPos2D(0, 0);
         }
@@ -75,12 +83,42 @@ public class Chapter {
             beginning = new BlockPos2D(previousChapter.chapterArea.end.x, previousChapter.chapterArea.end.z);
             beginning.add(offsetFromPrevious);
         }
-        chapterArea = new Zone(new BlockPos2D(beginning.x, beginning.z), new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
-        ringArea = new Zone(
-                new BlockPos2D(chapterArea.beginning.x - StoryEngine.ringRadius, chapterArea.beginning.z - StoryEngine.ringRadius),
-                new BlockPos2D(chapterArea.end.x + StoryEngine.ringRadius, chapterArea.end.z + StoryEngine.ringRadius)
+
+        Zone tempChapterArea = new Zone(new BlockPos2D(beginning.x, beginning.z), new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
+
+        boolean foundPlace = tempChapterArea.IsNotInForbiddenBiome(forbiddenBiomes, chaptersBaseHeight, biomeAccess);
+
+        int attempts = 0;
+        int maxAttempts = 100; // to avoid infinite loop
+        while (!foundPlace && attempts != maxAttempts)
+        {
+            int newX = beginning.x + (int)(Math.random() * story.baseMaxDistanceRadius * (attempts + 10) / 10);
+            int newZ = beginning.z + (int)(Math.random() * story.baseMaxDistanceRadius * (attempts + 10) / 10);
+
+            tempChapterArea.beginning.x = newX;
+            tempChapterArea.beginning.z = newZ;
+            tempChapterArea.end.x = newX + size.x;
+            tempChapterArea.end.z = newZ + size.z;
+
+            foundPlace = tempChapterArea.IsNotInForbiddenBiome(forbiddenBiomes, chaptersBaseHeight, biomeAccess);
+        }
+
+        if (attempts == maxAttempts)
+        {
+            LOGGER.error("Couldn't find suitable place for chapter after: {} attemps. Please change chapter settings", maxAttempts);
+            throw new RuntimeException();
+        }
+
+        // if I wanted to search ring wide - I would use this.
+        Zone tempRingArea = new Zone(
+                new BlockPos2D(tempChapterArea.beginning.x - StoryEngine.ringRadius, tempChapterArea.beginning.z - StoryEngine.ringRadius),
+                new BlockPos2D(tempChapterArea.end.x + StoryEngine.ringRadius, tempChapterArea.end.z + StoryEngine.ringRadius)
         );
+        chapterArea = tempChapterArea;
+        ringArea = tempRingArea;
     }
+
+
 
     public void addStoryCoords() {
         // Shift chapterArea relative to the story’s world position
@@ -104,7 +142,7 @@ public class Chapter {
     }
 
     // Populate landscape map with absolute world coordinates for the highest non-air block in each column
-    public void populateLandscapeMap(StructureTemplate landscapeTemplate) {
+    public void populateLandscapeMap() {
         if (landscapeTemplate == null) {
             LOGGER.error("Cannot populate landscape map: landscapeTemplate is null for chapter {}", name);
             throw new RuntimeException("landscapeTemplate is null for chapter " + name);
@@ -130,7 +168,7 @@ public class Chapter {
             if (!info.state().isAir()) {
                 BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
-                int y = worldPos.getY() + maxHeight;
+                int y = worldPos.getY() + chaptersBaseHeight;
 
                 // Update the y-value only if it's higher than the current stored value (or if no value exists)
                 if (!landscapeMap.containsKey(key) || y > landscapeMap.get(key)) {
@@ -149,12 +187,12 @@ public class Chapter {
 
 
     // Populate environment map with absolute world coordinates
-    public void populateEnvironmentMap(StructureTemplate environmentTemplate) {
+    public void populateEnvironmentMap() {
         if (environmentTemplate == null) {
             LOGGER.error("Cannot populate landscape map: environmentTemplate is null for chapter {}", name);
             throw new RuntimeException("environmentTemplate is null for chapter " + name);
         }
-        maxEnvironmentHeight = environmentTemplate.getSize().getY() + maxHeight;
+        maxEnvironmentHeight = environmentTemplate.getSize().getY() + chaptersBaseHeight;
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
         BlockPos origin = new BlockPos(chapterArea.beginning.x, 0, chapterArea.beginning.z); // y=64 for flat terrain
@@ -176,7 +214,7 @@ public class Chapter {
 
                 BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 //System.out.println(worldPos);
-                long key = XYZasLong(worldPos.getX(), worldPos.getY() + maxHeight, worldPos.getZ());
+                long key = XYZasLong(worldPos.getX(), worldPos.getY() + chaptersBaseHeight, worldPos.getZ());
                 noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
                 if (!(blockState == Blocks.PINK_WOOL.getDefaultState())) {
                     environmentMap.put(key, blockState);
@@ -287,6 +325,13 @@ public class Chapter {
                 .orElseThrow(() -> new IllegalArgumentException("Structure not found: " + structureId));
     }
 
+    public void LoadEnvironmentTemplate(MinecraftServer server) {
+        environmentTemplate = loadStructureTemplate(server, environmentName, parentStory.ModId);
+    }
+
+    public void LoadLandscapeTemplate(MinecraftServer server) {
+        landscapeTemplate = loadStructureTemplate(server, landscapeName, parentStory.ModId);
+    }
 
     public NbtCompound SaveToNbt() {
         NbtCompound nbt = new NbtCompound();

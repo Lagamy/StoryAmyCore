@@ -17,11 +17,10 @@ import java.util.Map;
 import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class StoryEngine {
+    public static boolean storiesInitialized = false;
     public static Map<String, Story> stories = new HashMap<>();
 
     public static ServerWorld serverWorld;
-
-    public static final int maxDistanceBetweenStories = 500;
 
     public static final float multiplyDistanceBetweenStories = 1.5f;
 
@@ -79,15 +78,6 @@ public class StoryEngine {
 
     public static void putStory(Story story) {
         stories.put(story.name, story);
-    }
-
-    public static void RandomizeStories(){ // When there is saved data(Fresh world)
-        Map<String, Story> initializedStories = new HashMap<>();
-        for(Story story : stories.values()) {
-            story.RandomizeStory(initializedStories);
-            //LOGGER.info("Created {} story starts at: {}. Ends at: {}", story.name, story.area.beginning.toString(), story.area.end.toString());
-            //LOGGER.info("Randomize");
-        }
     }
 
     public static NbtCompound SaveStoriesToNBT() {

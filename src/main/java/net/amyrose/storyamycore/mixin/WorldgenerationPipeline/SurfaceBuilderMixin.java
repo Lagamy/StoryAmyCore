@@ -2,6 +2,7 @@ package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.IChunkChapters;
+import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
@@ -24,20 +25,70 @@ import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static com.mojang.text2speech.Narrator.LOGGER;
-import static net.amyrose.storyamycore.core.StoryEngine.XYZasLong;
-import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
+import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 @Mixin(SurfaceBuilder.class)
 public abstract class SurfaceBuilderMixin {
+//    private static final ReentrantLock lock = new ReentrantLock();
+
+//    @Unique
+//    IChunkChapters Ichunk;
+//
+//    @Inject(method = "buildSurface", at = @At("HEAD"))
+//    private void RandomizeAndDecideStoriesPlaces(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
+//                                                  boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
+//                                                  ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule,
+//                                                  CallbackInfo ci) {
+//        if(!storiesInitialized) {
+//            lock.lock(); // Acquire lock, blocks other threads
+//            try {
+//                Map<String, Story> initializedStories = new HashMap<>();
+//                for (Story story : stories.values())
+//                {
+//                    story.RandomizeStory(initializedStories, biomeAccess);
+//                    for (Chapter chapter : story.chapters.values())
+//                    {
+//                        chapter.populateLandscapeMap();
+//                        chapter.populateEnvironmentMap();
+//                    }
+//                }
+//                storiesInitialized = true;
+//            }
+//            finally {
+//                lock.unlock();
+//            }
+//        }
+//
+//        Ichunk = (IChunkChapters) chunk;
+//        Ichunk.clearPresentChapters();
+//
+//        final ChunkPos chunkPos = chunk.getPos();
+//        int chunkX = chunkPos.getStartX();
+//        int chunkZ = chunkPos.getStartZ();
+//
+//        for (Story story : StoryEngine.stories.values()) {
+//            if (story.area.chunkInBound(chunkX, chunkZ)) {
+//                for (Chapter chapter : story.chapters.values()) {
+//                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+//                        Ichunk.addChapter(chapter);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
 
-    // Place everything here:
     @Inject(method = "buildSurface", at = @At("TAIL"))
     private void createChapter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
                                    boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
@@ -59,7 +110,7 @@ public abstract class SurfaceBuilderMixin {
                         int worldX = chunkX + x;
                         int worldZ = chunkZ + z;
 
-                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z), worldZ);
+                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE_WG, x, z), worldZ);
                         BlockState topmostBlockstate = chunk.getBlockState(topmostBlockpos); // For biome aware landscape.
 
                         //Generate Blending Rings
@@ -74,10 +125,10 @@ public abstract class SurfaceBuilderMixin {
                                 chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
                                 chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
                             }
-                            else if(y < ringLayerBlockHeight)
-                            {
-                                chunk.setBlockState(pos, topmostBlockstate, true);
-                            }
+//                            else if(y < ringLayerBlockHeight)
+//                            {
+//                                chunk.setBlockState(pos, topmostBlockstate, false);
+//                            }
                             else if (ringLayerBlockHeight != Integer.MIN_VALUE && y > ringLayerBlockHeight && chunk.getBlockState(pos).getFluidState().isEmpty())
                             {
                                     chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
@@ -91,6 +142,9 @@ public abstract class SurfaceBuilderMixin {
                                 chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
                                 chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
                             }
+//                            else if(y < landscapeY) {
+//                                chunk.setBlockState(pos, Blocks.STONE.getDefaultState(), false);
+//                            }
                             else if(landscapeY != Integer.MIN_VALUE && y > landscapeY)
                             {
                                 chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
@@ -129,4 +183,5 @@ public abstract class SurfaceBuilderMixin {
         }
         return Integer.MIN_VALUE;
     }
+
 }

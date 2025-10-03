@@ -1,5 +1,16 @@
 package net.amyrose.storyamycore.core;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeAccess;
+
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
+
+import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class Zone {
     public BlockPos2D beginning;
@@ -67,5 +78,51 @@ public class Zone {
                 beginningX > this.end.x ||   // another is right of this
                 endZ < this.beginning.z ||   // another is above this
                 beginningZ > this.end.z);    // another is below this
+    }
+
+
+    public boolean IsNotInForbiddenBiome(Set<String> forbiddenBiomes, int y, BiomeAccess biomeAccess) {
+//        return (
+//            !(forbiddenBiomes.contains(getBiomeKey(new BlockPos(beginning.x, y, beginning.z), biomeAccess)) ||
+//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(end.x, y, beginning.z), biomeAccess)) ||
+//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(beginning.x, y, end.z), biomeAccess)) ||
+//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(end.x, y, end.z), biomeAccess))));
+
+        // Debug version:
+        BlockPos t1 = new BlockPos(beginning.x, y, beginning.z);
+        BlockPos t2 = new BlockPos(end.x, y, beginning.z);
+        BlockPos t3 = new BlockPos(beginning.x, y, end.z);
+        BlockPos t4 = new BlockPos(end.x, y, end.z);
+
+        if(forbiddenBiomes.contains(getBiomeKey(t1, biomeAccess)))
+        {
+            LOGGER.info("forbidden biome was at beginning.x and beginning.z: {}", getBiomeKey(t1, biomeAccess));
+            return false;
+        }
+
+        if(forbiddenBiomes.contains(getBiomeKey(t2, biomeAccess)))
+        {
+            LOGGER.info("forbidden biome was at end.x and beginning.z: {}", getBiomeKey(t2, biomeAccess));
+            return false;
+        }
+
+        if(forbiddenBiomes.contains(getBiomeKey(t3, biomeAccess)))
+        {
+            LOGGER.info("forbidden biome was at beginning.x and end.z: {}", getBiomeKey(t3, biomeAccess));
+            return false;
+        }
+
+        if(forbiddenBiomes.contains(getBiomeKey(t4, biomeAccess)))
+        {
+            LOGGER.info("forbidden biome was at end.x and end.z: {}", getBiomeKey(t4, biomeAccess));
+            return false;
+        }
+        return true;
+    }
+
+    public String getBiomeKey(BlockPos pos, BiomeAccess biomeAccess) {
+        return biomeAccess.getBiome(pos).getKey()
+                .map(k -> k.getValue().toString())
+                .orElse("unknown_biome");
     }
 }

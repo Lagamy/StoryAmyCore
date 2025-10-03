@@ -38,8 +38,6 @@ public class NoiseSamplerMixin{
         int y = sampler.blockY();
         int z = sampler.blockZ();
 
-        LOGGER.info("modifyBlockState");
-        // Apply existing Chapter logic for flat regions
         for (Chapter chapter : Ichunk.getPresentChapters()) {
             if (chapter.chapterArea.inBounds(x, z)) {
                 int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);

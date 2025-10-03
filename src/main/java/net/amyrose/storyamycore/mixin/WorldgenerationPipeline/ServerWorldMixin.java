@@ -15,7 +15,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.dimension.DimensionOptions;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,11 +26,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
+import static net.amyrose.storyamycore.core.StoryEngine.stories;
+import static net.amyrose.storyamycore.core.StoryEngine.storiesInitialized;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
@@ -36,6 +43,23 @@ public class ServerWorldMixin {
     private void asignChapterBiomesAndInitializeServerWorld(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
         if (worldKey == World.OVERWORLD) {
             setChapterBiomes();
+            if (!StoryEngine.storiesInitialized) {
+                // Access BiomeSource from ChunkGenerator
+                ServerWorld world = (ServerWorld)(Object)this;
+                BiomeAccess biomeAccess = world.getBiomeAccess();
+
+                Map<String, Story> initializedStories = new HashMap<>();
+                for (Story story : stories.values())
+                {
+                    story.RandomizeStory(initializedStories, biomeAccess);
+                    for (Chapter chapter : story.chapters.values())
+                    {
+                        chapter.populateLandscapeMap();
+                        chapter.populateEnvironmentMap();
+                    }
+                }
+                storiesInitialized = true;
+            }
         }
     }
 

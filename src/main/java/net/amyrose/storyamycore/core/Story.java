@@ -1,22 +1,24 @@
 package net.amyrose.storyamycore.core;
 
 import net.minecraft.nbt.NbtCompound;
-import java.util.*;
+import net.minecraft.world.biome.source.BiomeAccess;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
+import java.util.*;
 
 public class Story {
     public String name;
     public Zone area;
     public String ModId;
     public Map<String, Chapter> chapters = new HashMap<>();
+    public int baseMaxDistanceRadius;
 
-    public Story(String name, String modId) {
+    public Story(String name, int baseMaxDistanceRadius, String modId) {
         this.name = name;
         this.ModId = modId;
+        this.baseMaxDistanceRadius = baseMaxDistanceRadius;
     }
 
-    public void RandomizeStory(Map<String, Story> initializedStories)
+    public void RandomizeStory(Map<String, Story> initializedStories, BiomeAccess biomeAccess)
     {
         //LOGGER.info("Story {}", this.name);
         // Initialize every story at 0, 0 coords first.
@@ -24,7 +26,7 @@ public class Story {
 
         // Initialize chapters and define its shape
         for(Chapter chapter : chapters.values()) {
-            chapter.initializeChapter(this);
+            chapter.initializeChapter(this, biomeAccess);
             updateStoryBounds(chapter);
         }
 
@@ -73,12 +75,18 @@ public class Story {
         initializedStories.put(this.name, this);
     }
 
-    public void AddFirstChapter(String name, BlockPos2D size, String landscapeName, String environmentName,  String biomeName) {
-        chapters.put(name, new Chapter(size, landscapeName, environmentName, biomeName));
+
+
+    public void AddFirstChapter(String name, BlockPos2D size, String landscapeName, String environmentName,  String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
+        Chapter chapter = new Chapter(size, landscapeName, environmentName, biomeName, forbiddenBiomes, chaptersBaseHeight);
+        chapter.parentStory = this;
+        chapters.put(name, chapter);
     }
 
-    public void AddChapter(String name, BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName,  String biomeName) {
-        chapters.put(name, new Chapter(size, offsetFromPrevious, landscapeName, environmentName, biomeName));
+    public void AddChapter(String name, BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName,  String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
+        Chapter chapter = new Chapter(size, offsetFromPrevious, landscapeName, environmentName, biomeName, forbiddenBiomes, chaptersBaseHeight);
+        chapter.parentStory = this;
+        chapters.put(name, chapter);
     }
 
     public void updateStoryBounds(Chapter chapter) {
