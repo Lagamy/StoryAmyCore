@@ -40,54 +40,30 @@ import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 @Mixin(SurfaceBuilder.class)
 public abstract class SurfaceBuilderMixin {
-//    private static final ReentrantLock lock = new ReentrantLock();
 
-//    @Unique
-//    IChunkChapters Ichunk;
-//
-//    @Inject(method = "buildSurface", at = @At("HEAD"))
-//    private void RandomizeAndDecideStoriesPlaces(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
-//                                                  boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
-//                                                  ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule,
-//                                                  CallbackInfo ci) {
-//        if(!storiesInitialized) {
-//            lock.lock(); // Acquire lock, blocks other threads
-//            try {
-//                Map<String, Story> initializedStories = new HashMap<>();
-//                for (Story story : stories.values())
-//                {
-//                    story.RandomizeStory(initializedStories, biomeAccess);
-//                    for (Chapter chapter : story.chapters.values())
-//                    {
-//                        chapter.populateLandscapeMap();
-//                        chapter.populateEnvironmentMap();
-//                    }
-//                }
-//                storiesInitialized = true;
-//            }
-//            finally {
-//                lock.unlock();
-//            }
-//        }
-//
-//        Ichunk = (IChunkChapters) chunk;
-//        Ichunk.clearPresentChapters();
-//
-//        final ChunkPos chunkPos = chunk.getPos();
-//        int chunkX = chunkPos.getStartX();
-//        int chunkZ = chunkPos.getStartZ();
-//
-//        for (Story story : StoryEngine.stories.values()) {
-//            if (story.area.chunkInBound(chunkX, chunkZ)) {
-//                for (Chapter chapter : story.chapters.values()) {
-//                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-//                        Ichunk.addChapter(chapter);
-//                    }
-//                }
-//            }
-//        }
-//    }
+    @Unique
+    IChunkChapters Ichunk;
+    @Inject(method = "buildSurface", at = @At("HEAD"))
+    private void chunkChapterFilter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
+                     boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
+                     ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule, CallbackInfo ci) {
+        Ichunk = (IChunkChapters) chunk;
+        Ichunk.clearPresentChapters();
 
+        final ChunkPos chunkPos = chunk.getPos();
+        int chunkX = chunkPos.getStartX();
+        int chunkZ = chunkPos.getStartZ();
+
+        for (Story story : StoryEngine.stories.values()) {
+            //if (story.area.chunkInBound(chunkX, chunkZ)) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+                        Ichunk.addChapter(chapter);
+                    }
+                }
+            //}
+        }
+    }
 
     @Inject(method = "buildSurface", at = @At("TAIL"))
     private void createChapter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
@@ -98,7 +74,6 @@ public abstract class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
-        IChunkChapters Ichunk = (IChunkChapters) chunk;
         if (Ichunk.getSize() != 0)
         {
             for (Chapter chapter : Ichunk.getPresentChapters())
@@ -110,7 +85,7 @@ public abstract class SurfaceBuilderMixin {
                         int worldX = chunkX + x;
                         int worldZ = chunkZ + z;
 
-                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE_WG, x, z), worldZ);
+                        BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z), worldZ);
                         BlockState topmostBlockstate = chunk.getBlockState(topmostBlockpos); // For biome aware landscape.
 
                         //Generate Blending Rings
@@ -149,7 +124,6 @@ public abstract class SurfaceBuilderMixin {
                             {
                                 chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
                             }
-
 
                             // Generate Environment
                             BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());

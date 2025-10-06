@@ -28,7 +28,7 @@ public class CarverMixin {
         IChunkChapters Ichunk = (IChunkChapters) chunk;
         if(Ichunk.getSize() != 0) {
             for (Chapter chapter : Ichunk.getPresentChapters()) {
-                if (chapter.chapterArea.chunkInBound(chunkPos.x, chunkPos.z)) {
+                if (chapter.ringArea.chunkInBound(chunkPos.x, chunkPos.z)) {
                     cir.setReturnValue(false);
                     return;
                 }

@@ -101,6 +101,7 @@ public class Chapter {
             tempChapterArea.end.z = newZ + size.z;
 
             foundPlace = tempChapterArea.IsNotInForbiddenBiome(forbiddenBiomes, chaptersBaseHeight, biomeAccess);
+            attempts++;
         }
 
         if (attempts == maxAttempts)
@@ -116,6 +117,7 @@ public class Chapter {
         );
         chapterArea = tempChapterArea;
         ringArea = tempRingArea;
+        //if(first) story.area.beginning = ringArea.beginning;
     }
 
 
