@@ -1,13 +1,8 @@
 package net.amyrose.storyamycore.core;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 
-import java.util.ArrayList;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
@@ -81,42 +76,54 @@ public class Zone {
     }
 
 
-    public boolean IsNotInForbiddenBiome(Set<String> forbiddenBiomes, int y, BiomeAccess biomeAccess) {
-//        return (
-//            !(forbiddenBiomes.contains(getBiomeKey(new BlockPos(beginning.x, y, beginning.z), biomeAccess)) ||
-//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(end.x, y, beginning.z), biomeAccess)) ||
-//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(beginning.x, y, end.z), biomeAccess)) ||
-//            forbiddenBiomes.contains(getBiomeKey(new BlockPos(end.x, y, end.z), biomeAccess))));
-
-        // Debug version:
+    public boolean IsInAllowedBiome(Set<String> allowedBiomes, int y, BiomeAccess biomeAccess) {
         BlockPos t1 = new BlockPos(beginning.x, y, beginning.z);
         BlockPos t2 = new BlockPos(end.x, y, beginning.z);
         BlockPos t3 = new BlockPos(beginning.x, y, end.z);
         BlockPos t4 = new BlockPos(end.x, y, end.z);
+        BlockPos center = new BlockPos(
+                (beginning.x + end.x) / 2,
+                y,
+                (beginning.z + end.z) / 2
+        );
 
-        if(forbiddenBiomes.contains(getBiomeKey(t1, biomeAccess)))
+        LOGGER.info("Exposition: beginning.x = {}, beginning.z = {}, end.x = {}, end.z = {}", beginning.x, beginning.z, end.x, end.z);
+        if(!allowedBiomes.contains(getBiomeKey(t1, biomeAccess)))
         {
             LOGGER.info("forbidden biome was at beginning.x and beginning.z: {}", getBiomeKey(t1, biomeAccess));
             return false;
         }
 
-        if(forbiddenBiomes.contains(getBiomeKey(t2, biomeAccess)))
+        if(!allowedBiomes.contains(getBiomeKey(t2, biomeAccess)))
         {
             LOGGER.info("forbidden biome was at end.x and beginning.z: {}", getBiomeKey(t2, biomeAccess));
             return false;
         }
 
-        if(forbiddenBiomes.contains(getBiomeKey(t3, biomeAccess)))
+        if(!allowedBiomes.contains(getBiomeKey(center, biomeAccess)))
+        {
+            LOGGER.info("forbidden biome was at center: {}", getBiomeKey(center, biomeAccess));
+            return false;
+        }
+
+
+        if(!allowedBiomes.contains(getBiomeKey(t3, biomeAccess)))
         {
             LOGGER.info("forbidden biome was at beginning.x and end.z: {}", getBiomeKey(t3, biomeAccess));
             return false;
         }
 
-        if(forbiddenBiomes.contains(getBiomeKey(t4, biomeAccess)))
+        if(!allowedBiomes.contains(getBiomeKey(t4, biomeAccess)))
         {
             LOGGER.info("forbidden biome was at end.x and end.z: {}", getBiomeKey(t4, biomeAccess));
             return false;
         }
+
+        LOGGER.info("allowed biome was at beginning.x and beginning.z: {}", getBiomeKey(t1, biomeAccess));
+        LOGGER.info("allowed biome was at end.x and beginning.z: {}", getBiomeKey(t2, biomeAccess));
+        LOGGER.info("allowed biome was at center: {}", getBiomeKey(center, biomeAccess));
+        LOGGER.info("allowed biome was at beginning.x and end.z: {}", getBiomeKey(t3, biomeAccess));
+        LOGGER.info("allowed biome was at end.x and end.z: {}", getBiomeKey(t4, biomeAccess));
         return true;
     }
 

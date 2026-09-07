@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
@@ -15,7 +14,6 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 
 import java.util.*;
@@ -35,7 +33,9 @@ public class Chapter {
     public String landscapeName;
     public String environmentName;
     public StructureTemplate landscapeTemplate;
+    public int landscapeHighestPoint = Integer.MIN_VALUE;
     public StructureTemplate environmentTemplate;
+    public int environmentHighestPoint = Integer.MIN_VALUE;
 
     public int chaptersBaseHeight = 64;
     public int maxEnvironmentHeight;
@@ -44,29 +44,30 @@ public class Chapter {
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
     public Long2ObjectOpenHashMap<BlockState> environmentMap = new Long2ObjectOpenHashMap<>();
-    public Set<String> forbiddenBiomes;
+    public Set<String> allowedBiomes;
+    public BlockState landscapeBlockState;
+    public Set<BlockState> forbiddenLandscapeBlocks;
 
-    public RegistryEntry<Biome> biome;
-
-
-    public Chapter(BlockPos2D size, String landscapeName, String environmentName, String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
+    public Chapter(BlockPos2D size, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
         this.landscapeName = landscapeName;
+        this.landscapeBlockState = landscapeBlockState;
+        this.forbiddenLandscapeBlocks = forbiddenLandscapeBlocks;
         this.environmentName = environmentName;
-        this.biomeName = biomeName;
         this.size = size;
         this.chaptersBaseHeight = chaptersBaseHeight;
-        this.forbiddenBiomes = forbiddenBiomes;
+        this.allowedBiomes = allowedBiomes;
         first = true;
     }
 
-    public Chapter(BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName, String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
+    public Chapter(BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
         this.landscapeName = landscapeName;
+        this.landscapeBlockState = landscapeBlockState;
+        this.forbiddenLandscapeBlocks = forbiddenLandscapeBlocks;
         this.environmentName = environmentName;
-        this.biomeName = biomeName;
         this.size = size;
         this.offsetFromPrevious = offsetFromPrevious;
         this.chaptersBaseHeight = chaptersBaseHeight;
-        this.forbiddenBiomes = forbiddenBiomes;
+        this.allowedBiomes = allowedBiomes;
     }
 
 
@@ -86,7 +87,7 @@ public class Chapter {
 
         Zone tempChapterArea = new Zone(new BlockPos2D(beginning.x, beginning.z), new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
 
-        boolean foundPlace = tempChapterArea.IsNotInForbiddenBiome(forbiddenBiomes, chaptersBaseHeight, biomeAccess);
+        boolean foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
 
         int attempts = 0;
         int maxAttempts = 100; // to avoid infinite loop
@@ -100,7 +101,7 @@ public class Chapter {
             tempChapterArea.end.x = newX + size.x;
             tempChapterArea.end.z = newZ + size.z;
 
-            foundPlace = tempChapterArea.IsNotInForbiddenBiome(forbiddenBiomes, chaptersBaseHeight, biomeAccess);
+            foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
             attempts++;
         }
 
@@ -117,21 +118,22 @@ public class Chapter {
         );
         chapterArea = tempChapterArea;
         ringArea = tempRingArea;
+        LOGGER.info("Final coords: beginning.x = {}, beginning.z = {}, end.x = {}, end.z = {}", chapterArea.beginning.x, chapterArea.beginning.z, chapterArea.end.x, chapterArea.end.z);
         //if(first) story.area.beginning = ringArea.beginning;
     }
 
 
 
-    public void addStoryCoords() {
-        // Shift chapterArea relative to the story’s world position
-        BlockPos2D storyBeginningMinusRingRadius = new BlockPos2D(parentStory.area.beginning.x + StoryEngine.ringRadius, parentStory.area.beginning.z + StoryEngine.ringRadius);
-        chapterArea.beginning.add(storyBeginningMinusRingRadius);
-        chapterArea.end.add(storyBeginningMinusRingRadius);
-
-        // ringArea follows the same world offset
-        ringArea.beginning.add(storyBeginningMinusRingRadius);
-        ringArea.end.add(storyBeginningMinusRingRadius);
-    }
+//    public void addStoryCoords() {
+//        // Shift chapterArea relative to the story’s world position
+//        BlockPos2D storyBeginningMinusRingRadius = new BlockPos2D(parentStory.area.beginning.x + StoryEngine.ringRadius, parentStory.area.beginning.z + StoryEngine.ringRadius);
+//        chapterArea.beginning.add(storyBeginningMinusRingRadius);
+//        chapterArea.end.add(storyBeginningMinusRingRadius);
+//
+//        // ringArea follows the same world offset
+//        ringArea.beginning.add(storyBeginningMinusRingRadius);
+//        ringArea.end.add(storyBeginningMinusRingRadius);
+//    }
 
     public int WhatRingLayerIsIt(int x, int z) {
         int encodedValue = ringLayersMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
@@ -174,6 +176,9 @@ public class Chapter {
 
                 // Update the y-value only if it's higher than the current stored value (or if no value exists)
                 if (!landscapeMap.containsKey(key) || y > landscapeMap.get(key)) {
+                    if(landscapeHighestPoint > y) {
+                        landscapeHighestPoint = y;
+                    }
                     landscapeMap.put(key, y);
                 }
             }
@@ -216,11 +221,17 @@ public class Chapter {
 
                 BlockPos worldPos = info.pos().add(origin); // Absolute world position
                 //System.out.println(worldPos);
-                long key = XYZasLong(worldPos.getX(), worldPos.getY() + chaptersBaseHeight, worldPos.getZ());
+                int currentY = worldPos.getY() + chaptersBaseHeight;
+                if(environmentHighestPoint < currentY) {
+                    environmentHighestPoint = currentY;
+                }
+                long key = XYZasLong(worldPos.getX(), currentY, worldPos.getZ());
+
                 noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
                 if (!(blockState == Blocks.PINK_WOOL.getDefaultState())) {
                     environmentMap.put(key, blockState);
                 }
+            //}
             //}
         }
 

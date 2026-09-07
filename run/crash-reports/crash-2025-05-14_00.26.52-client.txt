@@ -17,7 +17,7 @@ java.lang.RuntimeException: Could not execute entrypoint stage 'main' due to err
 	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86)
 Caused by: java.lang.NullPointerException: Cannot read field "beginning" because "this.chapterArea" is null
 	at knot//net.amyrose.storyamycore.core.Chapter.<init>(Chapter.java:66)
-	at knot//net.amyrose.storyamycore.custom.ModData.LoadChapters(ModData.java:14)
+	at knot//net.amyrose.storyamycore.custom.ModsData.LoadChapters(ModData.java:14)
 	at knot//net.amyrose.storyamycore.StoryAmyCoreMod.onInitialize(StoryAmyCoreMod.java:17)
 	at net.fabricmc.loader.impl.FabricLoaderImpl.invokeEntrypoints(FabricLoaderImpl.java:399)
 	... 7 more

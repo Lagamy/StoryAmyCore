@@ -4,6 +4,7 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"WorldgenerationPipeline.ChunkMixin",
+		"WorldgenerationPipeline.ChunkChapterFilterMixin",
 		"WorldgenerationPipeline.MinecraftServerMixin",
 		"WorldgenerationPipeline.ServerWorldMixin",
 		"WorldgenerationPipeline.CarverMixin",

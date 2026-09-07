@@ -1,9 +1,12 @@
 package net.amyrose.storyamycore.core;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.biome.source.BiomeAccess;
 
 import java.util.*;
+
+import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class Story {
     public String name;
@@ -30,61 +33,61 @@ public class Story {
             updateStoryBounds(chapter);
         }
 
-        int attempts = 0;
-        int maxAttempts = 1000; // to avoid infinite loop
-        Random rand = new Random();
-        if (!initializedStories.isEmpty()) {
-            boolean foundValidLocation = false;
-            BlockPos2D radius = StoryEngine.findStoriesSpawnRadius(initializedStories);
-            while (!foundValidLocation && attempts < maxAttempts) {
-                attempts++;
-                int xTry = rand.nextInt(radius.x * 2) - radius.x; // range: [-radius, +radius]
-                int zTry = rand.nextInt(radius.z * 2) - radius.z;
-                boolean overlaps = false;
-                for (Story story : initializedStories.values()) {
-                    if (story.area.CheckCollision(xTry + this.area.beginning.x, zTry + this.area.beginning.z, xTry + this.area.end.x, zTry + this.area.end.z)) {
-                        overlaps = true;
-                        break;
-                    }
-                }
-                if (!overlaps) {
-                    this.area.beginning.add(xTry, zTry);
-                    this.area.end.add(xTry, zTry);
-
-                    foundValidLocation = true;
-                }
-            }
-            if (!foundValidLocation) {
-                throw new RuntimeException("Couldn't find a free location for new Story.");
-            }
+//        int attempts = 0;
+//        int maxAttempts = 1000; // to avoid infinite loop
+//        Random rand = new Random();
+//        if (!initializedStories.isEmpty()) {
+//            boolean foundValidLocation = false;
+//            BlockPos2D radius = StoryEngine.findStoriesSpawnRadius(initializedStories);
+//            while (!foundValidLocation && attempts < maxAttempts) {
+//                attempts++;
+//                int xTry = rand.nextInt(radius.x * 2) - radius.x; // range: [-radius, +radius]
+//                int zTry = rand.nextInt(radius.z * 2) - radius.z;
+//                boolean overlaps = false;
+//                for (Story story : initializedStories.values()) {
+//                    if (story.area.CheckCollision(xTry + this.area.beginning.x, zTry + this.area.beginning.z, xTry + this.area.end.x, zTry + this.area.end.z)) {
+//                        overlaps = true;
+//                        break;
+//                    }
+//                }
+//                if (!overlaps) {
+//                    this.area.beginning.add(xTry, zTry);
+//                    this.area.end.add(xTry, zTry);
+//
+//                    foundValidLocation = true;
+//                }
+//            }
+//            if (!foundValidLocation) {
+//                throw new RuntimeException("Couldn't find a free location for new Story.");
+//            }
             // Working
 //            else {
 //                LOGGER.info("Success");
 //            }
-        }
+//                        }
         //LOGGER.info("Story {} starts at: {}. Ends at: {}. Amount of chapters: {}", this.name, this.area.beginning.toString(), this.area.end.toString(), chapters.size());
-        for(Chapter chapter : chapters.values()) {
-            chapter.addStoryCoords();
-//            //LOGGER.info("Chapter Area start: {}. Chapter Area end: {}",chapter.ringArea.beginning, chapter.ringArea.end);
+//        for(Chapter chapter : chapters.values()) {
+//            chapter.addStoryCoords();
+//            LOGGER.info("Chapter Area start: {}. Chapter Area end: {}",chapter.ringArea.beginning, chapter.ringArea.end);
 //            //LOGGER.info("Chapter start: {}. Chapter end: {}", chapter.chapterArea.beginning,  chapter.chapterArea.end);
 //            //            chapter.populateLandscapeMap(chapter.landscapeTemplate);
 ////            chapter.populateEnvironmentMap(chapter.environmentTemplate);
 //
-        }
+//        }
 
         initializedStories.put(this.name, this);
     }
 
 
 
-    public void AddFirstChapter(String name, BlockPos2D size, String landscapeName, String environmentName,  String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
-        Chapter chapter = new Chapter(size, landscapeName, environmentName, biomeName, forbiddenBiomes, chaptersBaseHeight);
+    public void AddFirstChapter(String name, BlockPos2D size, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
+        Chapter chapter = new Chapter(size, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight);
         chapter.parentStory = this;
         chapters.put(name, chapter);
     }
 
-    public void AddChapter(String name, BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, String environmentName,  String biomeName, Set<String> forbiddenBiomes, int chaptersBaseHeight) {
-        Chapter chapter = new Chapter(size, offsetFromPrevious, landscapeName, environmentName, biomeName, forbiddenBiomes, chaptersBaseHeight);
+    public void AddChapter(String name, BlockPos2D size, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
+        Chapter chapter = new Chapter(size, offsetFromPrevious, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight);
         chapter.parentStory = this;
         chapters.put(name, chapter);
     }

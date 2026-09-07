@@ -76,8 +76,8 @@ public class StoryEngine {
         return new BlockPos((int) ((key >> 38) & 0x3FFFFFFL) - COORD_OFFSET, (int) ((key >> 26) & 0xFFFL) - 2048, (int) (key & 0x3FFFFFFL) - COORD_OFFSET);
     }
 
-    public static void putStory(Story story) {
-        stories.put(story.name, story);
+    public static void addStory(String name, int baseMaxDistanceRadius, String modId) {
+        stories.put(name, new Story(name, baseMaxDistanceRadius, modId));
     }
 
     public static NbtCompound SaveStoriesToNBT() {

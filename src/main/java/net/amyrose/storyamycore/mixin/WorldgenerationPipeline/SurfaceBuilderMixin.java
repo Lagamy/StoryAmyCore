@@ -41,29 +41,29 @@ import static net.amyrose.storyamycore.core.StoryEngine.*;
 @Mixin(SurfaceBuilder.class)
 public abstract class SurfaceBuilderMixin {
 
-    @Unique
-    IChunkChapters Ichunk;
-    @Inject(method = "buildSurface", at = @At("HEAD"))
-    private void chunkChapterFilter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
-                     boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
-                     ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule, CallbackInfo ci) {
-        Ichunk = (IChunkChapters) chunk;
-        Ichunk.clearPresentChapters();
-
-        final ChunkPos chunkPos = chunk.getPos();
-        int chunkX = chunkPos.getStartX();
-        int chunkZ = chunkPos.getStartZ();
-
-        for (Story story : StoryEngine.stories.values()) {
-            //if (story.area.chunkInBound(chunkX, chunkZ)) {
-                for (Chapter chapter : story.chapters.values()) {
-                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-                        Ichunk.addChapter(chapter);
-                    }
-                }
-            //}
-        }
-    }
+//    @Unique
+//    IChunkChapters Ichunk;
+//    @Inject(method = "buildSurface", at = @At("HEAD"))
+//    private void chunkChapterFilter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
+//                     boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
+//                     ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule, CallbackInfo ci) {
+//        Ichunk = (IChunkChapters) chunk;
+//        Ichunk.clearPresentChapters();
+//
+//        final ChunkPos chunkPos = chunk.getPos();
+//        int chunkX = chunkPos.getStartX();
+//        int chunkZ = chunkPos.getStartZ();
+//
+//        for (Story story : StoryEngine.stories.values()) {
+//            //if (story.area.chunkInBound(chunkX, chunkZ)) {
+//                for (Chapter chapter : story.chapters.values()) {
+//                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+//                        Ichunk.addChapter(chapter);
+//                    }
+//                }
+//            //}
+//        }
+//    }
 
     @Inject(method = "buildSurface", at = @At("TAIL"))
     private void createChapter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
@@ -74,65 +74,91 @@ public abstract class SurfaceBuilderMixin {
         int chunkX = chunkPos.getStartX();
         int chunkZ = chunkPos.getStartZ();
         // Iterate over the 16x16 chunk
+        IChunkChapters Ichunk = (IChunkChapters) chunk;
         if (Ichunk.getSize() != 0)
         {
             for (Chapter chapter : Ichunk.getPresentChapters())
             {
                 for (int x = 0; x < 16; ++x)
                 {
-                    for (int z = 0; z < 16; ++z)
-                    {
+                    for (int z = 0; z < 16; ++z) {
                         int worldX = chunkX + x;
                         int worldZ = chunkZ + z;
 
                         BlockPos topmostBlockpos = new BlockPos(worldX, chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z), worldZ);
                         BlockState topmostBlockstate = chunk.getBlockState(topmostBlockpos); // For biome aware landscape.
-
+                        int highestY;
+                        int landscapeY = chapter.landscapeMap.getOrDefault(XandZAsLong(worldX, worldZ), Integer.MIN_VALUE);
                         //Generate Blending Rings
-                        int ringLayerBlockHeight = CalculateBlendedHighestBlock(chapter, worldX, worldZ, topmostBlockpos.getY());
+                        if (landscapeY == Integer.MIN_VALUE) { // That means -> not chapter territory yet
+                            int ringLayerBlockHeight = CalculateBlendedHighestBlock(chapter, worldX, worldZ, topmostBlockpos.getY());
 
-                        for (int y = 0; y <= 256; y++) // nuke it, since most of it is air(replace with code that will just clear above section
-                        {
-                            BlockPos pos = new BlockPos(worldX, y, worldZ);
-                            if (y == ringLayerBlockHeight)
-                            {
-                                chunk.setBlockState(pos, topmostBlockstate, false);
-                                chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
-                                chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
-                            }
-//                            else if(y < ringLayerBlockHeight)
-//                            {
-//                                chunk.setBlockState(pos, topmostBlockstate, false);
-//                            }
-                            else if (ringLayerBlockHeight != Integer.MIN_VALUE && y > ringLayerBlockHeight && chunk.getBlockState(pos).getFluidState().isEmpty())
-                            {
+                            highestY = Math.max(ringLayerBlockHeight, topmostBlockpos.getY());
+                            for (int y = ringLayerBlockHeight - 2; y <= highestY; y++) {
+                                BlockPos pos = new BlockPos(worldX, y, worldZ);
+                                if (y == ringLayerBlockHeight) {
+                                    BlockState state = topmostBlockstate;
+                                    if (chapter.forbiddenLandscapeBlocks.contains(topmostBlockstate))
+                                    {
+                                        state = chapter.landscapeBlockState;
+                                    }
+
+                                    chunk.setBlockState(pos, state, false);
+                                    chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
+                                    chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG).set(x, z, y);
+                                    chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
+                                }
+                                else if(y < ringLayerBlockHeight) {
+                                    BlockState state = chapter.landscapeBlockState;
+                                    BlockState above = chunk.getBlockState(pos.up());
+                                    if (state.equals(Blocks.GRASS_BLOCK.getDefaultState()) && !above.isAir())
+                                    {
+                                        state = Blocks.DIRT.getDefaultState();
+                                    }
+
+                                    chunk.setBlockState(pos, state, false);
+                                }
+                                else if (ringLayerBlockHeight != Integer.MIN_VALUE && y > ringLayerBlockHeight && chunk.getBlockState(pos).getFluidState().isEmpty()) {
                                     chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
+                                }
                             }
-
+                        } else {
                             //Generate Landscape
-                            int landscapeY = chapter.landscapeMap.getOrDefault(XandZAsLong(worldX, worldZ), Integer.MIN_VALUE);
-                            if (y == landscapeY)
-                            {
-                                chunk.setBlockState(pos, topmostBlockstate, false);
-                                chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
-                                chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
-                            }
-//                            else if(y < landscapeY) {
+
+                            highestY = Math.max(chapter.environmentHighestPoint, topmostBlockpos.getY());
+                            for(int y = chapter.chaptersBaseHeight; y <= highestY; y++) {
+                                BlockPos pos = new BlockPos(worldX, y, worldZ);
+                                if (y == landscapeY) {
+                                    BlockState state = topmostBlockstate;
+                                    if (chapter.forbiddenLandscapeBlocks.contains(topmostBlockstate))
+                                    {
+                                        state = chapter.landscapeBlockState;
+                                    }
+
+                                    chunk.setBlockState(pos, state, false);
+                                    chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG).set(x, z, y);
+                                    chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG).set(x, z, y);
+                                    chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).set(x, z, y);
+                                }
+                                else if (y == landscapeY - 1)
+                                {
+                                    chunk.setBlockState(pos, Blocks.DIRT.getDefaultState(), false); // temporary
+                                }
+//                            else if(y > chapter.chaptersBaseHeight && y < landscapeY) {
 //                                chunk.setBlockState(pos, Blocks.STONE.getDefaultState(), false);
 //                            }
-                            else if(landscapeY != Integer.MIN_VALUE && y > landscapeY)
-                            {
-                                chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
-                            }
+                                else if (landscapeY != Integer.MIN_VALUE && y > landscapeY) {
+                                    chunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
+                                }
 
-                            // Generate Environment
-                            BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
-                            //LOGGER.info("name: {}, block: {}",story.name, state);
+                                // Generate Environment
+                                BlockState state = chapter.environmentMap.getOrDefault(XYZasLong(worldX, y, worldZ), Blocks.AIR.getDefaultState());
+                                //LOGGER.info("name: {}, block: {}",story.name, state);
 
-                            if (state != Blocks.AIR.getDefaultState())
-                            {
-                                //System.out.println("maxHeight: " + chapter.maxHeight);
-                                chunk.setBlockState(pos, state, false);
+                                if (state != Blocks.AIR.getDefaultState()) {
+                                    //System.out.println("maxHeight: " + chapter.maxHeight);
+                                    chunk.setBlockState(pos, state, false);
+                                }
                             }
                         }
                     }
@@ -142,6 +168,7 @@ public abstract class SurfaceBuilderMixin {
         }
     }
 
+    @Unique
     int CalculateBlendedHighestBlock(Chapter chapter, int worldX, int worldZ, int highestBlock){
         int ringLayer = chapter.WhatRingLayerIsIt(worldX, worldZ);
         if(ringLayer != Integer.MIN_VALUE) { // Is ring layer

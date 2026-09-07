@@ -1,12 +1,9 @@
 {
   "mappings": {
-    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
-      "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
-    },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/CarverMixin": {
       "carveRegion": "Lnet/minecraft/class_2939;method_33978(Lnet/minecraft/class_5873;Lnet/minecraft/class_5871;Lnet/minecraft/class_2791;Ljava/util/function/Function;Lnet/minecraft/class_6350;DDDDDLnet/minecraft/class_6643;Lnet/minecraft/class_2939$class_5874;)Z"
     },
-    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ChunkGeneratorStartMixin": {
+    "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ChunkChapterFilterMixin": {
       "populateNoise(Lnet/minecraft/world/gen/chunk/Blender;Lnet/minecraft/world/gen/StructureAccessor;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/chunk/Chunk;II)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/class_3754;method_33754(Lnet/minecraft/class_6748;Lnet/minecraft/class_5138;Lnet/minecraft/class_7138;Lnet/minecraft/class_2791;II)Lnet/minecraft/class_2791;"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/FeaturesMixin": {
@@ -19,8 +16,6 @@
       "shutdown": "Lnet/minecraft/server/MinecraftServer;method_3782()V"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
-      "create(Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/gen/densityfunction/DensityFunctionTypes$Beardifying;Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/world/gen/chunk/AquiferSampler$FluidLevelSampler;Lnet/minecraft/world/gen/chunk/Blender;)Lnet/minecraft/world/gen/chunk/ChunkNoiseSampler;": "Lnet/minecraft/class_6568;method_39543(Lnet/minecraft/class_2791;Lnet/minecraft/class_7138;Lnet/minecraft/class_6916$class_7050;Lnet/minecraft/class_5284;Lnet/minecraft/class_6350$class_6565;Lnet/minecraft/class_6748;)Lnet/minecraft/class_6568;",
-      "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
       "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
     },
     "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {
@@ -32,13 +27,10 @@
   },
   "data": {
     "named:intermediary": {
-      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/BiomeSourceMixin": {
-        "getBiome": "Lnet/minecraft/class_4766;method_38109(IIILnet/minecraft/class_6544$class_6552;)Lnet/minecraft/class_6880;"
-      },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/CarverMixin": {
         "carveRegion": "Lnet/minecraft/class_2939;method_33978(Lnet/minecraft/class_5873;Lnet/minecraft/class_5871;Lnet/minecraft/class_2791;Ljava/util/function/Function;Lnet/minecraft/class_6350;DDDDDLnet/minecraft/class_6643;Lnet/minecraft/class_2939$class_5874;)Z"
       },
-      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ChunkGeneratorStartMixin": {
+      "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ChunkChapterFilterMixin": {
         "populateNoise(Lnet/minecraft/world/gen/chunk/Blender;Lnet/minecraft/world/gen/StructureAccessor;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/chunk/Chunk;II)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/class_3754;method_33754(Lnet/minecraft/class_6748;Lnet/minecraft/class_5138;Lnet/minecraft/class_7138;Lnet/minecraft/class_2791;II)Lnet/minecraft/class_2791;"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/FeaturesMixin": {
@@ -51,8 +43,6 @@
         "shutdown": "Lnet/minecraft/server/MinecraftServer;method_3782()V"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/NoiseSamplerMixin": {
-        "create(Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/world/gen/noise/NoiseConfig;Lnet/minecraft/world/gen/densityfunction/DensityFunctionTypes$Beardifying;Lnet/minecraft/world/gen/chunk/ChunkGeneratorSettings;Lnet/minecraft/world/gen/chunk/AquiferSampler$FluidLevelSampler;Lnet/minecraft/world/gen/chunk/Blender;)Lnet/minecraft/world/gen/chunk/ChunkNoiseSampler;": "Lnet/minecraft/class_6568;method_39543(Lnet/minecraft/class_2791;Lnet/minecraft/class_7138;Lnet/minecraft/class_6916$class_7050;Lnet/minecraft/class_5284;Lnet/minecraft/class_6350$class_6565;Lnet/minecraft/class_6748;)Lnet/minecraft/class_6568;",
-        "estimateSurfaceHeight(II)I": "Lnet/minecraft/class_6568;method_39900(II)I",
         "sampleBlockState()Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_6568;method_40536()Lnet/minecraft/class_2680;"
       },
       "net/amyrose/storyamycore/mixin/WorldgenerationPipeline/ServerWorldMixin": {

@@ -42,15 +42,15 @@ public class NoiseSamplerMixin{
             if (chapter.chapterArea.inBounds(x, z)) {
                 int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
                 if (MapedY != Integer.MIN_VALUE) {
-                    if (y <= 50) {
-                        // Below or at Y=50: Preserve air (caves), otherwise use stone
-                        cir.setReturnValue(originalState != null && originalState.isAir() ? originalState : Blocks.STONE.getDefaultState());
-                    } else if (y > MapedY) {
+                    if (y > MapedY) {
                         // Above Y=64: Always air
                         cir.setReturnValue(Blocks.AIR.getDefaultState());
-                    } else {
-                        // At Y=64: Stone
+                    }
+                    else if (y < MapedY && y > 64) {
                         cir.setReturnValue(Blocks.STONE.getDefaultState());
+                    }
+                    else {
+                        cir.setReturnValue(originalState);
                     }
                     return; // Exit early if in a Chapter region
                 }
@@ -58,43 +58,43 @@ public class NoiseSamplerMixin{
         }
     }
 
-    @Inject(
-            method = "estimateSurfaceHeight(II)I",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
-
-        Chunk chunk = serverWorld.getChunk(blockX, blockZ);
-        LOGGER.info("getChunk");
-        ChunkPos pos = chunk.getPos();
-        int chunkX = pos.getStartX();
-        int chunkZ = pos.getStartZ();
-
-        // Filter your chapters here
-        IChunkChapters ichunk = (IChunkChapters) chunk;
-        ichunk.clearPresentChapters();
-
-        for (Story story : StoryEngine.stories.values()) {
-            if (story.area.chunkInBound(chunkX, chunkZ)) {
-                for (Chapter chapter : story.chapters.values()) {
-                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-                        ichunk.addChapter(chapter);
-                    }
-                }
-            }
-        }
-        LOGGER.info("modifySurfaceHeight");
-        for (Chapter chapter : Ichunk.getPresentChapters()) {
-            if (chapter.chapterArea.inBounds(blockX, blockZ)) {
-                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
-                if (MapedY != Integer.MIN_VALUE) {
-                    cir.setReturnValue(MapedY);
-                }
-            }
-        }
-
-    }
+//    @Inject(
+//            method = "estimateSurfaceHeight(II)I",
+//            at = @At("HEAD"),
+//            cancellable = true
+//    )
+//    private void modifySurfaceHeight(int blockX, int blockZ, CallbackInfoReturnable<Integer> cir) {
+//
+////        Chunk chunk = serverWorld.getChunk(blockX, blockZ);
+////        LOGGER.info("getChunk");
+////        ChunkPos pos = chunk.getPos();
+////        int chunkX = pos.getStartX();
+////        int chunkZ = pos.getStartZ();
+//
+//        // Filter your chapters here
+////        IChunkChapters ichunk = (IChunkChapters) chunk;
+////        ichunk.clearPresentChapters();
+////
+////        for (Story story : StoryEngine.stories.values()) {
+////            if (story.area.chunkInBound(chunkX, chunkZ)) {
+////                for (Chapter chapter : story.chapters.values()) {
+////                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
+////                        ichunk.addChapter(chapter);
+////                    }
+////                }
+////            }
+////        }
+//        LOGGER.info("modifySurfaceHeight");
+//        for (Chapter chapter : Ichunk.getPresentChapters()) {
+//            if (chapter.chapterArea.inBounds(blockX, blockZ)) {
+//                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(blockX, blockZ), Integer.MIN_VALUE);
+//                if (MapedY != Integer.MIN_VALUE) {
+//                    cir.setReturnValue(MapedY);
+//                }
+//            }
+//        }
+//
+//    }
 
 
 }

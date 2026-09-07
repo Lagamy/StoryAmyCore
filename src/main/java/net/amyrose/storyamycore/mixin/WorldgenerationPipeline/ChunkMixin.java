@@ -36,31 +36,4 @@ public abstract class ChunkMixin implements IChunkChapters {
 
     @Override
     public int getSize() { return presentChapters.size();}
-//    @Inject(
-//            method = "getOrCreateChunkNoiseSampler",
-//            at = @At("RETURN")
-//    )
-//    private void afterCreateChunkNoiseSampler(Function<Chunk, ChunkNoiseSampler> chunkNoiseSamplerCreator,
-//                                              CallbackInfoReturnable<ChunkNoiseSampler> cir) {
-//        ChunkNoiseSampler sampler = cir.getReturnValue();
-//        Chunk chunk = (Chunk) (Object) this;
-//        LOGGER.info("getOrCreateChunkNoiseSampler");
-//        ChunkPos pos = chunk.getPos();
-//        int chunkX = pos.getStartX();
-//        int chunkZ = pos.getStartZ();
-//
-//        // Filter your chapters here
-//        IChunkChapters iChunk = (IChunkChapters) chunk;
-//        iChunk.clearPresentChapters();
-//
-//        for (Story story : StoryEngine.stories.values()) {
-//            if (story.area.chunkInBound(chunkX, chunkZ)) {
-//                for (Chapter chapter : story.chapters.values()) {
-//                    if (chapter.ringArea.chunkInBound(chunkX, chunkZ)) {
-//                        iChunk.addChapter(chapter);
-//                    }
-//                }
-//            }
-//        }
-//    }
 }
