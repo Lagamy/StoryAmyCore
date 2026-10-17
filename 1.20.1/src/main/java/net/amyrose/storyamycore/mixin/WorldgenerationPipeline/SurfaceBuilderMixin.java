@@ -68,6 +68,61 @@ public abstract class SurfaceBuilderMixin {
 //        }
 //    }
 
+    @Shadow @Final
+    private BlockState defaultState;
+
+    @Inject(method = "buildSurface", at = @At("HEAD"))
+    private void sealCavesInChapters(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
+                                     boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,
+                                     ChunkNoiseSampler chunkNoiseSampler, MaterialRules.MaterialRule materialRule,
+                                     CallbackInfo ci) {
+        IChunkChapters Ichunk = (IChunkChapters) chunk;
+        if (Ichunk.getSize() == 0) {
+            fillPresentChapters(chunk);
+        }
+        if (Ichunk.getSize() == 0) {
+            return;
+        }
+
+        /* Noise caves, cave entrances and aquifer lava/water come from the density function in populateNoise, not from carvers,
+           so CarverMixin cannot stop them. This runs at HEAD, before the surface rules, so the filled stone is dressed by vanilla
+           (grass, sand, deepslate) and the heightmap read by the ring blending in createChapter is already the sealed surface.
+           estimateSurfaceHeight is the cave-free terrain height the aquifer sampler uses; it is quantized, so it can be off by a few blocks.
+           Fluids above it (oceans) are left alone. pos is a local, so concurrent worldgen threads do not share it. */
+        final ChunkPos chunkPos = chunk.getPos();
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+        for (int x = 0; x < 16; ++x) {
+            for (int z = 0; z < 16; ++z) {
+                int worldX = chunkPos.getStartX() + x;
+                int worldZ = chunkPos.getStartZ() + z;
+
+                boolean inRing = false;
+                for (Chapter chapter : Ichunk.getPresentChapters()) {
+                    if (chapter.ringArea.inBounds(worldX, worldZ)) {
+                        inRing = true;
+                        break;
+                    }
+                }
+                if (!inRing) {
+                    continue;
+                }
+
+                int surfaceY = chunkNoiseSampler.estimateSurfaceHeight(worldX, worldZ);
+                if (surfaceY == Integer.MAX_VALUE) {
+                    continue;
+                }
+                int topY = Math.min(surfaceY, chunk.getTopY() - 1);
+                for (int y = chunk.getBottomY(); y <= topY; y++) {
+                    pos.set(worldX, y, worldZ);
+                    BlockState state = chunk.getBlockState(pos);
+                    if (state.isAir() || !state.getFluidState().isEmpty()) {
+                        chunk.setBlockState(pos, defaultState, false);
+                    }
+                }
+            }
+        }
+    }
+
     @Inject(method = "buildSurface", at = @At("TAIL"))
     private void createChapter(NoiseConfig noiseConfig, BiomeAccess biomeAccess, Registry<Biome> biomeRegistry,
                                    boolean useLegacyRandom, HeightContext heightContext, Chunk chunk,

@@ -1,14 +1,18 @@
 package net.amyrose.storyamycore.core;
 
+import net.amyrose.storyamycore.StoryAmyCoreMod;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.biome.source.BiomeAccess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class Story {
+    private static final Logger MOD_LOGGER = LoggerFactory.getLogger(StoryAmyCoreMod.MOD_ID);
     public String name;
     public Zone area;
     public String ModId;
@@ -141,6 +145,11 @@ public class Story {
             NbtCompound chaptersNbt = nbt.getCompound("chapters");
             for (String chapterKey : chaptersNbt.getKeys()) {
                 Chapter chapter = chapters.get(chapterKey);
+                /* The save may contain a chapter that a mod no longer registers: skip it instead of crashing the world load. */
+                if (chapter == null) {
+                    MOD_LOGGER.warn("Story {}: saved chapter {} is not registered, skipping", name, chapterKey);
+                    continue;
+                }
                 chapter.LoadFromNbt(chaptersNbt.getCompound(chapterKey)); // mutate existing
             }
         }

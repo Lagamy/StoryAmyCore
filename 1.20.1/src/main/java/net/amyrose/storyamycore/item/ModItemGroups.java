@@ -14,6 +14,8 @@ public class ModItemGroups {
     public static final ItemGroup STORYAMY_GROUP = Registry.register(Registries.ITEM_GROUP, new Identifier(StoryAmyCoreMod.MOD_ID),
             FabricItemGroup.builder().displayName(Text.literal("Story Amy Core")).icon(() -> new ItemStack(Items.PINK_WOOL)).entries((displayContext, entries) -> {
                 entries.add(Items.DIAMOND);
+                entries.add(ModItems.STORY_BOOK);
+                entries.add(ModItems.STORY_COMPASS);
             }).build());
     public static void registerItemGroups() {}
 }

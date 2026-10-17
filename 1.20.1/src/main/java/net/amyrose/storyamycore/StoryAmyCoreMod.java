@@ -1,10 +1,15 @@
 package net.amyrose.storyamycore;
 
 import net.amyrose.storyamycore.api.StoryAmyApi;
+import net.amyrose.storyamycore.core.StoryEngine;
 import net.amyrose.storyamycore.item.ModItemGroups;
+import net.amyrose.storyamycore.item.ModItems;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GrassBlock;
+import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -48,6 +53,15 @@ public class StoryAmyCoreMod implements ModInitializer {
 				),
 				64
 		);
+		ModItems.registerItems();
 		ModItemGroups.registerItemGroups();
+
+		/* Join and tick events run on the server thread. A player without a compass gets one, so a lost compass is regiven on next login. */
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			if (!handler.player.getInventory().containsAny(Set.of(ModItems.STORY_COMPASS))) {
+				handler.player.giveItemStack(new ItemStack(ModItems.STORY_COMPASS));
+			}
+		});
+		ServerTickEvents.END_SERVER_TICK.register(StoryEngine::markVisitedChapters);
 	}
 }

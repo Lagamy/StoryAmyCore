@@ -9,7 +9,8 @@
 		"WorldgenerationPipeline.ServerWorldMixin",
 		"WorldgenerationPipeline.CarverMixin",
 		"WorldgenerationPipeline.SurfaceBuilderMixin",
-		"WorldgenerationPipeline.StructureStartMixin"
+		"WorldgenerationPipeline.StructureStartMixin",
+		"WorldgenerationPipeline.LakeFeatureMixin"
 	],
 	"client": [],
 	"server": [],

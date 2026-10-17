@@ -24,6 +24,7 @@ import static net.amyrose.storyamycore.core.StoryEngine.*;
 public class Chapter {
     public Story parentStory; // reference to parent story.
     public boolean first = false;
+    public boolean wasVisited = false;
     public Chapter previousChapter;
     BlockPos2D offsetFromPrevious;
     BlockPos2D size;
@@ -90,12 +91,14 @@ public class Chapter {
 
         boolean foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
 
-        int attempts = 0;
-        int maxAttempts = 100; // to avoid infinite loop
-        while (!foundPlace && attempts != maxAttempts)
+        int expand = 0;
+        int attemptsAtRadius = 0;
+        int maxAttemptsPerRadius = 10;
+        int maxExpand = 100; // to avoid infinite loop
+        while (!foundPlace && expand != maxExpand)
         {
-            int newX = beginning.x + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (attempts + 10) / 10);
-            int newZ = beginning.z + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (attempts + 10) / 10);
+            int newX = beginning.x + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (expand + 10) / 10);
+            int newZ = beginning.z + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (expand + 10) / 10);
 
             tempChapterArea.beginning.x = newX;
             tempChapterArea.beginning.z = newZ;
@@ -103,12 +106,16 @@ public class Chapter {
             tempChapterArea.end.z = newZ + size.z;
 
             foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
-            attempts++;
+            attemptsAtRadius++;
+            if (attemptsAtRadius == maxAttemptsPerRadius) {
+                attemptsAtRadius = 0;
+                expand++;
+            }
         }
 
         if (!foundPlace)
         {
-            LOGGER.error("Couldn't find suitable place for chapter after: {} attemps. Please change chapter settings", maxAttempts);
+            LOGGER.error("Couldn't find suitable place for chapter after: {} attemps. Please change chapter settings", maxExpand * maxAttemptsPerRadius);
             throw new RuntimeException();
         }
 
@@ -361,6 +368,7 @@ public class Chapter {
         NbtCompound nbt = new NbtCompound();
         nbt.put("ringArea", ringArea.SaveToNbt());
         nbt.put("chapterArea", chapterArea.SaveToNbt());
+        nbt.putBoolean("wasVisited", wasVisited);
         return nbt;
     }
 
@@ -371,5 +379,6 @@ public class Chapter {
         if (nbt.contains("chapterArea")) {
             chapterArea = Zone.LoadFromNbt(nbt.getCompound("chapterArea"));
         }
+        wasVisited = nbt.getBoolean("wasVisited");
     }
 }

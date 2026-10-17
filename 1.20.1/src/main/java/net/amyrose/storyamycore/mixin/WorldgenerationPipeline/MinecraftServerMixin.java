@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.io.File;
 import java.net.Proxy;
@@ -52,6 +53,14 @@ public class MinecraftServerMixin {
                     chapter.populateEnvironmentMap();
                 }
             }
+        }
+    }
+
+    /* MinecraftServer.save runs on the server thread for autosave, /save-all and shutdown, so story_data.dat is written together with the world and a crash loses at most one autosave interval. */
+    @Inject(method = "save", at = @At("HEAD"))
+    private void onSave(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> cir) {
+        if (serverDataManager != null) {
+            serverDataManager.save();
         }
     }
 
