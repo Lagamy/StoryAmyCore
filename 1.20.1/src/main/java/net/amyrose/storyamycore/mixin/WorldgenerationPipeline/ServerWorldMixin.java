@@ -1,6 +1,7 @@
 package net.amyrose.storyamycore.mixin.WorldgenerationPipeline;
 
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.ChapterPlacementException;
 import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.RegistryKey;
@@ -38,17 +39,23 @@ public class ServerWorldMixin {
                 ServerWorld world = (ServerWorld)(Object)this;
                 BiomeAccess biomeAccess = world.getBiomeAccess();
 
-                Map<String, Story> initializedStories = new HashMap<>();
-                for (Story story : stories.values())
-                {
-                    story.RandomizeStory(initializedStories, biomeAccess, seed);
-                    for (Chapter chapter : story.chapters.values())
+                /* A chapter without a place must not crash the server start: the failure is stored, storiesInitialized stays false
+                   (so placement is retried on the next load) and the join event disconnects the player with the message. */
+                try {
+                    Map<String, Story> initializedStories = new HashMap<>();
+                    for (Story story : stories.values())
                     {
-                        chapter.populateLandscapeMap();
-                        chapter.populateEnvironmentMap();
+                        story.RandomizeStory(initializedStories, biomeAccess, seed);
+                        for (Chapter chapter : story.chapters.values())
+                        {
+                            chapter.populateLandscapeMap();
+                            chapter.populateEnvironmentMap();
+                        }
                     }
+                    storiesInitialized = true;
+                } catch (ChapterPlacementException e) {
+                    StoryEngine.placementFailure = e.getMessage();
                 }
-                storiesInitialized = true;
             }
         }
     }

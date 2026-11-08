@@ -25,6 +25,8 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 public class StoryEngine {
     public static boolean storiesInitialized = false;
     public static boolean registrationClosed = false;
+    /* Set when chapter placement failed during world load; players are disconnected with this text on join. */
+    public static String placementFailure = null;
     public static Map<String, Story> stories = new HashMap<>();
 
     public static ServerWorld serverWorld;
@@ -182,6 +184,20 @@ public class StoryEngine {
         for (Story story : stories.values()) {
             for (Chapter chapter : story.chapters.values()) {
                 if (chapter.isPlaced() && chapter.ringArea.CheckCollision(minX, minZ, maxX, maxZ)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /* Reads stories directly instead of a chunk's present chapters, so it is usable from the features stage after a chunk reload.
+       Read-only, so it is safe off the main thread. */
+    public static boolean isInNoFoliageMask(int x, int z) {
+        long key = XandZAsLong(x, z);
+        for (Story story : stories.values()) {
+            for (Chapter chapter : story.chapters.values()) {
+                if (chapter.isPlaced() && chapter.chapterArea.inBounds(x, z) && chapter.noFoliageMask.contains(key)) {
                     return true;
                 }
             }

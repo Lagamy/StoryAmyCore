@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GrassBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -58,6 +59,10 @@ public class StoryAmyCoreMod implements ModInitializer {
 
 		/* Join and tick events run on the server thread. A player without a compass gets one, so a lost compass is regiven on next login. */
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			if (StoryEngine.placementFailure != null) {
+				handler.disconnect(Text.literal(StoryEngine.placementFailure));
+				return;
+			}
 			if (!handler.player.getInventory().containsAny(Set.of(ModItems.STORY_COMPASS))) {
 				handler.player.giveItemStack(new ItemStack(ModItems.STORY_COMPASS));
 			}

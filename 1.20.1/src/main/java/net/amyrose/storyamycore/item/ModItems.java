@@ -14,5 +14,8 @@ public class ModItems {
     public static final Item STORY_COMPASS = Registry.register(Registries.ITEM, new Identifier(StoryAmyCoreMod.MOD_ID, "story_compass"),
             new StoryCompassItem(new FabricItemSettings().maxCount(1)));
 
+    public static final Item FLASHLIGHT = Registry.register(Registries.ITEM, new Identifier(StoryAmyCoreMod.MOD_ID, "flashlight"),
+            new Item(new FabricItemSettings().maxCount(1)));
+
     public static void registerItems() {}
 }

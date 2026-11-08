@@ -1,5 +1,9 @@
 {
-  "block.storyamycore.landscape_block": "Landscape Block",
-  "item.storyamycore.story_book": "Story Book",
-  "item.storyamycore.story_compass": "Story Compass"
+  "itemGroup.storyamycore": "Story Amy Core",
+  "item.storyamycore.flashlight": "Flashlight",
+  "block.storyamycore.flashlight_block": "Flashlight Block",
+  "sounds.storyamycore.prologue_music": "Music",
+  "sounds.storyamycore.flashlight_click": "Click",
+  "key.category.storyamycore.flashlight": "Flashlight",
+  "key.storyamycore.flashlight": "Turn On/Off Key"
 }

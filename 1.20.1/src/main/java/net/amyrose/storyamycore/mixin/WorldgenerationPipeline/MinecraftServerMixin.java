@@ -4,6 +4,7 @@ import com.mojang.datafixers.DataFixer;
 import net.amyrose.storyamycore.core.Chapter;
 import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
+import net.amyrose.storyamycore.core.StoryJson;
 import net.amyrose.storyamycore.nbt.ServerDataManager;
 import net.amyrose.storyamycore.nbt.worldDataNBT;
 import net.minecraft.resource.ResourcePackManager;
@@ -34,6 +35,11 @@ public class MinecraftServerMixin {
     void initializeChapters(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo ci) {
         /* Stories are read by worldgen threads and matched against story_data.dat, so registration is only allowed during mod initialization. */
         StoryEngine.registrationClosed = true;
+        StoryEngine.placementFailure = null;
+        /* Chapters are built from the story JSON files here (not at registration), so hand-added chapters are included and edits are re-read on every world load. */
+        for (Story story : StoryEngine.stories.values()) {
+            StoryJson.loadStory(story);
+        }
         File saveDir = session.getDirectory(WorldSavePath.ROOT).toFile(); // You may need to adjust to your Minecraft version
         MinecraftServer server = (MinecraftServer) (Object) this;
         serverDataManager = new ServerDataManager(server, saveDir);

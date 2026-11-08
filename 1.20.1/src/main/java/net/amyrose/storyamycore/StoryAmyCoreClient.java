@@ -2,10 +2,12 @@ package net.amyrose.storyamycore;
 
 import net.amyrose.storyamycore.item.ModItems;
 import net.amyrose.storyamycore.item.StoryCompassItem;
+import net.amyrose.storyamycore.render.light.Light;
+import net.amyrose.storyamycore.render.light.LightManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredicateProviderRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -15,9 +17,15 @@ import net.minecraft.util.math.MathHelper;
 public class StoryAmyCoreClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        /* Test light: flashlight cookie 10 projected in front of the camera at all times. */
+        LightManager.init();
+        Light testLight = new Light(new Identifier(StoryAmyCoreMod.MOD_ID, "textures/misc/flashlight_cookies/10.png"));
+        testLight.followCamera = true;
+        LightManager.addLight(testLight);
+
         /* Same math as vanilla CompassItem: bearing to the target relative to the holder's yaw, wrapped to 0..1 for the
            32 compass frames in the model overrides. Without a target the needle spins slowly. */
-        FabricModelPredicateProviderRegistry.register(ModItems.STORY_COMPASS, new Identifier("angle"), (stack, world, entity, seed) -> {
+        ModelPredicateProviderRegistry.register(ModItems.STORY_COMPASS, new Identifier("angle"), (stack, world, entity, seed) -> {
             NbtCompound nbt = stack.getNbt();
             Entity holder = entity != null ? entity : MinecraftClient.getInstance().player;
             if (holder == null) {

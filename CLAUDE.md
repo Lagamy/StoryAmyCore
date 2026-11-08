@@ -38,21 +38,7 @@ Use errors, logs and crash reports I paste for anything runtime. After a change,
 compiled (or the errors), and that nothing was run; don't claim it works.
 
 ## Architecture (current state)
-Worldgen only. There is no client code, networking, shader code or tests yet.
-
-- `StoryAmyCoreMod` (main entrypoint) defines stories in Java: `StoryEngine.addStory(...)`, then `story.AddFirstChapter(...)`. `StoryAmyCoreClient` and `StoryAmyCoreModDataGenerator` are empty.
-- `core/`: `Story` (name, modId, chapters map, overall `Zone`), `Chapter` (size, landscape/environment structures, allowed biomes, base Y, placement data), `StoryEngine` (static global state + coordinate bit-packing like `XandZAsLong`), `Zone`, `BlockPos2D`, `IChunkChapters` (mixed into `Chunk`).
-- `nbt/`: `ServerDataManager` reads/writes `<world>/story_data.dat`. Only each story's `storyArea` and each chapter's `ringArea`/`chapterArea` are persisted, as packed longs.
-- `item/`: one creative tab (`ModItemGroups`); `ModItems` is empty.
-- `mixin/WorldgenerationPipeline/`: the flow is
-  `MinecraftServerMixin` (load data + structure templates at init, save on shutdown) →
-  `ServerWorldMixin` (first Overworld load: randomize placement) →
-  `ChunkChapterFilterMixin` (at `populateNoise`, tag chunks overlapping a chapter's ring) →
-  `CarverMixin` (cancel caves in chapter chunks) →
-  `SurfaceBuilderMixin` (stamp landscape, blend rings toward vanilla height, place environment, update heightmaps).
-  `ChunkMixin` implements `IChunkChapters`.
-- Landscape/environment are vanilla structure NBT in `src/main/resources/data/storyamycore/structures/`, loaded by `Identifier(modId, name)`. Pink wool in the environment template is skipped.
-- Placement is random with up to 100 retries and a growing radius until the 4 corners and center are in allowed biomes; otherwise it throws. Ring layers are computed by BFS from the landscape border. Coordinate data uses fastutil maps.
+Worldgen only: stories made of chapters are placed in the Overworld, and their landscape and environment are stamped into terrain generation. There is no client code, networking, shader code or tests yet. For the class layout, worldgen pipeline and data files, go to `Docs.md`.
 
 ## Conventions for new code
 - 4 spaces, K&R braces (`if (x) {`). Classes `PascalCase`, methods/fields/locals `camelCase`. Interfaces get an `I` prefix, mixins end in `Mixin`.
@@ -63,7 +49,7 @@ Worldgen only. There is no client code, networking, shader code or tests yet.
 
 ## Known issues (report if relevant, fix only when asked)
 - `core/StoryEngine - Copy.java` is a stray backup file.
-- `FeaturesMixin` and `NoiseSamplerMixin` exist but are not registered; `BiomeSourceMixin` is fully commented out.
+- `NoiseSamplerMixin` exists but is not registered; `BiomeSourceMixin` is fully commented out.
 - Multi-story overlap placement in `Story.RandomizeStory` is commented out.
 - `landscape_block` blockstate/model assets exist but no such block is registered.
 - `fabric.mod.json` still has template placeholders (description, homepage, sources, authors, `suggests`).

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "storyamycore:block/flashlight_block"
+    }
+  }
+}

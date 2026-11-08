@@ -14,6 +14,7 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.source.BiomeAccess;
 
 import java.util.*;
@@ -38,6 +39,7 @@ public class Chapter {
     public int landscapeHighestPoint = Integer.MIN_VALUE;
     public StructureTemplate environmentTemplate;
     public int environmentHighestPoint = Integer.MIN_VALUE;
+    public StructureTemplate noFoliageTemplate;
 
     public int chaptersBaseHeight = 64;
     public int maxEnvironmentHeight;
@@ -116,7 +118,7 @@ public class Chapter {
         if (!foundPlace)
         {
             LOGGER.error("Couldn't find suitable place for chapter after: {} attemps. Please change chapter settings", maxExpand * maxAttemptsPerRadius);
-            throw new RuntimeException();
+            throw new ChapterPlacementException("Couldn't find a suitable place for chapter '" + name + "' of story '" + story.name + "'. Try another world seed or change the chapter settings.");
         }
 
         // if I wanted to search ring wide - I would use this.
@@ -232,10 +234,8 @@ public class Chapter {
                 int currentY = worldPos.getY() + chaptersBaseHeight;
                 long key = XYZasLong(worldPos.getX(), currentY, worldPos.getZ());
 
-                noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
-                /* Air is not stored: the stamp treats a missing entry as air, and a template can hold millions of air blocks.
-                   The mask above is filled before this skip so it still covers the whole template footprint. */
-                if (!blockState.isAir() && !(blockState == Blocks.PINK_WOOL.getDefaultState())) {
+                /* Air is not stored: the stamp treats a missing entry as air, and a template can hold millions of air blocks. */
+                if (!blockState.isAir()) {
                     if(environmentHighestPoint < currentY) {
                         environmentHighestPoint = currentY;
                     }
@@ -250,6 +250,16 @@ public class Chapter {
 
         //LOGGER.info("Populated environment map with {} columns for chapter {}", environmentMap.size(), name);
         //LOGGER.info(environmentMap.toString());
+
+        /* The no-foliage template is placed at the same origin as the environment (same size in X and Z, checked at load), so columns map 1:1.
+           Every block in it excludes its x/z column from foliage, except red wool, which only pins the template's corners to the environment's size. */
+        if (noFoliageTemplate != null) {
+            for (StructureTemplate.StructureBlockInfo info : placementData.getRandomBlockInfos(noFoliageTemplate.blockInfoLists, placeholder).getAll()) {
+                if (info.state().isOf(Blocks.RED_WOOL)) continue;
+                BlockPos worldPos = info.pos().add(origin);
+                noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
+            }
+        }
     }
 
     public void computeLandscapeBorder() {
@@ -353,6 +363,24 @@ public class Chapter {
 
     public void LoadEnvironmentTemplate(MinecraftServer server) {
         environmentTemplate = loadStructureTemplate(server, environmentName, parentStory.ModId);
+
+        /* The no-foliage template is optional and named after the environment with "-environment" swapped for "-no-foliage"
+           ("prologue-environment" -> "prologue-no-foliage"); a name without that suffix just gets "-no-foliage" appended.
+           Without the file the chapter simply has no mask. */
+        String noFoliageName = environmentName.endsWith("-environment")
+                ? environmentName.substring(0, environmentName.length() - "-environment".length()) + "-no-foliage"
+                : environmentName + "-no-foliage";
+        noFoliageTemplate = server.getStructureTemplateManager()
+                .getTemplate(new Identifier(parentStory.ModId, noFoliageName))
+                .orElse(null);
+        if (noFoliageTemplate != null) {
+            Vec3i envSize = environmentTemplate.getSize();
+            Vec3i maskSize = noFoliageTemplate.getSize();
+            if (envSize.getX() != maskSize.getX() || envSize.getZ() != maskSize.getZ()) {
+                LOGGER.error("No-foliage template {} is {}x{} (X by Z) but environment {} is {}x{}. They must match so they map 1:1: put red wool in the corners.", noFoliageName, maskSize.getX(), maskSize.getZ(), environmentName, envSize.getX(), envSize.getZ());
+                throw new RuntimeException("No-foliage template size differs from environment for chapter " + name);
+            }
+        }
     }
 
     public void LoadLandscapeTemplate(MinecraftServer server) {
