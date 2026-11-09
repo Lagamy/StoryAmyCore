@@ -19,7 +19,9 @@
 		"Rendering.RenderPhaseMixin",
 		"Rendering.ParticleManagerMixin",
 		"Rendering.GameRendererMixin",
-		"Rendering.EntityRenderDispatcherMixin"
+		"Rendering.EntityRenderDispatcherMixin",
+		"Rendering.ItemRendererMixin",
+		"Rendering.BlockEntityRenderDispatcherMixin"
 	],
 	"server": [],
 	"injectors": {

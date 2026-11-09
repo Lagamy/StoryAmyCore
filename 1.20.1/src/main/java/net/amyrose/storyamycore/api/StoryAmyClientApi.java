@@ -18,7 +18,7 @@ import java.util.function.Supplier;
    (modId, id). Call it from your ClientModInitializer and from client code only; it must run on the render/client thread, and it never
    loads on a dedicated server. Registering twice or using an unknown id throws. Nothing here is synced over the network.
    Four kinds of effect:
-   - lights: a spotlight with a cookie texture. Mutate the Light you get back (public fields) to change any attribute, or set Light.updater to drive it every frame.
+   - lights: a spotlight with a cookie texture, or a point light (Light.point), optionally limited to chosen entities, items and block entities (Light.affect*). Mutate the Light you get back (public fields) to change any attribute, or set Light.updater to drive it every frame.
    - world shaders: your own full-screen pass in game space (IWorldShader), same depth/normal/albedo buffers the lights use.
    - entity shaders: swaps the shader program of every render layer of the entities your predicate matches.
    - post effects: a vanilla post effect json (assets/<modid>/shaders/post/<name>.json) run over the whole screen, under the HUD. */

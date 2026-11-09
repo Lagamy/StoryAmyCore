@@ -99,23 +99,26 @@ public class Chapter {
             beginning.add(offsetFromPrevious);
         }
 
-        /* The intended spot is tried first, with every rotation turning around the intended corner (so that corner stays a corner of the chapter,
-           and a player standing at it is at the chapter's edge, not in its middle). If none fits, the range around it
-           (baseMaxDistanceRadius * MAX_RANGE_FACTOR) is scanned with one biome lookup per SEARCH_STEP grid point and every point inside an allowed
-           biome becomes a candidate (a locate-biome call would return only one). Candidates are sorted by distance from the intended spot, and
-           the chapter zone centered on each one is tested with every rotation (NONE, RIGHT, LEFT, BACK) until one passes, so the nearest suitable
-           spot wins. No randomness: the same seed always gives the same result. */
-        Zone tempChapterArea = null;
-        for (ChapterRotation tryRotation : ChapterRotation.values()) {
-            Zone zone = rotatedZone(tryRotation, beginning.x, beginning.z, false);
-            if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
-                tempChapterArea = zone;
-                rotation = tryRotation;
-                break;
-            }
+        /* The rotation is not searched, it follows from where the chapter lies relative to the player's reference point (see facePlayer),
+           so the chapter always faces the player. The intended spot is tried first, with the rotation turning around the intended corner (so that
+           corner stays a corner of the chapter, and a player standing at it is at the chapter's edge, not in its middle). If it does not fit, the range
+           around it (baseMaxDistanceRadius * MAX_RANGE_FACTOR) is scanned with one biome lookup per SEARCH_STEP grid point and every point inside an
+           allowed biome becomes a candidate (a locate-biome call would return only one). Candidates are sorted by distance from the intended spot, and
+           the chapter zone centered on each one is tested until one passes, so the nearest suitable spot wins. No randomness: the same seed always
+           gives the same result. */
+        int referenceX = 0;
+        int referenceZ = 0;
+        if (!first) {
+            referenceX = (previousChapter.chapterArea.beginning.x + previousChapter.chapterArea.end.x) / 2;
+            referenceZ = (previousChapter.chapterArea.beginning.z + previousChapter.chapterArea.end.z) / 2;
         }
 
-        if (tempChapterArea == null) {
+        ChapterRotation intendedRotation = facePlayer(beginning.x + size.x / 2, beginning.z + size.z / 2, referenceX, referenceZ);
+        Zone tempChapterArea = rotatedZone(intendedRotation, beginning.x, beginning.z, false);
+        if (tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
+            rotation = intendedRotation;
+        } else {
+            tempChapterArea = null;
             int range = story.baseMaxDistanceRadius * MAX_RANGE_FACTOR;
             List<int[]> candidates = new ArrayList<>();
             BlockPos.Mutable pos = new BlockPos.Mutable();
@@ -129,17 +132,17 @@ public class Chapter {
             }
             candidates.sort(Comparator.<int[]>comparingLong(c -> (long) c[0] * c[0] + (long) c[1] * c[1]).thenComparingInt(c -> c[0]).thenComparingInt(c -> c[1]));
 
-            search:
             for (int i = 0; i < candidates.size(); i++) {
                 int[] candidate = candidates.get(i);
-                for (ChapterRotation tryRotation : ChapterRotation.values()) {
-                    Zone zone = rotatedZone(tryRotation, beginning.x + candidate[0], beginning.z + candidate[1], true);
-                    if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
-                        tempChapterArea = zone;
-                        rotation = tryRotation;
-                        LOGGER.info("Chapter placed {} blocks from the intended spot (candidate {} of {})", (int) Math.hypot(candidate[0], candidate[1]), i + 1, candidates.size());
-                        break search;
-                    }
+                int centerX = beginning.x + candidate[0];
+                int centerZ = beginning.z + candidate[1];
+                ChapterRotation candidateRotation = facePlayer(centerX, centerZ, referenceX, referenceZ);
+                Zone zone = rotatedZone(candidateRotation, centerX, centerZ, true);
+                if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
+                    tempChapterArea = zone;
+                    rotation = candidateRotation;
+                    LOGGER.info("Chapter placed {} blocks from the intended spot (candidate {} of {})", (int) Math.hypot(candidate[0], candidate[1]), i + 1, candidates.size());
+                    break;
                 }
             }
         }
@@ -162,6 +165,18 @@ public class Chapter {
     }
 
 
+
+    /* Turns the chapter towards the player. The player looks south (+Z, the default spawn facing) and the unrotated chapter's front is its north side.
+       Whichever axis the chapter is farther along decides: ahead of the player (south) is NONE, behind (north) is BACK, and to the side east/west
+       is RIGHT/LEFT (a 90 degree turn of the chapter, not the side of the player it is on). */
+    private ChapterRotation facePlayer(int centerX, int centerZ, int playerX, int playerZ) {
+        int toChapterX = centerX - playerX;
+        int toChapterZ = centerZ - playerZ;
+        if (Math.abs(toChapterZ) >= Math.abs(toChapterX)) {
+            return toChapterZ >= 0 ? ChapterRotation.NONE : ChapterRotation.BACK;
+        }
+        return toChapterX > 0 ? ChapterRotation.RIGHT : ChapterRotation.LEFT;
+    }
 
     /* The chapter zone for a rotation: with centered it is centered on (x, z), otherwise (x, z) stays a corner of the zone.
        RIGHT/LEFT swap the X and Z size. */

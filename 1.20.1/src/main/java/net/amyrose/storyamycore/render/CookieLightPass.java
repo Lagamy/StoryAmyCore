@@ -12,6 +12,7 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -77,6 +78,22 @@ public class CookieLightPass {
        Colour and depth are blitted into a scratch framebuffer and sampled from there, so the texture being read is never also
        attached to the framebuffer being drawn to (that read/write loop is undefined in OpenGL). */
     public void draw(Light light, WorldRenderContext context) {
+        Camera camera = context.camera();
+        draw(light, camera.getPos(), camera.getYaw(), camera.getPitch(), new Matrix4f(context.projectionMatrix()).invert(),
+                new Matrix4f(context.matrixStack().peek().getPositionMatrix()).invert());
+    }
+
+    /* The hand is drawn in view space with its own projection and no camera rotation in the matrices, so the view-to-world step is
+       just the inverse of the camera rotation. Called with the projection that is current right after the hand was drawn. */
+    public void drawHand(Light light, Camera camera, Matrix4f projection) {
+        Matrix4f viewToWorld = new Matrix4f()
+                .rotateX((float) Math.toRadians(camera.getPitch()))
+                .rotateY((float) Math.toRadians(camera.getYaw() + 180.0f))
+                .invert();
+        draw(light, camera.getPos(), camera.getYaw(), camera.getPitch(), new Matrix4f(projection).invert(), viewToWorld);
+    }
+
+    void draw(Light light, Vec3d cameraPosition, float cameraYaw, float cameraPitch, Matrix4f inverseProjection, Matrix4f viewToWorld) {
         MinecraftClient client = MinecraftClient.getInstance();
         Framebuffer framebuffer = client.getFramebuffer();
         int width = framebuffer.textureWidth;
@@ -99,18 +116,16 @@ public class CookieLightPass {
         /* The world position matrix is camera-relative and contains view bobbing and hurt tilt. It is undone here, and the light is
            placed in camera-relative world space instead, so a light attached to the camera does not wobble with the bob. The light
            orientation uses the same pitch/yaw rotation GameRenderer applies before bobbing. */
-        Vec3d cameraPosition = context.camera().getPos();
         Vec3d lightPosition = light.followCamera ? cameraPosition : light.position;
-        float lightYaw = light.followCamera ? context.camera().getYaw() : light.yaw;
-        float lightPitch = light.followCamera ? context.camera().getPitch() : light.pitch;
+        float lightYaw = light.followCamera ? cameraYaw : light.yaw;
+        float lightPitch = light.followCamera ? cameraPitch : light.pitch;
         Vec3d offset = lightPosition.subtract(cameraPosition);
 
-        Matrix4f inverseProjection = new Matrix4f(context.projectionMatrix()).invert();
         Matrix4f worldToLight = new Matrix4f()
                 .rotateX((float) Math.toRadians(lightPitch))
                 .rotateY((float) Math.toRadians(lightYaw + 180.0f))
                 .translate((float) -offset.x, (float) -offset.y, (float) -offset.z);
-        Matrix4f viewToLight = worldToLight.mul(new Matrix4f(context.matrixStack().peek().getPositionMatrix()).invert());
+        Matrix4f viewToLight = worldToLight.mul(viewToWorld);
 
         if (NormalBuffer.getTexture() < 0) {
             return;
@@ -123,9 +138,12 @@ public class CookieLightPass {
         program.addSampler("DepthSampler", sceneCopy.getDepthAttachment());
         program.addSampler("AlbedoSampler", NormalBuffer.getAlbedoTexture());
         program.addSampler("NormalSampler", NormalBuffer.getTexture());
+        program.addSampler("MaskSampler", NormalBuffer.getMaskTexture());
         program.addSampler("CookieSampler", client.getTextureManager().getTexture(light.cookie).getGlId());
         program.getUniform("InvProjMat").set(inverseProjection);
         program.getUniform("ViewToLightMat").set(viewToLight);
+        program.getUniform("ReceiversOnly").set(light.hasReceivers() ? 1.0f : 0.0f);
+        program.getUniform("IsPoint").set(light.point ? 1.0f : 0.0f);
         /* A null setting on the light uses the value written in the shader json. */
         applySetting("Fov", light.fovDegrees == null ? null : new float[]{light.fovDegrees});
         applySetting("Range", light.range == null ? null : new float[]{light.range});

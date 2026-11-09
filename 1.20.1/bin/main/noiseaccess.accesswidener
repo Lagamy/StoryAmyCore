@@ -28,3 +28,5 @@ accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters li
 accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters colorLogic Lnet/minecraft/client/render/RenderPhase$ColorLogic;
 accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters outlineMode Lnet/minecraft/client/render/RenderLayer$OutlineMode;
 accessible field net/minecraft/client/gl/PostEffectProcessor passes Ljava/util/List;
+accessible class net/minecraft/client/render/RenderPhase$Transparency
+accessible field net/minecraft/client/render/RenderPhase NO_TRANSPARENCY Lnet/minecraft/client/render/RenderPhase$Transparency;

@@ -1,12 +1,15 @@
 {
 	"credit": "Made with Blockbench",
+	"overrides": [
+		{"predicate": {"storyamycore:lit": 1}, "model": "storyamycore:item/flashlight_on"}
+	],
 	"texture_size": [4, 4],
 	"textures": {
-		"0": "storyamycore:item/fl1",
+		"0": "storyamycore:item/fl1_off",
 		"1": "storyamycore:item/fl2",
 		"2": "storyamycore:item/fl3",
-		"3": "storyamycore:item/fl4",
-		"particle": "storyamycore:item/fl1"
+		"3": "storyamycore:item/fl4_off",
+		"particle": "storyamycore:item/fl1_off"
 	},
 	"elements": [
 		{
