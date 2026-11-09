@@ -1,11 +1,22 @@
 package net.amyrose.storyamycore.render.light;
 
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
+import java.util.function.BiConsumer;
+
 /* A spotlight. The cookie is the mask: its brightness is the light's brightness inside the cone. */
 public class Light {
+    /* Set by the registration call, read-only afterwards. */
+    public String modId;
+    public String id;
+    /* A disabled light is skipped by the renderer but stays registered, so a mod can switch it back on. */
+    public boolean enabled = true;
+    /* Optional. Called every frame before the light is drawn (also while disabled), so a mod can move the light, attach it to an
+       entity or hand, fade it, or turn it on and off. The context gives the camera and tickDelta. */
+    public BiConsumer<Light, WorldRenderContext> updater;
     public Identifier cookie;
     /* The five settings below are null by default, which means the value from storyamycore_cookie_light.json is used.
        Set one in code only to override the json for this light. */

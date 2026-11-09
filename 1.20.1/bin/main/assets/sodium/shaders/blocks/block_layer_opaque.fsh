@@ -2,6 +2,7 @@
 
 #import <sodium:include/fog.glsl>
 
+in vec4 v_BaseColor;
 in vec4 v_Color; // The interpolated vertex color
 in vec3 v_ViewPos;
 in vec2 v_TexCoord; // The interpolated block texture coordinates
@@ -17,7 +18,8 @@ uniform float u_FogStart; // The starting position of the shader fog
 uniform float u_FogEnd; // The ending position of the shader fog
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec4 normalOut; // The output fragment for the color framebuffer
+layout(location = 1) out vec4 normalOut;
+layout(location = 2) out vec4 albedoOut;
 
 void main() {
     vec4 diffuseColor = texture(u_BlockTex, v_TexCoord, v_MaterialMipBias);
@@ -36,5 +38,6 @@ void main() {
 
     fragColor = _linearFog(diffuseColor, v_FragDistance, u_FogColor, u_FogStart, u_FogEnd);
 
-    normalOut = vec4(normalize(cross(dFdx(v_ViewPos), dFdy(v_ViewPos))), gl_FragCoord.z);
+    albedoOut = vec4(texture(u_BlockTex, v_TexCoord, v_MaterialMipBias).rgb * v_BaseColor.rgb * v_BaseColor.a, 1.0);
+    normalOut = vec4(normalize(cross(dFdx(v_ViewPos), dFdy(v_ViewPos))), diffuseColor.a < 0.999 ? 1.0 : gl_FragCoord.z);
 }

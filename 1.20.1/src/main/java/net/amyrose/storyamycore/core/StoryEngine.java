@@ -205,6 +205,52 @@ public class StoryEngine {
         return false;
     }
 
+    /* Vanilla scatters a new player up to 10 blocks (spawnRadius) around the world spawn, so the spawn is kept at least this far from any chapter's middle. */
+    static final int SPAWN_EDGE_MARGIN = 16;
+
+    /* Returns where the world spawn should move to, or null when it is fine. A spawn deeper than SPAWN_EDGE_MARGIN inside a chapter is moved
+       to just outside the nearest edge of that chapter (SPAWN_EDGE_MARGIN past it), so a spawn on a chapter's corner or edge is left alone.
+       Repeated because the new spot can fall inside another chapter. Reads placement only, so it runs on the server thread at world setup. */
+    public static BlockPos2D findSpawnOutsideChapters(int spawnX, int spawnZ) {
+        int x = spawnX;
+        int z = spawnZ;
+        boolean moved = false;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            boolean insideAny = false;
+            for (Story story : stories.values()) {
+                for (Chapter chapter : story.chapters.values()) {
+                    if (!chapter.isPlaced()) {
+                        continue;
+                    }
+                    Zone area = chapter.chapterArea;
+                    int toWest = x - area.beginning.x;
+                    int toEast = area.end.x - x;
+                    int toNorth = z - area.beginning.z;
+                    int toSouth = area.end.z - z;
+                    int deepest = Math.min(Math.min(toWest, toEast), Math.min(toNorth, toSouth));
+                    if (deepest <= SPAWN_EDGE_MARGIN) {
+                        continue;
+                    }
+                    insideAny = true;
+                    moved = true;
+                    if (deepest == toWest) {
+                        x = area.beginning.x - SPAWN_EDGE_MARGIN;
+                    } else if (deepest == toEast) {
+                        x = area.end.x + SPAWN_EDGE_MARGIN;
+                    } else if (deepest == toNorth) {
+                        z = area.beginning.z - SPAWN_EDGE_MARGIN;
+                    } else {
+                        z = area.end.z + SPAWN_EDGE_MARGIN;
+                    }
+                }
+            }
+            if (!insideAny) {
+                break;
+            }
+        }
+        return moved ? new BlockPos2D(x, z) : null;
+    }
+
     public static BlockPos2D findStoriesSpawnRadius(Map<String, Story> initializedStories)
     {
         int storiesXCombinedSize = 0;

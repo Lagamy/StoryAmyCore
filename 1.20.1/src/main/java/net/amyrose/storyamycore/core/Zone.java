@@ -77,16 +77,25 @@ public class Zone {
     }
 
 
-    public boolean IsInAllowedBiome(Set<String> allowedBiomes, int y, BiomeAccess biomeAccess) {
-        /* Biomes are sampled on a grid with BIOME_SAMPLE_STEP spacing from beginning to end, and the end row/column is always sampled,
-           so a forbidden biome in the middle of a large zone is found too, not only at the corners and the center.
-           The position is a local Mutable (not a field) and the first forbidden biome ends the check early. */
+    public boolean IsInAllowedBiome(Set<String> allowedBiomes, int y, BiomeAccess biomeAccess, double minShare) {
+        /* Biomes are sampled on a grid with BIOME_SAMPLE_STEP spacing from beginning to end, and the end row/column is always sampled.
+           The zone passes when at least minShare of the samples are allowed biomes (1.0 = all, the old behavior). The sample count is
+           known up front, so the check ends early as soon as too many samples missed for the share to be reached.
+           The position is a local Mutable (not a field). */
+        int samplesX = (end.x - beginning.x + BIOME_SAMPLE_STEP - 1) / BIOME_SAMPLE_STEP + 1;
+        int samplesZ = (end.z - beginning.z + BIOME_SAMPLE_STEP - 1) / BIOME_SAMPLE_STEP + 1;
+        int total = samplesX * samplesZ;
+        int maxMisses = total - (int) Math.ceil(minShare * total);
+        int misses = 0;
         BlockPos.Mutable pos = new BlockPos.Mutable();
         for (int x = beginning.x; ; x = Math.min(x + BIOME_SAMPLE_STEP, end.x)) {
             for (int z = beginning.z; ; z = Math.min(z + BIOME_SAMPLE_STEP, end.z)) {
                 pos.set(x, y, z);
                 if (!allowedBiomes.contains(getBiomeKey(pos, biomeAccess))) {
-                    return false;
+                    misses++;
+                    if (misses > maxMisses) {
+                        return false;
+                    }
                 }
                 if (z == end.z) {
                     break;

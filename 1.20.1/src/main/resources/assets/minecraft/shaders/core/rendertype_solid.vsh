@@ -18,6 +18,7 @@ uniform int FogShape;
 
 out float vertexDistance;
 out vec4 vertexColor;
+out vec4 baseColor;
 out vec2 texCoord0;
 out vec4 normal;
 
@@ -28,5 +29,6 @@ void main() {
     vertexDistance = fog_distance(ModelViewMat, pos, FogShape);
     vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
     texCoord0 = UV0;
+    baseColor = Color;
     normal = vec4(mat3(ModelViewMat) * Normal, 0.0);
 }

@@ -128,12 +128,33 @@ public final class StoryJson {
             }
             int baseElevation = getInt(json, "baseElevation", chapterWhere);
 
+            /* Optional: absent means every sampled point must be in an allowed biome. */
+            double minBiomeShare = 1.0;
+            if (json.has("minBiomeShare")) {
+                if (!json.get("minBiomeShare").isJsonPrimitive()) {
+                    fail(chapterWhere + " 'minBiomeShare' must be a number.");
+                }
+                minBiomeShare = json.get("minBiomeShare").getAsDouble();
+                if (minBiomeShare <= 0 || minBiomeShare > 1) {
+                    fail(chapterWhere + " 'minBiomeShare' must be above 0 and at most 1.");
+                }
+            }
+
             if (first) {
                 story.AddFirstChapter(chapterName, size, landscapeName, landscapeBlockState, forbidden, environmentName, allowedBiomes, baseElevation);
                 first = false;
             } else {
                 BlockPos2D offsetFromPrevious = getPos(json, "offsetFromPrevious", chapterWhere);
                 story.AddChapter(chapterName, size, offsetFromPrevious, landscapeName, landscapeBlockState, forbidden, environmentName, allowedBiomes, baseElevation);
+            }
+            story.chapters.get(chapterName).minBiomeShare = minBiomeShare;
+
+            /* Optional: the biome the chapter area is generated as, e.g. "minecraft:forest". */
+            if (json.has("biome")) {
+                if (!json.get("biome").isJsonPrimitive()) {
+                    fail(chapterWhere + " 'biome' must be text.");
+                }
+                story.chapters.get(chapterName).biomeName = json.get("biome").getAsString();
             }
         }
     }

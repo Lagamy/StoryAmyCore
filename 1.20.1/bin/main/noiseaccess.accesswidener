@@ -4,3 +4,27 @@ accessible method net/minecraft/world/gen/chunk/NoiseChunkGenerator populateNois
 accessible field net/minecraft/structure/StructureTemplate blockInfoLists Ljava/util/List;
 accessible method net/minecraft/world/gen/feature/PlacedFeature generate (Lnet/minecraft/world/gen/feature/FeaturePlacementContext;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;)Z
 accessible method net/minecraft/world/Heightmap set (III)V
+
+accessible class net/minecraft/client/render/RenderLayer$MultiPhase
+accessible class net/minecraft/client/render/RenderLayer$MultiPhaseParameters
+accessible class net/minecraft/client/render/RenderPhase$ShaderProgram
+accessible method net/minecraft/client/render/RenderLayer$MultiPhase getPhases ()Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
+accessible field net/minecraft/client/render/RenderLayer hasCrumbling Z
+accessible field net/minecraft/client/render/RenderLayer translucent Z
+accessible field net/minecraft/client/render/RenderPhase name Ljava/lang/String;
+accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters <init> (Lnet/minecraft/client/render/RenderPhase$TextureBase;Lnet/minecraft/client/render/RenderPhase$ShaderProgram;Lnet/minecraft/client/render/RenderPhase$Transparency;Lnet/minecraft/client/render/RenderPhase$DepthTest;Lnet/minecraft/client/render/RenderPhase$Cull;Lnet/minecraft/client/render/RenderPhase$Lightmap;Lnet/minecraft/client/render/RenderPhase$Overlay;Lnet/minecraft/client/render/RenderPhase$Layering;Lnet/minecraft/client/render/RenderPhase$Target;Lnet/minecraft/client/render/RenderPhase$Texturing;Lnet/minecraft/client/render/RenderPhase$WriteMaskState;Lnet/minecraft/client/render/RenderPhase$LineWidth;Lnet/minecraft/client/render/RenderPhase$ColorLogic;Lnet/minecraft/client/render/RenderLayer$OutlineMode;)V
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters texture Lnet/minecraft/client/render/RenderPhase$TextureBase;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters program Lnet/minecraft/client/render/RenderPhase$ShaderProgram;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters transparency Lnet/minecraft/client/render/RenderPhase$Transparency;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters depthTest Lnet/minecraft/client/render/RenderPhase$DepthTest;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters cull Lnet/minecraft/client/render/RenderPhase$Cull;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters lightmap Lnet/minecraft/client/render/RenderPhase$Lightmap;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters overlay Lnet/minecraft/client/render/RenderPhase$Overlay;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters layering Lnet/minecraft/client/render/RenderPhase$Layering;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters target Lnet/minecraft/client/render/RenderPhase$Target;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters texturing Lnet/minecraft/client/render/RenderPhase$Texturing;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters writeMaskState Lnet/minecraft/client/render/RenderPhase$WriteMaskState;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters lineWidth Lnet/minecraft/client/render/RenderPhase$LineWidth;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters colorLogic Lnet/minecraft/client/render/RenderPhase$ColorLogic;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters outlineMode Lnet/minecraft/client/render/RenderLayer$OutlineMode;
+accessible field net/minecraft/client/gl/PostEffectProcessor passes Ljava/util/List;

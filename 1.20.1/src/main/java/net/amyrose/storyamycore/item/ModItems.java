@@ -1,7 +1,9 @@
 package net.amyrose.storyamycore.item;
 
 import net.amyrose.storyamycore.StoryAmyCoreMod;
+import net.amyrose.storyamycore.block.ModBlocks;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -16,6 +18,9 @@ public class ModItems {
 
     public static final Item FLASHLIGHT = Registry.register(Registries.ITEM, new Identifier(StoryAmyCoreMod.MOD_ID, "flashlight"),
             new Item(new FabricItemSettings().maxCount(1)));
+
+    public static final Item FLASHLIGHT_BLOCK = Registry.register(Registries.ITEM, new Identifier(StoryAmyCoreMod.MOD_ID, "flashlight_block"),
+            new BlockItem(ModBlocks.FLASHLIGHT_BLOCK, new FabricItemSettings()));
 
     public static void registerItems() {}
 }

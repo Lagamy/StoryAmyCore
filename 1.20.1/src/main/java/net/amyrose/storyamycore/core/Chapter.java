@@ -15,6 +15,10 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 
 import java.util.*;
@@ -23,6 +27,9 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.amyrose.storyamycore.core.StoryEngine.*;
 
 public class Chapter {
+    private static final int SEARCH_STEP = 32;
+    private static final int MAX_RANGE_FACTOR = 4;
+
     public Story parentStory; // reference to parent story.
     public boolean first = false;
     public boolean wasVisited = false;
@@ -30,9 +37,11 @@ public class Chapter {
     BlockPos2D offsetFromPrevious;
     BlockPos2D size;
     public String name;
+    public ChapterRotation rotation = ChapterRotation.NONE;
     public Zone chapterArea;
     public Zone ringArea;
-    public String biomeName;
+    public String biomeName; // optional "biome" JSON field: when set, the chapter area is generated as this biome.
+    public RegistryEntry<Biome> biome; // resolved from biomeName at server start, read by BiomeSourceMixin.
     public String landscapeName;
     public String environmentName;
     public StructureTemplate landscapeTemplate;
@@ -50,6 +59,7 @@ public class Chapter {
     public Long2ObjectOpenHashMap<BlockState> environmentMap = new Long2ObjectOpenHashMap<>();
     public Long2ObjectOpenHashMap<NbtCompound> environmentBlockEntityNbt = new Long2ObjectOpenHashMap<>();
     public Set<String> allowedBiomes;
+    public double minBiomeShare = 1.0; // share of sampled points that must be in allowedBiomes, set from the optional "minBiomeShare" JSON field.
     public BlockState landscapeBlockState;
     public Set<BlockState> forbiddenLandscapeBlocks;
 
@@ -76,7 +86,7 @@ public class Chapter {
     }
 
 
-    public void initializeChapter(Story story, BiomeAccess biomeAccess, Random random)
+    public void initializeChapter(Story story, BiomeAccess biomeAccess)
     {
         parentStory = story; // saves reference to story.
         BlockPos2D beginning;
@@ -89,35 +99,54 @@ public class Chapter {
             beginning.add(offsetFromPrevious);
         }
 
-        Zone tempChapterArea = new Zone(new BlockPos2D(beginning.x, beginning.z), new BlockPos2D(beginning.x + size.x, beginning.z + size.z));
-
-        boolean foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
-
-        int expand = 0;
-        int attemptsAtRadius = 0;
-        int maxAttemptsPerRadius = 10;
-        int maxExpand = 100; // to avoid infinite loop
-        while (!foundPlace && expand != maxExpand)
-        {
-            int newX = beginning.x + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (expand + 10) / 10);
-            int newZ = beginning.z + (int)((random.nextDouble() * 2 - 1) * story.baseMaxDistanceRadius * (expand + 10) / 10);
-
-            tempChapterArea.beginning.x = newX;
-            tempChapterArea.beginning.z = newZ;
-            tempChapterArea.end.x = newX + size.x;
-            tempChapterArea.end.z = newZ + size.z;
-
-            foundPlace = tempChapterArea.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess);
-            attemptsAtRadius++;
-            if (attemptsAtRadius == maxAttemptsPerRadius) {
-                attemptsAtRadius = 0;
-                expand++;
+        /* The intended spot is tried first, with every rotation turning around the intended corner (so that corner stays a corner of the chapter,
+           and a player standing at it is at the chapter's edge, not in its middle). If none fits, the range around it
+           (baseMaxDistanceRadius * MAX_RANGE_FACTOR) is scanned with one biome lookup per SEARCH_STEP grid point and every point inside an allowed
+           biome becomes a candidate (a locate-biome call would return only one). Candidates are sorted by distance from the intended spot, and
+           the chapter zone centered on each one is tested with every rotation (NONE, RIGHT, LEFT, BACK) until one passes, so the nearest suitable
+           spot wins. No randomness: the same seed always gives the same result. */
+        Zone tempChapterArea = null;
+        for (ChapterRotation tryRotation : ChapterRotation.values()) {
+            Zone zone = rotatedZone(tryRotation, beginning.x, beginning.z, false);
+            if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
+                tempChapterArea = zone;
+                rotation = tryRotation;
+                break;
             }
         }
 
-        if (!foundPlace)
+        if (tempChapterArea == null) {
+            int range = story.baseMaxDistanceRadius * MAX_RANGE_FACTOR;
+            List<int[]> candidates = new ArrayList<>();
+            BlockPos.Mutable pos = new BlockPos.Mutable();
+            for (int dx = -range; dx <= range; dx += SEARCH_STEP) {
+                for (int dz = -range; dz <= range; dz += SEARCH_STEP) {
+                    pos.set(beginning.x + dx, chaptersBaseHeight, beginning.z + dz);
+                    if (allowedBiomes.contains(getBiomeKey(pos, biomeAccess))) {
+                        candidates.add(new int[]{dx, dz});
+                    }
+                }
+            }
+            candidates.sort(Comparator.<int[]>comparingLong(c -> (long) c[0] * c[0] + (long) c[1] * c[1]).thenComparingInt(c -> c[0]).thenComparingInt(c -> c[1]));
+
+            search:
+            for (int i = 0; i < candidates.size(); i++) {
+                int[] candidate = candidates.get(i);
+                for (ChapterRotation tryRotation : ChapterRotation.values()) {
+                    Zone zone = rotatedZone(tryRotation, beginning.x + candidate[0], beginning.z + candidate[1], true);
+                    if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
+                        tempChapterArea = zone;
+                        rotation = tryRotation;
+                        LOGGER.info("Chapter placed {} blocks from the intended spot (candidate {} of {})", (int) Math.hypot(candidate[0], candidate[1]), i + 1, candidates.size());
+                        break search;
+                    }
+                }
+            }
+        }
+
+        if (tempChapterArea == null)
         {
-            LOGGER.error("Couldn't find suitable place for chapter after: {} attemps. Please change chapter settings", maxExpand * maxAttemptsPerRadius);
+            LOGGER.error("Couldn't find suitable place for chapter within {} blocks. Please change chapter settings", story.baseMaxDistanceRadius * MAX_RANGE_FACTOR);
             throw new ChapterPlacementException("Couldn't find a suitable place for chapter '" + name + "' of story '" + story.name + "'. Try another world seed or change the chapter settings.");
         }
 
@@ -128,11 +157,55 @@ public class Chapter {
         );
         chapterArea = tempChapterArea;
         ringArea = tempRingArea;
-        LOGGER.info("Final coords: beginning.x = {}, beginning.z = {}, end.x = {}, end.z = {}", chapterArea.beginning.x, chapterArea.beginning.z, chapterArea.end.x, chapterArea.end.z);
+        LOGGER.info("Final coords (rotation {}): beginning.x = {}, beginning.z = {}, end.x = {}, end.z = {}", rotation, chapterArea.beginning.x, chapterArea.beginning.z, chapterArea.end.x, chapterArea.end.z);
         //if(first) story.area.beginning = ringArea.beginning;
     }
 
 
+
+    /* The chapter zone for a rotation: with centered it is centered on (x, z), otherwise (x, z) stays a corner of the zone.
+       RIGHT/LEFT swap the X and Z size. */
+    private Zone rotatedZone(ChapterRotation rotation, int x, int z, boolean centered) {
+        int sizeX = rotation.swapsAxes() ? size.z : size.x;
+        int sizeZ = rotation.swapsAxes() ? size.x : size.z;
+        int beginX;
+        int beginZ;
+        if (centered) {
+            beginX = x - sizeX / 2;
+            beginZ = z - sizeZ / 2;
+        } else {
+            beginX = (rotation == ChapterRotation.RIGHT || rotation == ChapterRotation.BACK) ? x - sizeX : x;
+            beginZ = (rotation == ChapterRotation.BACK || rotation == ChapterRotation.LEFT) ? z - sizeZ : z;
+        }
+        return new Zone(new BlockPos2D(beginX, beginZ), new BlockPos2D(beginX + sizeX, beginZ + sizeZ));
+    }
+
+    /* Templates are rotated around their own (0, 0) corner, which moves their blocks to the negative side for RIGHT/LEFT/BACK.
+       The origin is shifted back so the rotated blocks fill chapterArea exactly (size - 1 because a template of N blocks spans 0..N-1). */
+    private BlockPos templateOrigin() {
+        int offsetX = switch (rotation) {
+            case RIGHT -> size.z - 1;
+            case BACK -> size.x - 1;
+            default -> 0;
+        };
+        int offsetZ = switch (rotation) {
+            case LEFT -> size.x - 1;
+            case BACK -> size.z - 1;
+            default -> 0;
+        };
+        return new BlockPos(chapterArea.beginning.x + offsetX, 0, chapterArea.beginning.z + offsetZ);
+    }
+
+    /* getRandomBlockInfos does not apply the rotation to positions, so it is applied here (and to block states where it is needed). */
+    private BlockPos rotatePos(BlockPos pos) {
+        return StructureTemplate.transformAround(pos, BlockMirror.NONE, rotation.blockRotation, BlockPos.ORIGIN);
+    }
+
+    public String getBiomeKey(BlockPos pos, BiomeAccess biomeAccess) {
+        return biomeAccess.getBiome(pos).getKey()
+                .map(k -> k.getValue().toString())
+                .orElse("unknown_biome");
+    }
 
 //    public void addStoryCoords() {
 //        // Shift chapterArea relative to the story’s world position
@@ -163,7 +236,7 @@ public class Chapter {
         }
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, 0, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = templateOrigin();
 
         BlockPos placeholder = new BlockPos(0, 0, 0);
         LOGGER.info("{}. Chapter Area start: {}. Chapter Area end: {}",this.parentStory.name, this.chapterArea.beginning, this.chapterArea.end);
@@ -171,7 +244,7 @@ public class Chapter {
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
                 .setMirror(BlockMirror.NONE)
-                .setRotation(BlockRotation.NONE)
+                .setRotation(rotation.blockRotation)
                 .setPosition(placeholder);
 
         // Get transformed block infos
@@ -180,7 +253,7 @@ public class Chapter {
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
             if (!info.state().isAir()) {
-                BlockPos worldPos = info.pos().add(origin); // Absolute world position
+                BlockPos worldPos = rotatePos(info.pos()).add(origin); // Absolute world position
                 long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
                 int y = worldPos.getY() + chaptersBaseHeight;
 
@@ -212,13 +285,13 @@ public class Chapter {
         maxEnvironmentHeight = environmentTemplate.getSize().getY() + chaptersBaseHeight;
 
         // Placement origin (use chapterArea.beginning as beginningTemp, adjust if you have a specific field)
-        BlockPos origin = new BlockPos(chapterArea.beginning.x, 0, chapterArea.beginning.z); // y=64 for flat terrain
+        BlockPos origin = templateOrigin();
         BlockPos placeholder = new BlockPos(0, 0, 0);
 
         // Default placement settings (no rotation/mirror, adjust as needed)
         StructurePlacementData placementData = new StructurePlacementData()
                 .setMirror(BlockMirror.NONE)
-                .setRotation(BlockRotation.NONE)
+                .setRotation(rotation.blockRotation)
                 .setPosition(placeholder);
 
         // Get transformed block infos
@@ -226,10 +299,10 @@ public class Chapter {
 
         // Iterate over blocks, filter non-air, and store only the highest y for each (x, z) column
         for (StructureTemplate.StructureBlockInfo info : blockInfos) {
-            BlockState blockState = info.state();
+            BlockState blockState = info.state().rotate(rotation.blockRotation);
             //if (!blockState.isAir()) {
 
-                BlockPos worldPos = info.pos().add(origin); // Absolute world position
+                BlockPos worldPos = rotatePos(info.pos()).add(origin); // Absolute world position
                 //System.out.println(worldPos);
                 int currentY = worldPos.getY() + chaptersBaseHeight;
                 long key = XYZasLong(worldPos.getX(), currentY, worldPos.getZ());
@@ -256,7 +329,7 @@ public class Chapter {
         if (noFoliageTemplate != null) {
             for (StructureTemplate.StructureBlockInfo info : placementData.getRandomBlockInfos(noFoliageTemplate.blockInfoLists, placeholder).getAll()) {
                 if (info.state().isOf(Blocks.RED_WOOL)) continue;
-                BlockPos worldPos = info.pos().add(origin);
+                BlockPos worldPos = rotatePos(info.pos()).add(origin);
                 noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
             }
         }
@@ -383,6 +456,20 @@ public class Chapter {
         }
     }
 
+    /* Resolved here on the server thread so worldgen threads only read the finished field. An unknown biome id fails loudly instead of silently generating the normal biome. */
+    public void LoadBiome(MinecraftServer server) {
+        if (biomeName == null) {
+            biome = null;
+            return;
+        }
+        Identifier id = Identifier.tryParse(biomeName);
+        biome = id == null ? null : server.getRegistryManager().get(RegistryKeys.BIOME).getEntry(RegistryKey.of(RegistryKeys.BIOME, id)).orElse(null);
+        if (biome == null) {
+            LOGGER.error("Chapter '{}' of story '{}' has unknown biome '{}'", name, parentStory.name, biomeName);
+            throw new RuntimeException("Unknown biome '" + biomeName + "' for chapter of story '" + parentStory.name + "'.");
+        }
+    }
+
     public void LoadLandscapeTemplate(MinecraftServer server) {
         landscapeTemplate = loadStructureTemplate(server, landscapeName, parentStory.ModId);
     }
@@ -396,6 +483,7 @@ public class Chapter {
         NbtCompound nbt = new NbtCompound();
         nbt.put("ringArea", ringArea.SaveToNbt());
         nbt.put("chapterArea", chapterArea.SaveToNbt());
+        nbt.putString("rotation", rotation.name());
         nbt.putBoolean("wasVisited", wasVisited);
         return nbt;
     }
@@ -407,6 +495,8 @@ public class Chapter {
         if (nbt.contains("chapterArea")) {
             chapterArea = Zone.LoadFromNbt(nbt.getCompound("chapterArea"));
         }
+        /* Saves from before rotation existed have no entry: they were placed unrotated. */
+        rotation = nbt.contains("rotation") ? ChapterRotation.valueOf(nbt.getString("rotation")) : ChapterRotation.NONE;
         wasVisited = nbt.getBoolean("wasVisited");
     }
 }

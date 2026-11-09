@@ -1,7 +1,8 @@
 #version 150
 
 uniform sampler2D DepthSampler;
-uniform sampler2D SceneSampler;
+uniform sampler2D AlbedoSampler;
+uniform sampler2D NormalSampler;
 uniform sampler2D CookieSampler;
 uniform mat4 InvProjMat;
 uniform mat4 ViewToLightMat;
@@ -14,12 +15,6 @@ uniform vec3 LightColor;
 in vec2 texCoord;
 
 out vec4 fragColor;
-
-vec3 viewPositionAt(vec2 uv) {
-    float depth = texture(DepthSampler, uv).r;
-    vec4 position = InvProjMat * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    return position.xyz / position.w;
-}
 
 void main() {
     float depth = texture(DepthSampler, texCoord).r;
@@ -47,21 +42,18 @@ void main() {
         discard;
     }
 
-    /* Surface normal from the depth buffer. On each axis the neighbouring pixel closest in depth is used, so at silhouette edges
-       (a grass blade against the ground behind it) the slope never crosses the jump between two different surfaces, which would
-       give a sideways normal and an unlit outline. It is flipped to face the camera, then rotated into light space, so surfaces
-       turned away from the light get less of it. */
-    vec2 texel = 1.0 / vec2(textureSize(DepthSampler, 0));
-    vec3 center = viewPos.xyz;
-    vec3 right = viewPositionAt(texCoord + vec2(texel.x, 0.0)) - center;
-    vec3 left = center - viewPositionAt(texCoord - vec2(texel.x, 0.0));
-    vec3 up = viewPositionAt(texCoord + vec2(0.0, texel.y)) - center;
-    vec3 down = center - viewPositionAt(texCoord - vec2(0.0, texel.y));
-    vec3 slopeX = abs(right.z) < abs(left.z) ? right : left;
-    vec3 slopeY = abs(up.z) < abs(down.z) ? up : down;
-    vec3 normal = cross(slopeX, slopeY);
+    /* Surface normal written by the terrain and entity shaders (see NormalBuffer). Its w holds the depth of the fragment that wrote it:
+       when that differs from the depth buffer, something without a normal was drawn over it afterwards (a block outline line) or
+       nothing wrote at all (sky, water, particles), and the pixel is left unlit. A stored w of 1 marks a translucent surface (water, glass), which cannot keep a depth because
+       of blending, so that check is skipped for it. The normal is flipped to face the camera, then
+       rotated into light space, so surfaces turned away from the light get less of it. */
+    vec4 stored = texture(NormalSampler, texCoord);
+    if (stored.w < 1.0 && abs(stored.w - depth) > 5e-7) {
+        discard;
+    }
+    vec3 normal = stored.xyz;
     float normalLength = length(normal);
-    if (normalLength < 1e-6) {
+    if (normalLength < 0.5) {
         discard;
     }
     normal /= normalLength;
@@ -69,14 +61,17 @@ void main() {
         normal = -normal;
     }
     vec3 normalInLight = mat3(ViewToLightMat) * normal;
-    float facing = max(dot(normalInLight, -lightPos.xyz / distanceToLight), 0.0);
+    /* Half-Lambert with an ambient floor (the same curve Veil's area light uses): a surface edge-on to the light still gets
+       about 0.64 instead of 0, so flat ground and the vertical quads of plants end up close in brightness. */
+    float facing = (dot(normalInLight, -lightPos.xyz / distanceToLight) + 1.0) * 0.5;
+    facing = (facing + 0.4) / 1.4;
 
-    /* The block's hue (its colour scaled up to full brightness) tints the light, so grass stays green and stone grey, but a dark
-       block is not lit any less than a bright one. */
-    vec3 scene = texture(SceneSampler, texCoord).rgb;
-    vec3 tint = clamp(scene / max(max(scene.r, max(scene.g, scene.b)), 0.1), 0.0, 1.0);
+    /* The light multiplies the surface's unlit albedo (written by the terrain and entity shaders), with a small floor so black
+       surfaces still catch some light. Same combine as Veil: albedo * 0.9 + 0.1. It never reads the lit, 8-bit frame, so vanilla
+       lighting and its smooth-lighting gradients do not leak into the light. */
+    vec3 albedo = texture(AlbedoSampler, texCoord).rgb * 0.9 + 0.1;
 
     /* Raising the mask to a power above 1 pulls the dark parts down faster than the bright ones, which sharpens the cookie. */
     vec3 mask = pow(texture(CookieSampler, vec2(uv.x, 1.0 - uv.y)).rgb, vec3(Contrast)) * LightColor;
-    fragColor = vec4(mask * tint * Intensity * facing * falloff * falloff, 1.0);
+    fragColor = vec4(mask * albedo * Intensity * facing * falloff * falloff, 1.0);
 }

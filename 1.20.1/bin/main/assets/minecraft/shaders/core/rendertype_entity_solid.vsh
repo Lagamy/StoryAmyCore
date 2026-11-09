@@ -37,6 +37,6 @@ void main() {
     lightMapColor = texelFetch(Sampler2, UV2 / 16, 0);
     overlayColor = texelFetch(Sampler1, UV1, 0);
     texCoord0 = UV0;
+    baseColor = minecraft_mix_light(Light0_Direction, Light1_Direction, Normal, Color);
     normal = vec4(mat3(ModelViewMat) * Normal, 0.0);
-    baseColor = Color;
 }

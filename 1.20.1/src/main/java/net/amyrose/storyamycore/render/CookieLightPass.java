@@ -72,7 +72,7 @@ public class CookieLightPass {
         }
     }
 
-    /* Rule: the light is rebuilt from the depth buffer. Screen depth is turned back into a view-space position with the inverse
+    /* Rule: the light is rebuilt from the depth buffer and the normals buffer (see NormalBuffer). Screen depth is turned back into a view-space position with the inverse
        camera projection, moved into the light's own space, and projected with the light's perspective to get cookie UVs.
        Colour and depth are blitted into a scratch framebuffer and sampled from there, so the texture being read is never also
        attached to the framebuffer being drawn to (that read/write loop is undefined in OpenGL). */
@@ -112,12 +112,17 @@ public class CookieLightPass {
                 .translate((float) -offset.x, (float) -offset.y, (float) -offset.z);
         Matrix4f viewToLight = worldToLight.mul(new Matrix4f(context.matrixStack().peek().getPositionMatrix()).invert());
 
+        if (NormalBuffer.getTexture() < 0) {
+            return;
+        }
+
         client.getTextureManager().bindTexture(light.cookie);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
         program.addSampler("DepthSampler", sceneCopy.getDepthAttachment());
-        program.addSampler("SceneSampler", sceneCopy.getColorAttachment());
+        program.addSampler("AlbedoSampler", NormalBuffer.getAlbedoTexture());
+        program.addSampler("NormalSampler", NormalBuffer.getTexture());
         program.addSampler("CookieSampler", client.getTextureManager().getTexture(light.cookie).getGlId());
         program.getUniform("InvProjMat").set(inverseProjection);
         program.getUniform("ViewToLightMat").set(viewToLight);
@@ -130,8 +135,8 @@ public class CookieLightPass {
 
         /* Blending is set here and not only in the shader json: the shader's blend state is cached in a static field and skipped
            when it looks unchanged, while this pass turns blending off again afterwards, so the json alone gets lost after the first frame.
-           The light is added on top of the scene (ONE, ONE). Its colour is already tinted by the block's hue in the shader, so it does
-           not depend on how bright the surroundings are, and bright surfaces simply saturate like they do with real light. */
+           The light is added on top of the scene (ONE, ONE). It is multiplied by the unlit albedo in the shader, so it does not
+           depend on how bright the surroundings are, and bright surfaces simply saturate like they do with real light. */
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
         RenderSystem.disableCull();

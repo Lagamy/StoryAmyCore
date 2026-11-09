@@ -2,8 +2,10 @@ package net.amyrose.storyamycore;
 
 import net.amyrose.storyamycore.api.StoryAmyApi;
 import net.amyrose.storyamycore.core.StoryEngine;
+import net.amyrose.storyamycore.block.ModBlocks;
 import net.amyrose.storyamycore.item.ModItemGroups;
 import net.amyrose.storyamycore.item.ModItems;
+import net.amyrose.storyamycore.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -54,6 +56,8 @@ public class StoryAmyCoreMod implements ModInitializer {
 				),
 				64
 		);
+		ModBlocks.registerBlocks();
+		ModSounds.registerSounds();
 		ModItems.registerItems();
 		ModItemGroups.registerItemGroups();
 

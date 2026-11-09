@@ -11,9 +11,16 @@
 		"WorldgenerationPipeline.SurfaceBuilderMixin",
 		"WorldgenerationPipeline.StructureStartMixin",
 		"WorldgenerationPipeline.LakeFeatureMixin",
-		"WorldgenerationPipeline.FeaturesMixin"
+		"WorldgenerationPipeline.FeaturesMixin",
+		"WorldgenerationPipeline.ChapterBiomeMixin"
 	],
-	"client": [],
+	"client": [
+		"Rendering.FramebufferMixin",
+		"Rendering.RenderPhaseMixin",
+		"Rendering.ParticleManagerMixin",
+		"Rendering.GameRendererMixin",
+		"Rendering.EntityRenderDispatcherMixin"
+	],
 	"server": [],
 	"injectors": {
 		"defaultRequire": 1

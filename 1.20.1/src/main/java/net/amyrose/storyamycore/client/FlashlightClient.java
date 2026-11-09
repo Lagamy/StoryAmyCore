@@ -1,4 +1,4 @@
-package net.amyrose.storyamycore.render;
+package net.amyrose.storyamycore.client;
 
 import net.amyrose.storyamycore.StoryAmyCoreMod;
 import net.amyrose.storyamycore.api.StoryAmyClientApi;

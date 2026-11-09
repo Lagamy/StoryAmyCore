@@ -1,5 +1,7 @@
 {
   "itemGroup.storyamycore": "Story Amy Core",
+  "item.storyamycore.story_book": "Story Book",
+  "item.storyamycore.story_compass": "Story Compass",
   "item.storyamycore.flashlight": "Flashlight",
   "block.storyamycore.flashlight_block": "Flashlight Block",
   "sounds.storyamycore.prologue_music": "Music",

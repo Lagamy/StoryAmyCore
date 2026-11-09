@@ -11,7 +11,14 @@ import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.SaveLoader;
 import net.minecraft.server.WorldGenerationProgressListenerFactory;
+import net.minecraft.server.network.SpawnLocating;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplate;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.level.ServerWorldProperties;
+import net.amyrose.storyamycore.core.BlockPos2D;
 import net.minecraft.util.ApiServices;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -51,6 +58,7 @@ public class MinecraftServerMixin {
             //LOGGER.info("Populate Maps");
             for (Chapter chapter : story.chapters.values())
             {
+                chapter.LoadBiome(server);
                 chapter.LoadLandscapeTemplate(server);
                 chapter.LoadEnvironmentTemplate(server);
                 if(storiesInitialized && chapter.isPlaced())
@@ -60,6 +68,27 @@ public class MinecraftServerMixin {
                 }
             }
         }
+    }
+
+    /* setupSpawn runs once per new world, on the server thread, after the overworld (and so the chapter placement) exists. Vanilla picks the spawn
+       from the biome noise, which knows nothing about chapters, so a spawn that landed deep inside a chapter is moved just outside it. The spawn y comes
+       from SpawnLocating (a safe surface in that chunk), falling back to the surface height. */
+    @Inject(method = "setupSpawn", at = @At("TAIL"))
+    private static void keepSpawnOutsideChapters(ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, CallbackInfo ci) {
+        if (!StoryEngine.storiesInitialized) {
+            return;
+        }
+        BlockPos spawn = world.getSpawnPos();
+        BlockPos2D target = StoryEngine.findSpawnOutsideChapters(spawn.getX(), spawn.getZ());
+        if (target == null) {
+            return;
+        }
+        BlockPos safe = SpawnLocating.findServerSpawnPoint(world, new ChunkPos(new BlockPos(target.x, 0, target.z)));
+        if (safe == null) {
+            safe = new BlockPos(target.x, world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, target.x, target.z), target.z);
+        }
+        LOGGER.info("World spawn {} was inside a chapter, moved to {}", spawn, safe);
+        world.setSpawnPos(safe, 0.0F);
     }
 
     /* MinecraftServer.save runs on the server thread for autosave, /save-all and shutdown, so story_data.dat is written together with the world and a crash loses at most one autosave interval. */

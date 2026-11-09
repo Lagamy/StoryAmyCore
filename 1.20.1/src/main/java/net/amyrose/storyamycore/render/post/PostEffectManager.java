@@ -7,6 +7,8 @@ import net.amyrose.storyamycore.render.RenderRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUniform;
+import net.minecraft.client.gl.PostEffectPass;
 import net.minecraft.client.gl.PostEffectProcessor;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -111,8 +113,14 @@ public class PostEffectManager {
                 effect.width = width;
                 effect.height = height;
             }
+            /* Vanilla's own parseUniform does the same lookup: the uniform is null in passes whose program does not declare it. */
             for (Map.Entry<String, Float> uniform : effect.uniforms.entrySet()) {
-                effect.processor.setUniforms(uniform.getKey(), uniform.getValue());
+                for (PostEffectPass pass : effect.processor.passes) {
+                    GlUniform glUniform = pass.getProgram().getUniformByName(uniform.getKey());
+                    if (glUniform != null) {
+                        glUniform.set(uniform.getValue());
+                    }
+                }
             }
             RenderSystem.disableBlend();
             RenderSystem.disableDepthTest();

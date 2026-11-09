@@ -15,6 +15,7 @@ public class ModItemGroups {
                 entries.add(ModItems.STORY_BOOK);
                 entries.add(ModItems.STORY_COMPASS);
                 entries.add(ModItems.FLASHLIGHT);
+                entries.add(ModItems.FLASHLIGHT_BLOCK);
             }).build());
     public static void registerItemGroups() {}
 }

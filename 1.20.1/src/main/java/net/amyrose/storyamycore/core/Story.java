@@ -33,13 +33,9 @@ public class Story {
         // Initialize every story at 0, 0 coords first.
         this.area = new Zone(0, 0);
 
-        /* Placement is drawn from a Random seeded by the world seed and this story's key, so the same seed gives the same chapter positions.
-           String.hashCode is specified by the JDK (stable across JVMs) and chapters is insertion-ordered, so the draw order is stable too. */
-        Random random = new Random(seed ^ StoryEngine.storyKey(ModId, name).hashCode());
-
         // Initialize chapters and define its shape
         for(Chapter chapter : chapters.values()) {
-            chapter.initializeChapter(this, biomeAccess, random);
+            chapter.initializeChapter(this, biomeAccess);
             updateStoryBounds(chapter);
         }
 
