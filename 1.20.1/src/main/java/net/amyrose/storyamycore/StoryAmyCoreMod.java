@@ -1,12 +1,15 @@
 package net.amyrose.storyamycore;
 
 import net.amyrose.storyamycore.api.StoryAmyApi;
+import net.amyrose.storyamycore.core.BlockPos2D;
 import net.amyrose.storyamycore.core.StoryEngine;
+import net.amyrose.storyamycore.core.StructureStreamJobs;
 import net.amyrose.storyamycore.block.ModBlocks;
 import net.amyrose.storyamycore.item.ModItemGroups;
 import net.amyrose.storyamycore.item.ModItems;
 import net.amyrose.storyamycore.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.Blocks;
@@ -26,7 +29,7 @@ public class StoryAmyCoreMod implements ModInitializer {
 		StoryAmyApi.addFirstChapter(
 				MOD_ID,
 				"testStory",
-				"testChapter",
+				"prologue",
 				281, 188,
 				"prologue-landscape",
 				Blocks.GRASS_BLOCK.getDefaultState(),
@@ -54,8 +57,62 @@ public class StoryAmyCoreMod implements ModInitializer {
 						"minecraft:sparse_jungle",
 						"minecraft:bamboo_jungle"
 				),
-				64
+				64,
+				0.85
 		);
+
+//		StoryAmyApi.addFirstChapter(
+//				MOD_ID,
+//				"testStory",
+//				"eightPagesTest",
+//				1000, 1000,
+//				"eightpages",
+//				Blocks.GRASS_BLOCK.getDefaultState(),
+//				Set.of(
+//						Blocks.STONE.getDefaultState(),
+//						Blocks.DIRT.getDefaultState(),
+//						Blocks.COARSE_DIRT.getDefaultState(),
+//						Blocks.GRAVEL.getDefaultState(),
+//						Blocks.SAND.getDefaultState(),
+//						Blocks.ANDESITE.getDefaultState()
+//				),
+//				"eightpages-environment",
+//				Set.of(
+//						"minecraft:plains",
+//						"minecraft:sunflower_plains"
+//				),
+//				64,
+//				new BlockPos2D(125, 125),
+//				"minecraft:forest",
+//				0.5
+//		);
+
+//		StoryAmyApi.addFirstChapter(
+//				MOD_ID,
+//				"testStory",
+//				"prologueTest",
+//				1000, 1000,
+//				"prologue-test-landscape",
+//				Blocks.GRASS_BLOCK.getDefaultState(),
+//				Set.of(
+//						Blocks.STONE.getDefaultState(),
+//						Blocks.DIRT.getDefaultState(),
+//						Blocks.COARSE_DIRT.getDefaultState(),
+//						Blocks.GRAVEL.getDefaultState(),
+//						Blocks.SAND.getDefaultState(),
+//						Blocks.ANDESITE.getDefaultState()
+//				),
+//				"prologue-test-environment",
+//				Set.of(
+//						"minecraft:plains",
+//						"minecraft:sunflower_plains"
+//				),
+//				64,
+//				new BlockPos2D(125, 125),
+//				"minecraft:forest",
+//				0.5
+//		);
+
 		ModBlocks.registerBlocks();
 		ModSounds.registerSounds();
 		ModItems.registerItems();
@@ -72,5 +129,7 @@ public class StoryAmyCoreMod implements ModInitializer {
 			}
 		});
 		ServerTickEvents.END_SERVER_TICK.register(StoryEngine::markVisitedChapters);
+		ServerTickEvents.END_SERVER_TICK.register(StructureStreamJobs::tick);
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> StructureStreamJobs.clear());
 	}
 }

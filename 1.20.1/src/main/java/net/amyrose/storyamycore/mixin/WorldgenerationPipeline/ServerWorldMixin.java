@@ -7,7 +7,11 @@ import net.amyrose.storyamycore.core.StoryEngine;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;
+import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeAccess;
@@ -34,7 +38,8 @@ public class ServerWorldMixin {
     private void InitializeServerWorld(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
         if (worldKey == World.OVERWORLD) {
             // setChapterBiomes();
-            if (!StoryEngine.storiesInitialized) {
+            /* With chapter generation off for this world no chapter is placed, so every chapter-related worldgen mixin sees nothing to act on and the terrain is vanilla. */
+            if (StoryEngine.chapterGenEnabled && !StoryEngine.storiesInitialized) {
                 // Access BiomeSource from ChunkGenerator
                 ServerWorld world = (ServerWorld)(Object)this;
                 BiomeAccess biomeAccess = world.getBiomeAccess();
@@ -48,8 +53,17 @@ public class ServerWorldMixin {
                         story.RandomizeStory(initializedStories, biomeAccess, seed);
                         for (Chapter chapter : story.chapters.values())
                         {
-                            chapter.populateLandscapeMap();
-                            chapter.populateEnvironmentMap();
+                            /* The base height follows the ground where the chapter was placed, so the landscape sits on the terrain (also on flat worlds)
+                               instead of on a plateau. The generator is asked directly, because no chunk exists yet; getHeight is the first free Y above
+                               the ground at the chapter's center, so one block is subtracted to have the lowest landscape layer replace the surface.
+                               The baseElevation from the JSON is only used for the biome check at placement. */
+                            ChunkGenerator generator = world.getChunkManager().getChunkGenerator();
+                            NoiseConfig noiseConfig = ((ServerChunkManager) world.getChunkManager()).getNoiseConfig();
+                            int centerX = (chapter.chapterArea.beginning.x + chapter.chapterArea.end.x) / 2;
+                            int centerZ = (chapter.chapterArea.beginning.z + chapter.chapterArea.end.z) / 2;
+                            chapter.chaptersBaseHeight = generator.getHeight(centerX, centerZ, Heightmap.Type.OCEAN_FLOOR_WG, world, noiseConfig) - 1;
+                            chapter.populateLandscapeMap(world.getServer());
+                            chapter.populateEnvironmentMap(world.getServer());
                         }
                     }
                     storiesInitialized = true;

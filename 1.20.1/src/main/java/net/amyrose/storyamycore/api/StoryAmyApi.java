@@ -60,6 +60,36 @@ public final class StoryAmyApi {
         sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
     }
 
+    /* Same as addFirstChapter plus minBiomeShare only (1.0 = every sampled point must be in an allowed biome); the tile size and biome override stay off. */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation, double minBiomeShare) {
+        addFirstChapter(modId, storyName, chapterName, sizeX, sizeZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, null, null, minBiomeShare);
+    }
+
+    /* Same as addChapter plus minBiomeShare only, see the addFirstChapter overload. */
+    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight, double minBiomeShare) {
+        addChapter(modId, storyName, chapterName, sizeX, sizeZ, offsetFromPreviousX, offsetFromPreviousZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, null, null, minBiomeShare);
+    }
+
+    /* Same as addFirstChapter plus the optional chapter fields (see Docs.md): landscapeTileSize (null = one landscape template), biome (null = no override) and minBiomeShare (1.0 = every sampled point must be in an allowed biome). */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation, BlockPos2D landscapeTileSize, String biome, double minBiomeShare) {
+        checkEditable(modId, storyName, chapterName);
+        if (sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
+            fail("Story " + storyName + " already has a first chapter; use addChapter for " + chapterName + ".");
+        }
+        StoryJson.ensureChapterEntry(modId, storyName, chapterName, null, StoryJson.chapterEntry(sizeX, sizeZ, null, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, landscapeTileSize, biome, minBiomeShare));
+        sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
+    }
+
+    /* Same as addChapter plus the optional chapter fields, see the addFirstChapter overload. */
+    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight, BlockPos2D landscapeTileSize, String biome, double minBiomeShare) {
+        checkEditable(modId, storyName, chapterName);
+        if (!sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
+            fail("Story " + storyName + " has no first chapter; call addFirstChapter before " + chapterName + ".");
+        }
+        StoryJson.ensureChapterEntry(modId, storyName, chapterName, sessionLastChapter.get(StoryEngine.storyKey(modId, storyName)), StoryJson.chapterEntry(sizeX, sizeZ, new BlockPos2D(offsetFromPreviousX, offsetFromPreviousZ), landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, landscapeTileSize, biome, minBiomeShare));
+        sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
+    }
+
     /* True once the story's placement is known (world generated or loaded from story_data.dat). */
     public static boolean isStoryPlaced(String modId, String storyName) {
         Story story = StoryEngine.stories.get(StoryEngine.storyKey(modId, storyName));

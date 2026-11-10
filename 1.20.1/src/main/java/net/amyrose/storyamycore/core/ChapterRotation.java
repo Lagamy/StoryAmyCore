@@ -15,6 +15,15 @@ public enum ChapterRotation {
         this.blockRotation = blockRotation;
     }
 
+    public ChapterRotation opposite() {
+        return switch (this) {
+            case NONE -> BACK;
+            case BACK -> NONE;
+            case RIGHT -> LEFT;
+            case LEFT -> RIGHT;
+        };
+    }
+
     public boolean swapsAxes() {
         return this == RIGHT || this == LEFT;
     }

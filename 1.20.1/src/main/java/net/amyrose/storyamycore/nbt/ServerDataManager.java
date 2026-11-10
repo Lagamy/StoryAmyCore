@@ -36,17 +36,26 @@ public class ServerDataManager {
                 data = new worldDataNBT();
                 data.wasCreated = true;
                 storiesInitialized = false;
+                useNewWorldChapterGen();
             }
         } else {
             data = new worldDataNBT();
             data.wasCreated = true;
             storiesInitialized = false;
+            useNewWorldChapterGen();
         }
 // Moved to SurfaceBuilding
 //        if (data.wasCreated) {
 //            StoryEngine.RandomizeStories();
 //            save(); // save new data immediately
 //        }
+    }
+
+    /* No story_data.dat means a new world: take the value picked in the create world screen (true on a dedicated server) and reset it, so it
+       cannot leak into the next world. */
+    private void useNewWorldChapterGen() {
+        StoryEngine.chapterGenEnabled = StoryEngine.newWorldChapterGen;
+        StoryEngine.newWorldChapterGen = true;
     }
 
     public void save() {

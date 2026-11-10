@@ -59,12 +59,12 @@ public class MinecraftServerMixin {
             for (Chapter chapter : story.chapters.values())
             {
                 chapter.LoadBiome(server);
-                chapter.LoadLandscapeTemplate(server);
+                chapter.PrepareLandscapeTiles();
                 chapter.LoadEnvironmentTemplate(server);
                 if(storiesInitialized && chapter.isPlaced())
                 {
-                    chapter.populateLandscapeMap();
-                    chapter.populateEnvironmentMap();
+                    chapter.populateLandscapeMap(server);
+                    chapter.populateEnvironmentMap(server);
                 }
             }
         }

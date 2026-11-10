@@ -12,7 +12,11 @@
 		"WorldgenerationPipeline.StructureStartMixin",
 		"WorldgenerationPipeline.LakeFeatureMixin",
 		"WorldgenerationPipeline.FeaturesMixin",
-		"WorldgenerationPipeline.ChapterBiomeMixin"
+		"WorldgenerationPipeline.ChapterBiomeMixin",
+		"WorldgenerationPipeline.FixedBiomeSourceMixin",
+		"WorldgenerationPipeline.FlatChunkGeneratorMixin",
+		"StructureBlock.StructureBlockBlockEntityMixin",
+		"StructureBlock.UpdateStructureBlockC2SPacketMixin"
 	],
 	"client": [
 		"Rendering.FramebufferMixin",
@@ -21,7 +25,8 @@
 		"Rendering.GameRendererMixin",
 		"Rendering.EntityRenderDispatcherMixin",
 		"Rendering.ItemRendererMixin",
-		"Rendering.BlockEntityRenderDispatcherMixin"
+		"Rendering.BlockEntityRenderDispatcherMixin",
+		"CreateWorld.MoreTabMixin"
 	],
 	"server": [],
 	"injectors": {

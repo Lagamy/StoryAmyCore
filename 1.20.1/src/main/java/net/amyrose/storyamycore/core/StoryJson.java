@@ -74,6 +74,11 @@ public final class StoryJson {
     }
 
     public static JsonObject chapterEntry(int sizeX, int sizeZ, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int baseElevation) {
+        return chapterEntry(sizeX, sizeZ, offsetFromPrevious, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, baseElevation, null, null, 1.0);
+    }
+
+    /* Optional fields are written only when set: tileSize null = untiled, biome null = no biome override, minBiomeShare 1.0 = the default. */
+    public static JsonObject chapterEntry(int sizeX, int sizeZ, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int baseElevation, BlockPos2D landscapeTileSize, String chapterBiome, double minBiomeShare) {
         JsonObject entry = new JsonObject();
         entry.add("size", pos(sizeX, sizeZ));
         if (offsetFromPrevious != null) {
@@ -93,6 +98,15 @@ public final class StoryJson {
         }
         entry.add("allowedBiomes", biomes);
         entry.addProperty("baseElevation", baseElevation);
+        if (landscapeTileSize != null) {
+            entry.add("landscapeTileSize", pos(landscapeTileSize.x, landscapeTileSize.z));
+        }
+        if (minBiomeShare != 1.0) {
+            entry.addProperty("minBiomeShare", minBiomeShare);
+        }
+        if (chapterBiome != null) {
+            entry.addProperty("biome", chapterBiome);
+        }
         return entry;
     }
 
@@ -148,6 +162,11 @@ public final class StoryJson {
                 story.AddChapter(chapterName, size, offsetFromPrevious, landscapeName, landscapeBlockState, forbidden, environmentName, allowedBiomes, baseElevation);
             }
             story.chapters.get(chapterName).minBiomeShare = minBiomeShare;
+
+            /* Optional: splits the landscape into templates of this size, named <landscapeName>_<column>_<row>. It must divide the chapter size evenly. */
+            if (json.has("landscapeTileSize")) {
+                story.chapters.get(chapterName).landscapeTileSize = getPos(json, "landscapeTileSize", chapterWhere);
+            }
 
             /* Optional: the biome the chapter area is generated as, e.g. "minecraft:forest". */
             if (json.has("biome")) {

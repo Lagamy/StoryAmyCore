@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
-import static net.amyrose.storyamycore.core.StoryEngine.XandZAsLong;
 import static net.amyrose.storyamycore.core.StoryEngine.serverWorld;
 
 @Mixin(ChunkNoiseSampler.class)
@@ -40,7 +39,7 @@ public class NoiseSamplerMixin{
 
         for (Chapter chapter : Ichunk.getPresentChapters()) {
             if (chapter.chapterArea.inBounds(x, z)) {
-                int MapedY = chapter.landscapeMap.getOrDefault(XandZAsLong(x, z), Integer.MIN_VALUE);
+                int MapedY = chapter.getLandscapeY(x, z);
                 if (MapedY != Integer.MIN_VALUE) {
                     if (y > MapedY) {
                         // Above Y=64: Always air

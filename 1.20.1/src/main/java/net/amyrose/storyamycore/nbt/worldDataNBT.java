@@ -12,12 +12,15 @@ public class worldDataNBT {
     private static final String STORIES_KEY = "stories";
     private static final String INITIALIZED_KEY = "initialized";
     private static final String COMPASS_STORY_KEY = "compassStoryIndex";
+    private static final String CHAPTER_GEN_KEY = "chapterGen";
 
 
     public static worldDataNBT fromNbt(NbtCompound nbt) {
         worldDataNBT data = new worldDataNBT();
         storiesInitialized = nbt.getBoolean(INITIALIZED_KEY);
         StoryEngine.compassStoryIndex = nbt.getInt(COMPASS_STORY_KEY);
+        /* Worlds saved before the toggle existed have no key and keep generating chapters. */
+        StoryEngine.chapterGenEnabled = !nbt.contains(CHAPTER_GEN_KEY) || nbt.getBoolean(CHAPTER_GEN_KEY);
         if (nbt.contains(STORIES_KEY, NbtElement.COMPOUND_TYPE)) {
             NbtCompound storyCompound = nbt.getCompound(STORIES_KEY);
             StoryEngine.LoadStoriesFromNBT(storyCompound);
@@ -30,6 +33,7 @@ public class worldDataNBT {
         nbt.put(STORIES_KEY, StoryEngine.SaveStoriesToNBT());
         nbt.putBoolean(INITIALIZED_KEY, storiesInitialized);
         nbt.putInt(COMPASS_STORY_KEY, StoryEngine.compassStoryIndex);
+        nbt.putBoolean(CHAPTER_GEN_KEY, StoryEngine.chapterGenEnabled);
         return nbt;
     }
 }
