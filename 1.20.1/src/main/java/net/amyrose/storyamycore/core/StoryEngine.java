@@ -437,7 +437,7 @@ public class StoryEngine {
             int BorderY = chapter.GetBorderYPosition(worldX, worldZ);
 
             // Normalize how deep into the ring this block is: 0.0 (closest to chapter) → 1.0 (outermost ring edge)
-            float normalized = (float) ringLayer / StoryEngine.ringRadius;
+            float normalized = (float) ringLayer / chapter.ringRadius;
 
             // Interpolate between flatY and vanilla height using the normalized value
             // At center of ring (normalized = 0) → flatY, at edge (normalized = 1) → currentHeight

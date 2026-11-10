@@ -73,39 +73,43 @@ public final class StoryJson {
         write(path, root);
     }
 
-    public static JsonObject chapterEntry(int sizeX, int sizeZ, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int baseElevation) {
-        return chapterEntry(sizeX, sizeZ, offsetFromPrevious, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, baseElevation, null, null, 1.0);
-    }
-
-    /* Optional fields are written only when set: tileSize null = untiled, biome null = no biome override, minBiomeShare 1.0 = the default. */
-    public static JsonObject chapterEntry(int sizeX, int sizeZ, BlockPos2D offsetFromPrevious, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int baseElevation, BlockPos2D landscapeTileSize, String chapterBiome, double minBiomeShare) {
+    /* Optional fields are written only when they differ from their default: tileSize null = untiled, biome null = no biome override,
+       minBiomeShare 1.0, ringRadius equal to StoryEngine.ringRadius, adaptiveRing false (steepnessAdaptationFactor is only written when it is on). */
+    public static JsonObject chapterEntry(ChapterCreateInfo info) {
         JsonObject entry = new JsonObject();
-        entry.add("size", pos(sizeX, sizeZ));
-        if (offsetFromPrevious != null) {
-            entry.add("offsetFromPrevious", pos(offsetFromPrevious.x, offsetFromPrevious.z));
+        entry.add("size", pos(info.sizeX, info.sizeZ));
+        if (info.offsetFromPrevious != null) {
+            entry.add("offsetFromPrevious", pos(info.offsetFromPrevious.x, info.offsetFromPrevious.z));
         }
-        entry.addProperty("landscapeName", landscapeName);
-        entry.add("landscapeBlockState", blockStateToJson(landscapeBlockState));
+        entry.addProperty("landscapeName", info.landscapeName);
+        entry.add("landscapeBlockState", blockStateToJson(info.landscapeBlockState));
         JsonArray forbidden = new JsonArray();
-        for (BlockState state : forbiddenLandscapeBlocks) {
+        for (BlockState state : info.forbiddenLandscapeBlocks) {
             forbidden.add(blockStateToJson(state));
         }
         entry.add("forbiddenLandscapeBlocks", forbidden);
-        entry.addProperty("environmentName", environmentName);
+        entry.addProperty("environmentName", info.environmentName);
         JsonArray biomes = new JsonArray();
-        for (String biome : allowedBiomes) {
+        for (String biome : info.allowedBiomes) {
             biomes.add(biome);
         }
         entry.add("allowedBiomes", biomes);
-        entry.addProperty("baseElevation", baseElevation);
-        if (landscapeTileSize != null) {
-            entry.add("landscapeTileSize", pos(landscapeTileSize.x, landscapeTileSize.z));
+        entry.addProperty("baseElevation", info.baseElevation);
+        if (info.landscapeTileSize != null) {
+            entry.add("landscapeTileSize", pos(info.landscapeTileSize.x, info.landscapeTileSize.z));
         }
-        if (minBiomeShare != 1.0) {
-            entry.addProperty("minBiomeShare", minBiomeShare);
+        if (info.minBiomeShare != 1.0) {
+            entry.addProperty("minBiomeShare", info.minBiomeShare);
         }
-        if (chapterBiome != null) {
-            entry.addProperty("biome", chapterBiome);
+        if (info.biome != null) {
+            entry.addProperty("biome", info.biome);
+        }
+        if (info.ringRadius != StoryEngine.ringRadius) {
+            entry.addProperty("ringRadius", info.ringRadius);
+        }
+        if (info.adaptiveRing) {
+            entry.addProperty("adaptiveRing", true);
+            entry.addProperty("steepnessAdaptationFactor", info.steepnessAdaptationFactor);
         }
         return entry;
     }
@@ -162,6 +166,34 @@ public final class StoryJson {
                 story.AddChapter(chapterName, size, offsetFromPrevious, landscapeName, landscapeBlockState, forbidden, environmentName, allowedBiomes, baseElevation);
             }
             story.chapters.get(chapterName).minBiomeShare = minBiomeShare;
+
+            /* Optional: how many blocks the blend ring around the landscape spans; a bigger value gives a more gradual transition (each ring step changes the height by about 1 block). */
+            if (json.has("ringRadius")) {
+                int ringRadius = getInt(json, "ringRadius", chapterWhere);
+                if (ringRadius < 1) {
+                    fail(chapterWhere + " 'ringRadius' must be at least 1.");
+                }
+                story.chapters.get(chapterName).ringRadius = ringRadius;
+            }
+
+            /* Optional: with adaptiveRing true the ring grows where the vanilla terrain is far from the chapter's edge; steepnessAdaptationFactor (ring blocks per block of height difference) is then required. */
+            if (json.has("adaptiveRing")) {
+                if (!json.get("adaptiveRing").isJsonPrimitive() || !json.get("adaptiveRing").getAsJsonPrimitive().isBoolean()) {
+                    fail(chapterWhere + " 'adaptiveRing' must be true or false.");
+                }
+                boolean adaptiveRing = json.get("adaptiveRing").getAsBoolean();
+                story.chapters.get(chapterName).adaptiveRing = adaptiveRing;
+                if (adaptiveRing) {
+                    if (!json.has("steepnessAdaptationFactor") || !json.get("steepnessAdaptationFactor").isJsonPrimitive()) {
+                        fail(chapterWhere + " 'steepnessAdaptationFactor' (a number above 0) is required when 'adaptiveRing' is true.");
+                    }
+                    double steepnessAdaptationFactor = json.get("steepnessAdaptationFactor").getAsDouble();
+                    if (steepnessAdaptationFactor <= 0) {
+                        fail(chapterWhere + " 'steepnessAdaptationFactor' must be above 0.");
+                    }
+                    story.chapters.get(chapterName).steepnessAdaptationFactor = steepnessAdaptationFactor;
+                }
+            }
 
             /* Optional: splits the landscape into templates of this size, named <landscapeName>_<column>_<row>. It must divide the chapter size evenly. */
             if (json.has("landscapeTileSize")) {

@@ -63,6 +63,7 @@ public class ServerWorldMixin {
                             int centerZ = (chapter.chapterArea.beginning.z + chapter.chapterArea.end.z) / 2;
                             chapter.chaptersBaseHeight = generator.getHeight(centerX, centerZ, Heightmap.Type.OCEAN_FLOOR_WG, world, noiseConfig) - 1;
                             chapter.populateLandscapeMap(world.getServer());
+                            chapter.extendRingForSteepness(generator, noiseConfig, world);
                             chapter.populateEnvironmentMap(world.getServer());
                         }
                     }

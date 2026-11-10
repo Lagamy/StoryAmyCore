@@ -15,8 +15,12 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.noise.NoiseConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +33,8 @@ public class Chapter {
     private static final int SEARCH_STEP = 32;
     private static final int MAX_RANGE_FACTOR = 4;
     private static final double ZONE_PREFILTER_MARGIN = 0.15;
+    public static final int MAX_ADAPTIVE_RING_RADIUS = 256;
+    private static final int STEEPNESS_SAMPLE_STEP = 8;
 
     public Story parentStory; // reference to parent story.
     public boolean first = false;
@@ -62,6 +68,9 @@ public class Chapter {
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
     public Set<String> allowedBiomes;
+    public int ringRadius = StoryEngine.ringRadius; // optional "ringRadius" JSON field: how many blocks the blend ring around the landscape spans. Fixed by the ring area saved at placement, so changing it only affects chapters placed afterwards.
+    public boolean adaptiveRing = false; // optional "adaptiveRing" JSON field: the ring may grow beyond ringRadius where the vanilla terrain is far from the landscape's edge (see extendRingForSteepness).
+    public double steepnessAdaptationFactor = 1.0; // optional "steepnessAdaptationFactor" JSON field, only used when adaptiveRing: ring blocks per block of worst height difference.
     public double minBiomeShare = 1.0; // share of sampled points that must be in allowedBiomes, set from the optional "minBiomeShare" JSON field.
     public BlockState landscapeBlockState;
     public Set<BlockState> forbiddenLandscapeBlocks;
@@ -176,8 +185,8 @@ public class Chapter {
 
         // if I wanted to search ring wide - I would use this.
         Zone tempRingArea = new Zone(
-                new BlockPos2D(tempChapterArea.beginning.x - StoryEngine.ringRadius, tempChapterArea.beginning.z - StoryEngine.ringRadius),
-                new BlockPos2D(tempChapterArea.end.x + StoryEngine.ringRadius, tempChapterArea.end.z + StoryEngine.ringRadius)
+                new BlockPos2D(tempChapterArea.beginning.x - ringRadius, tempChapterArea.beginning.z - ringRadius),
+                new BlockPos2D(tempChapterArea.end.x + ringRadius, tempChapterArea.end.z + ringRadius)
         );
         chapterArea = tempChapterArea;
         ringArea = tempRingArea;
@@ -582,7 +591,7 @@ public class Chapter {
             RingStep current = queue.poll();
             int currentLayer = RingLayerFromInt(ringLayersMap.get(XandZAsLong(current.x, current.z)));
 
-            if (currentLayer >= StoryEngine.ringRadius) continue;
+            if (currentLayer >= ringRadius) continue;
 
             for (int i = 0; i < 4; i++) {
                 int nx = current.x + dx[i];
@@ -603,6 +612,43 @@ public class Chapter {
     }
 
 
+
+    /* Widens the ring where the vanilla terrain is far from the landscape's edge, so the slope stays gradual (over a ring of N layers a height difference D
+       changes by about D / N per layer). Runs once, on the server thread, right after the landscape map exists and before any chunk is generated:
+       the vanilla height is asked from the generator directly, as for the base height. The ring layers of the current ring give the edge height of
+       every ring column, and a grid of columns (STEEPNESS_SAMPLE_STEP apart) is compared with the generator's height; the largest difference times
+       steepnessAdaptationFactor is the radius needed. The ring only grows (never below ringRadius, never above MAX_ADAPTIVE_RING_RADIUS), and the difference is only
+       measured inside the current ring, so it is an estimate: terrain beyond the old ring edge may still be steeper. The new radius is not saved
+       on its own, LoadFromNbt derives it from the saved areas. */
+    public void extendRingForSteepness(ChunkGenerator generator, NoiseConfig noiseConfig, HeightLimitView world) {
+        if (!adaptiveRing) {
+            return;
+        }
+        int worstDifference = 0;
+        for (int x = ringArea.beginning.x; x <= ringArea.end.x; x += STEEPNESS_SAMPLE_STEP) {
+            for (int z = ringArea.beginning.z; z <= ringArea.end.z; z += STEEPNESS_SAMPLE_STEP) {
+                int borderY = GetBorderYPosition(x, z);
+                if (borderY == Integer.MIN_VALUE) {
+                    continue;
+                }
+                int vanillaY = generator.getHeight(x, z, Heightmap.Type.OCEAN_FLOOR_WG, world, noiseConfig) - 1;
+                worstDifference = Math.max(worstDifference, Math.abs(vanillaY - borderY));
+            }
+        }
+        int newRadius = Math.min(Math.max(ringRadius, (int) Math.ceil(worstDifference * steepnessAdaptationFactor)), MAX_ADAPTIVE_RING_RADIUS);
+        LOGGER.info("Chapter {}: worst height difference to the terrain is {} blocks, ring radius {} -> {}", name, worstDifference, ringRadius, newRadius);
+        if (newRadius == ringRadius) {
+            return;
+        }
+        ringRadius = newRadius;
+        ringArea = new Zone(
+                new BlockPos2D(chapterArea.beginning.x - ringRadius, chapterArea.beginning.z - ringRadius),
+                new BlockPos2D(chapterArea.end.x + ringRadius, chapterArea.end.z + ringRadius)
+        );
+        parentStory.area.beginning.setMin(ringArea.beginning);
+        parentStory.area.end.setMax(ringArea.end);
+        computeRingLayersFromLandscape();
+    }
 
     public int SquareWhatRingLayer(int x, int z)
     {
@@ -693,6 +739,10 @@ public class Chapter {
         }
         if (nbt.contains("chapterArea")) {
             chapterArea = Zone.LoadFromNbt(nbt.getCompound("chapterArea"));
+        }
+        /* The ring may have been widened at placement (extendRingForSteepness) or the JSON edited since, so the radius is read back from the saved areas. */
+        if (ringArea != null && chapterArea != null) {
+            ringRadius = chapterArea.beginning.x - ringArea.beginning.x;
         }
         /* Saves from before rotation existed have no entry: they were placed unrotated. */
         rotation = nbt.contains("rotation") ? ChapterRotation.valueOf(nbt.getString("rotation")) : ChapterRotation.NONE;

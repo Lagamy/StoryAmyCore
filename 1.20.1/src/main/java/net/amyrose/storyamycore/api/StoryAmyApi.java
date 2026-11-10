@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import net.amyrose.storyamycore.StoryAmyCoreMod;
 import net.amyrose.storyamycore.core.BlockPos2D;
 import net.amyrose.storyamycore.core.Chapter;
+import net.amyrose.storyamycore.core.ChapterCreateInfo;
 import net.amyrose.storyamycore.core.Story;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.amyrose.storyamycore.core.StoryJson;
@@ -42,22 +43,41 @@ public final class StoryAmyApi {
         StoryEngine.addStory(storyName, radius, modId);
     }
 
-    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation) {
+    /* Adds the first chapter of a story from a ChapterCreateInfo (see there for the required and optional fields); offsetFromPrevious must be null. */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, ChapterCreateInfo info) {
         checkEditable(modId, storyName, chapterName);
+        checkInfo(chapterName, info);
+        if (info.offsetFromPrevious != null) {
+            fail("Chapter " + chapterName + " is the first chapter of " + storyName + " and cannot have an offsetFromPrevious.");
+        }
         if (sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
             fail("Story " + storyName + " already has a first chapter; use addChapter for " + chapterName + ".");
         }
-        StoryJson.ensureChapterEntry(modId, storyName, chapterName, null, StoryJson.chapterEntry(sizeX, sizeZ, null, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation));
+        StoryJson.ensureChapterEntry(modId, storyName, chapterName, null, StoryJson.chapterEntry(info));
         sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
     }
 
-    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
+    /* Adds a chapter after the one added before it from a ChapterCreateInfo; offsetFromPrevious is required. */
+    public static void addChapter(String modId, String storyName, String chapterName, ChapterCreateInfo info) {
         checkEditable(modId, storyName, chapterName);
+        checkInfo(chapterName, info);
+        if (info.offsetFromPrevious == null) {
+            fail("Chapter " + chapterName + " needs an offsetFromPrevious (only the first chapter of a story has none).");
+        }
         if (!sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
             fail("Story " + storyName + " has no first chapter; call addFirstChapter before " + chapterName + ".");
         }
-        StoryJson.ensureChapterEntry(modId, storyName, chapterName, sessionLastChapter.get(StoryEngine.storyKey(modId, storyName)), StoryJson.chapterEntry(sizeX, sizeZ, new BlockPos2D(offsetFromPreviousX, offsetFromPreviousZ), landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight));
+        StoryJson.ensureChapterEntry(modId, storyName, chapterName, sessionLastChapter.get(StoryEngine.storyKey(modId, storyName)), StoryJson.chapterEntry(info));
         sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
+    }
+
+    /* The long overloads below are the same calls with every value as an argument; they build a ChapterCreateInfo and are kept for existing callers. New code should use the ChapterCreateInfo overloads. */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation) {
+        addFirstChapter(modId, storyName, chapterName, sizeX, sizeZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, null, null, 1.0);
+    }
+
+    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight) {
+        addChapter(modId, storyName, chapterName, sizeX, sizeZ, offsetFromPreviousX, offsetFromPreviousZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, null, null, 1.0);
     }
 
     /* Same as addFirstChapter plus minBiomeShare only (1.0 = every sampled point must be in an allowed biome); the tile size and biome override stay off. */
@@ -70,24 +90,65 @@ public final class StoryAmyApi {
         addChapter(modId, storyName, chapterName, sizeX, sizeZ, offsetFromPreviousX, offsetFromPreviousZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, null, null, minBiomeShare);
     }
 
-    /* Same as addFirstChapter plus the optional chapter fields (see Docs.md): landscapeTileSize (null = one landscape template), biome (null = no override) and minBiomeShare (1.0 = every sampled point must be in an allowed biome). */
+    /* Same as addFirstChapter plus the optional chapter fields (see Docs.md): landscapeTileSize (null = one landscape template), biome (null = no override) and minBiomeShare (1.0 = every sampled point must be in an allowed biome). The blend ring keeps its default size. */
     public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation, BlockPos2D landscapeTileSize, String biome, double minBiomeShare) {
-        checkEditable(modId, storyName, chapterName);
-        if (sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
-            fail("Story " + storyName + " already has a first chapter; use addChapter for " + chapterName + ".");
-        }
-        StoryJson.ensureChapterEntry(modId, storyName, chapterName, null, StoryJson.chapterEntry(sizeX, sizeZ, null, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, landscapeTileSize, biome, minBiomeShare));
-        sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
+        addFirstChapter(modId, storyName, chapterName, sizeX, sizeZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, landscapeTileSize, biome, minBiomeShare, StoryEngine.ringRadius);
+    }
+
+    /* Same as addFirstChapter plus all optional fields, including ringRadius: how many blocks the blend ring between the landscape and the vanilla terrain spans (default StoryEngine.ringRadius, 64). Each ring step changes the height by about one block, so a chapter whose edge differs a lot from the terrain needs a bigger value for a gradual slope. */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation, BlockPos2D landscapeTileSize, String biome, double minBiomeShare, int ringRadius) {
+        addFirstChapter(modId, storyName, chapterName, sizeX, sizeZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseElevation, landscapeTileSize, biome, minBiomeShare, ringRadius, false, 1.0);
+    }
+
+    /* Same as addFirstChapter plus all optional fields, including adaptiveRing and steepnessAdaptationFactor: when adaptiveRing is true the blend ring is made wider than ringRadius where the vanilla terrain around the chapter differs a lot from its edge, to ring blocks = steepnessAdaptationFactor x the worst height difference found (1.0 = about one block of height per ring block, bigger = more gradual). It never makes the ring smaller than ringRadius and never wider than Chapter.MAX_ADAPTIVE_RING_RADIUS. steepnessAdaptationFactor must be above 0 when adaptiveRing is true. */
+    public static void addFirstChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseElevation, BlockPos2D landscapeTileSize, String biome, double minBiomeShare, int ringRadius, boolean adaptiveRing, double steepnessAdaptationFactor) {
+        ChapterCreateInfo info = new ChapterCreateInfo();
+        info.sizeX = sizeX;
+        info.sizeZ = sizeZ;
+        info.landscapeName = landscapeName;
+        info.landscapeBlockState = landscapeBlockState;
+        info.forbiddenLandscapeBlocks = forbiddenLandscapeBlocks;
+        info.environmentName = environmentName;
+        info.allowedBiomes = allowedBiomes;
+        info.baseElevation = chaptersBaseElevation;
+        info.landscapeTileSize = landscapeTileSize;
+        info.biome = biome;
+        info.minBiomeShare = minBiomeShare;
+        info.ringRadius = ringRadius;
+        info.adaptiveRing = adaptiveRing;
+        info.steepnessAdaptationFactor = steepnessAdaptationFactor;
+        addFirstChapter(modId, storyName, chapterName, info);
     }
 
     /* Same as addChapter plus the optional chapter fields, see the addFirstChapter overload. */
     public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight, BlockPos2D landscapeTileSize, String biome, double minBiomeShare) {
-        checkEditable(modId, storyName, chapterName);
-        if (!sessionLastChapter.containsKey(StoryEngine.storyKey(modId, storyName))) {
-            fail("Story " + storyName + " has no first chapter; call addFirstChapter before " + chapterName + ".");
-        }
-        StoryJson.ensureChapterEntry(modId, storyName, chapterName, sessionLastChapter.get(StoryEngine.storyKey(modId, storyName)), StoryJson.chapterEntry(sizeX, sizeZ, new BlockPos2D(offsetFromPreviousX, offsetFromPreviousZ), landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, landscapeTileSize, biome, minBiomeShare));
-        sessionLastChapter.put(StoryEngine.storyKey(modId, storyName), chapterName);
+        addChapter(modId, storyName, chapterName, sizeX, sizeZ, offsetFromPreviousX, offsetFromPreviousZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, landscapeTileSize, biome, minBiomeShare, StoryEngine.ringRadius);
+    }
+
+    /* Same as addChapter plus all optional fields, including ringRadius, see the addFirstChapter overload. */
+    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight, BlockPos2D landscapeTileSize, String biome, double minBiomeShare, int ringRadius) {
+        addChapter(modId, storyName, chapterName, sizeX, sizeZ, offsetFromPreviousX, offsetFromPreviousZ, landscapeName, landscapeBlockState, forbiddenLandscapeBlocks, environmentName, allowedBiomes, chaptersBaseHeight, landscapeTileSize, biome, minBiomeShare, ringRadius, false, 1.0);
+    }
+
+    /* Same as addChapter plus all optional fields, including adaptiveRing and steepnessAdaptationFactor: when adaptiveRing is true the blend ring is made wider than ringRadius where the vanilla terrain around the chapter differs a lot from its edge, to ring blocks = steepnessAdaptationFactor x the worst height difference found (1.0 = about one block of height per ring block, bigger = more gradual). It never makes the ring smaller than ringRadius and never wider than Chapter.MAX_ADAPTIVE_RING_RADIUS. steepnessAdaptationFactor must be above 0 when adaptiveRing is true. */
+    public static void addChapter(String modId, String storyName, String chapterName, int sizeX, int sizeZ, int offsetFromPreviousX, int offsetFromPreviousZ, String landscapeName, BlockState landscapeBlockState, Set<BlockState> forbiddenLandscapeBlocks, String environmentName, Set<String> allowedBiomes, int chaptersBaseHeight, BlockPos2D landscapeTileSize, String biome, double minBiomeShare, int ringRadius, boolean adaptiveRing, double steepnessAdaptationFactor) {
+        ChapterCreateInfo info = new ChapterCreateInfo();
+        info.sizeX = sizeX;
+        info.sizeZ = sizeZ;
+        info.landscapeName = landscapeName;
+        info.landscapeBlockState = landscapeBlockState;
+        info.forbiddenLandscapeBlocks = forbiddenLandscapeBlocks;
+        info.environmentName = environmentName;
+        info.allowedBiomes = allowedBiomes;
+        info.baseElevation = chaptersBaseHeight;
+        info.landscapeTileSize = landscapeTileSize;
+        info.biome = biome;
+        info.minBiomeShare = minBiomeShare;
+        info.ringRadius = ringRadius;
+        info.adaptiveRing = adaptiveRing;
+        info.steepnessAdaptationFactor = steepnessAdaptationFactor;
+        info.offsetFromPrevious = new BlockPos2D(offsetFromPreviousX, offsetFromPreviousZ);
+        addChapter(modId, storyName, chapterName, info);
     }
 
     /* True once the story's placement is known (world generated or loaded from story_data.dat). */
@@ -108,6 +169,31 @@ public final class StoryAmyApi {
             return Optional.empty();
         }
         return Optional.of(new Zone(chapter.chapterArea.beginning, chapter.chapterArea.end));
+    }
+
+    /* Required fields must be set; invalid values fail loudly here, at registration, instead of when the server starts. */
+    private static void checkInfo(String chapterName, ChapterCreateInfo info) {
+        if (info == null) {
+            fail("Chapter " + chapterName + " has no ChapterCreateInfo.");
+        }
+        if (info.sizeX <= 0 || info.sizeZ <= 0) {
+            fail("Chapter " + chapterName + " needs sizeX and sizeZ above 0.");
+        }
+        if (info.landscapeName == null || info.environmentName == null || info.landscapeBlockState == null || info.allowedBiomes == null) {
+            fail("Chapter " + chapterName + " needs landscapeName, landscapeBlockState, environmentName and allowedBiomes.");
+        }
+        if (info.forbiddenLandscapeBlocks == null) {
+            fail("Chapter " + chapterName + " has forbiddenLandscapeBlocks set to null; use an empty set.");
+        }
+        if (info.minBiomeShare <= 0 || info.minBiomeShare > 1) {
+            fail("Chapter " + chapterName + " needs minBiomeShare above 0 and at most 1.");
+        }
+        if (info.ringRadius < 1) {
+            fail("Chapter " + chapterName + " needs ringRadius of at least 1.");
+        }
+        if (info.adaptiveRing && info.steepnessAdaptationFactor <= 0) {
+            fail("Chapter " + chapterName + " needs steepnessAdaptationFactor above 0 when adaptiveRing is on.");
+        }
     }
 
     private static void checkEditable(String modId, String storyName, String chapterName) {
