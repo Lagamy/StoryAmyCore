@@ -1,7 +1,7 @@
 package net.amyrose.storyamycore.mixin.StructureBlock;
 
 import net.amyrose.storyamycore.StoryAmyCoreMod;
-import net.amyrose.storyamycore.core.LandscapeNbtReader;
+import net.amyrose.storyamycore.core.ChapReader;
 import net.amyrose.storyamycore.core.StructureStreamJobs;
 import net.amyrose.storyamycore.core.StructureStreamLoadJob;
 import net.amyrose.storyamycore.core.StructureStreamSaveJob;
@@ -90,9 +90,10 @@ public abstract class StructureBlockBlockEntityMixin {
         try {
             int[] fileSize;
             try (InputStream stream = StructureStreamJobs.open(world, templateName)) {
-                fileSize = stream == null ? null : LandscapeNbtReader.readStreamableSize(stream);
+                fileSize = stream == null ? null : ChapReader.readSize(stream);
             }
             if (fileSize == null) {
+                cir.setReturnValue(false);
                 return;
             }
 

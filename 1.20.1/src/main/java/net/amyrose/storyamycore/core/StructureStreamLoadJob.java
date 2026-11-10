@@ -23,12 +23,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 /* Places a structure of any size without ever holding it in memory.
-   A background thread streams the file through LandscapeNbtReader and hands blocks over in batches through a small bounded queue
+   A background thread reads the .chap file with ChapReader and hands vertical spans over in batches through a small bounded queue
    (so it waits when the server is slower); the server thread places a slice of them every tick, because the world may only be changed from
    the server thread. Entities are not loaded and integrity is ignored. */
 public class StructureStreamLoadJob implements StructureStreamJobs.Job {
 
-    private record Placement(int x, int y, int z, BlockState state, NbtCompound blockEntity) {
+    /* A run of length blocks of one state going up from y, or, when length is 0, only the block entity data of the block at x, y, z. */
+    private record Placement(int x, int y, int z, int length, BlockState state, NbtCompound blockEntity) {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoryAmyCoreMod.MOD_ID);
@@ -61,11 +62,15 @@ public class StructureStreamLoadJob implements StructureStreamJobs.Job {
 
     private void readFile(InputStream stream) {
         try {
-            LandscapeNbtReader.read(stream, (x, y, z, state, blockEntity) -> {
-                batch.add(new Placement(x, y, z, state, blockEntity));
-                if (batch.size() >= BATCH_SIZE) {
-                    handOver(batch);
-                    batch = new ArrayList<>(BATCH_SIZE);
+            ChapReader.read(stream, new ChapReader.Visitor() {
+                @Override
+                public void visitSpan(int x, int z, int y, int length, BlockState state) {
+                    add(new Placement(x, y, z, length, state, null));
+                }
+
+                @Override
+                public void visitBlockEntity(int x, int y, int z, NbtCompound nbt) {
+                    add(new Placement(x, y, z, 0, null, nbt));
                 }
             });
             handOver(batch);
@@ -77,6 +82,14 @@ public class StructureStreamLoadJob implements StructureStreamJobs.Job {
         try {
             queue.put(END);
         } catch (InterruptedException ignored) {
+        }
+    }
+
+    private void add(Placement placement) {
+        batch.add(placement);
+        if (batch.size() >= BATCH_SIZE) {
+            handOver(batch);
+            batch = new ArrayList<>(BATCH_SIZE);
         }
     }
 
@@ -102,21 +115,18 @@ public class StructureStreamLoadJob implements StructureStreamJobs.Job {
                     return finish();
                 }
             }
-            place(current.get(currentIndex++));
-            if ((++placed & 255) == 0 && System.nanoTime() > deadlineNanos) {
+            Placement placement = current.get(currentIndex++);
+            place(placement);
+            if (System.nanoTime() > deadlineNanos) {
                 return false;
             }
         }
     }
 
+    /* The block entity of a span-less placement belongs to a block placed earlier: the reader emits a region's block entities after its spans. */
     private void place(Placement placement) {
-        if (placement.state().isOf(Blocks.STRUCTURE_VOID)) {
-            return;
-        }
-        BlockPos pos = StructureTemplate.transformAround(new BlockPos(placement.x(), placement.y(), placement.z()), mirror, rotation, BlockPos.ORIGIN).add(origin);
-        world.setBlockState(pos, placement.state().mirror(mirror).rotate(rotation), Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
-
-        if (placement.blockEntity() != null) {
+        if (placement.length() == 0) {
+            BlockPos pos = transform(placement.x(), placement.y(), placement.z());
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity != null) {
                 NbtCompound nbt = placement.blockEntity().copy();
@@ -126,7 +136,20 @@ public class StructureStreamLoadJob implements StructureStreamJobs.Job {
                 blockEntity.readNbt(nbt);
                 blockEntity.markDirty();
             }
+            return;
         }
+        if (placement.state().isOf(Blocks.STRUCTURE_VOID)) {
+            return;
+        }
+        BlockState state = placement.state().mirror(mirror).rotate(rotation);
+        for (int y = placement.y(); y < placement.y() + placement.length(); y++) {
+            world.setBlockState(transform(placement.x(), y, placement.z()), state, Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
+            placed++;
+        }
+    }
+
+    private BlockPos transform(int x, int y, int z) {
+        return StructureTemplate.transformAround(new BlockPos(x, y, z), mirror, rotation, BlockPos.ORIGIN).add(origin);
     }
 
     private boolean finish() {

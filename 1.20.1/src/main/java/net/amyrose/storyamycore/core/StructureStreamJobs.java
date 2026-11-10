@@ -1,7 +1,9 @@
 package net.amyrose.storyamycore.core;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resource.Resource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.WorldSavePath;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -52,14 +54,28 @@ public class StructureStreamJobs {
         world.getServer().getPlayerManager().broadcast(Text.literal(message), false);
     }
 
-    /* Saved structures live in the world's generated folder; anything else is looked up in the resources (data packs and mods),
-       the same two places the vanilla structure block reads from. Returns null when the structure does not exist. */
-    public static InputStream open(ServerWorld world, Identifier name) throws IOException {
-        Path generated = world.getStructureTemplateManager().getTemplatePath(name, ".nbt");
-        if (Files.exists(generated)) {
-            return Files.newInputStream(generated);
+    /* Where the chapter block saves a chapter file. Running from the mod project (dev environment), that is the project's own
+       src/main/resources/data/<namespace>/chapters, so the normal build packs it into the jar. Anywhere else it is the world's generated folder,
+       because a built jar cannot be written to. */
+    public static Path chapterPath(MinecraftServer server, Identifier name) {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            Path project = FabricLoader.getInstance().getGameDir().toAbsolutePath().normalize().getParent();
+            Path resources = project == null ? null : project.resolve("src/main/resources");
+            if (resources != null && Files.isDirectory(resources)) {
+                return resources.resolve("data").resolve(name.getNamespace()).resolve("chapters").resolve(name.getPath() + ".chap");
+            }
         }
-        Optional<Resource> resource = world.getServer().getResourceManager().getResource(new Identifier(name.getNamespace(), "structures/" + name.getPath() + ".nbt"));
+        return server.getSavePath(WorldSavePath.GENERATED).resolve(name.getNamespace()).resolve("chapters").resolve(name.getPath() + ".chap");
+    }
+
+    /* The saved file from chapterPath if it exists (so a chapter saved in dev loads without rebuilding), otherwise the chapter in the
+       resources (mods and data packs). Returns null when the chapter does not exist. */
+    public static InputStream open(ServerWorld world, Identifier name) throws IOException {
+        Path saved = chapterPath(world.getServer(), name);
+        if (Files.exists(saved)) {
+            return Files.newInputStream(saved);
+        }
+        Optional<Resource> resource = world.getServer().getResourceManager().getResource(new Identifier(name.getNamespace(), "chapters/" + name.getPath() + ".chap"));
         return resource.isPresent() ? resource.get().getInputStream() : null;
     }
 }

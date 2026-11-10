@@ -7,11 +7,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
-import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
@@ -47,18 +44,17 @@ public class Chapter {
     public RegistryEntry<Biome> biome; // resolved from biomeName at server start, read by BiomeSourceMixin.
     public String landscapeName;
     public String environmentName;
-    public BlockPos2D landscapeTileSize; // optional "landscapeTileSize" JSON field: when set, the landscape file is split into internal tiles of this size (one file, <landscapeName>.nbt).
+    public BlockPos2D landscapeTileSize; // optional "landscapeTileSize" JSON field: when set, the landscape file is split into internal tiles of this size (one file, <landscapeName>.chap).
     public List<LandscapeTile> landscapeTiles = new ArrayList<>();
     private LandscapeTile[] tileGrid = new LandscapeTile[0];
     private int tileCellsZ;
     private int tileCellWidth = 1;
     private int tileCellDepth = 1;
     public int landscapeHighestPoint = Integer.MIN_VALUE;
-    public StructureTemplate environmentTemplate; // only set when the environment file cannot be streamed (see LoadEnvironmentTemplate).
     public Vec3i environmentSize;
     private int environmentDropped;
     public int environmentHighestPoint = Integer.MIN_VALUE;
-    public StructureTemplate noFoliageTemplate;
+    private Identifier noFoliageFileId; // null when the chapter has no no-foliage file (see LoadEnvironmentTemplate).
 
     public int chaptersBaseHeight = 64;
     public int maxEnvironmentHeight;
@@ -113,7 +109,7 @@ public class Chapter {
            return only one). Candidates are sorted by distance from the intended spot, and the chapter zone centered on each one is tested with each
            allowed rotation until one passes, so the nearest suitable spot wins. No randomness: the same seed always gives the same result. */
         Zone tempChapterArea = null;
-        for (ChapterRotation intendedRotation : rotationsToTry(beginning.x + size.x / 2, beginning.z + size.z / 2)) {
+        for (ChapterRotation intendedRotation : rotationsToTry(beginning.x, beginning.z)) {
             Zone zone = rotatedZone(intendedRotation, beginning.x, beginning.z, false);
             if (zone.IsInAllowedBiome(allowedBiomes, chaptersBaseHeight, biomeAccess, minBiomeShare)) {
                 tempChapterArea = zone;
@@ -147,7 +143,7 @@ public class Chapter {
                 int[] candidate = candidates.get(i);
                 int centerX = beginning.x + candidate[0];
                 int centerZ = beginning.z + candidate[1];
-                for (ChapterRotation candidateRotation : rotationsToTry(centerX, centerZ)) {
+                for (ChapterRotation candidateRotation : rotationsToTry(centerX - size.x / 2, centerZ - size.z / 2)) {
                     Zone zone = rotatedZone(candidateRotation, centerX, centerZ, true);
                     /* The grid is coarser than the real check, so it only rejects zones that are clearly short of the share (with a margin); the real check decides. */
                     int firstI = Math.floorDiv(zone.beginning.x - beginning.x + range + SEARCH_STEP - 1, SEARCH_STEP);
@@ -191,22 +187,23 @@ public class Chapter {
 
 
 
-    /* The rotations allowed for a chapter centered on (centerX, centerZ), in the order they are tested. The chapter is judged by where it lies
-       relative to a reference: the player's start (0, 0) for the first chapter, and for the others the point of the previous chapter's area (not its ring)
-       that is nearest to the spot, so a chapter beside the previous one is to the right of its rightmost edge, not of its center.
+    /* The rotations allowed for a chapter whose start corner (its most negative x and z, as the unrotated chapter) is (startX, startZ), in the order they are tested.
+       The chapter is judged by where that corner lies relative to a reference: the player's start (0, 0) for the first chapter, and for the others the point
+       of the previous chapter's area (not its ring) nearest to the corner. A chapter is never judged by its center, so one that starts north of the reference
+       is behind it even when it is centered on it.
        The player looks south (+Z, the default spawn facing) and the unrotated chapter's front is its north side. Ahead of the reference only NONE
        is allowed (behind it only BACK), and a chapter to the east/west also may turn RIGHT/LEFT (a 90 degree turn of the chapter, not the side of
        the reference it is on). When it lies farther to the side than ahead, the side turn is tested first, otherwise the straight one.
        The rotation opposite to the previous chapter's (NONE/BACK, RIGHT/LEFT) is never allowed, so the story does not fold back on itself. */
-    private List<ChapterRotation> rotationsToTry(int centerX, int centerZ) {
+    private List<ChapterRotation> rotationsToTry(int startX, int startZ) {
         int referenceX = 0;
         int referenceZ = 0;
         if (!first) {
-            referenceX = Math.max(previousChapter.chapterArea.beginning.x, Math.min(centerX, previousChapter.chapterArea.end.x));
-            referenceZ = Math.max(previousChapter.chapterArea.beginning.z, Math.min(centerZ, previousChapter.chapterArea.end.z));
+            referenceX = Math.max(previousChapter.chapterArea.beginning.x, Math.min(startX, previousChapter.chapterArea.end.x));
+            referenceZ = Math.max(previousChapter.chapterArea.beginning.z, Math.min(startZ, previousChapter.chapterArea.end.z));
         }
-        int toChapterX = centerX - referenceX;
-        int toChapterZ = centerZ - referenceZ;
+        int toChapterX = startX - referenceX;
+        int toChapterZ = startZ - referenceZ;
         ChapterRotation straight = toChapterZ >= 0 ? ChapterRotation.NONE : ChapterRotation.BACK;
         List<ChapterRotation> rotations = new ArrayList<>();
         if (toChapterX == 0) {
@@ -347,7 +344,7 @@ public class Chapter {
     }
 
     /* Populate landscape maps with absolute world coordinates for the highest non-air block in each column.
-       The landscape file is streamed once by LandscapeNbtReader and every block goes straight into the column maps of the internal
+       The landscape .chap file is read once by ChapReader and every vertical span goes straight into the column maps of the internal
        tile that owns it, so the blocks of a big landscape are never in memory, only the per-tile column maps stay. */
     public void populateLandscapeMap(MinecraftServer server) {
         if (landscapeTiles.isEmpty()) {
@@ -382,15 +379,15 @@ public class Chapter {
         /* Per column, keep the highest solid block (its Y and its state) and, separately, the highest water block.
            Water is not a surface: the river bed stays the landscape Y and the water is filled above it when stamping.
            Tiles are listed column by column along X, so a block's tile is its X cell times the row count plus its Z cell.
-           The server resource manager is used because the mods' data packs (and so their structures folder) are part of it. */
+           The server resource manager is used because the mods' data packs (and so their chapters folder) are part of it. */
         int rows = size.z / tileSize.z;
-        Identifier fileId = new Identifier(parentStory.ModId, "structures/" + landscapeName + ".nbt");
-        LandscapeNbtReader.BlockVisitor visitor = (x, y, z, state) -> {
+        Identifier fileId = new Identifier(parentStory.ModId, "chapters/" + landscapeName + ".chap");
+        ChapReader.Visitor visitor = (x, z, y, length, state) -> {
             if (state.isAir() || x < 0 || z < 0 || x >= size.x || z >= size.z) {
                 return;
             }
             LandscapeTile tile = landscapeTiles.get((x / tileSize.x) * rows + z / tileSize.z);
-            BlockPos worldPos = rotatePos(new BlockPos(x, y, z)).add(origin); // Absolute world position
+            BlockPos worldPos = rotatePos(new BlockPos(x, y + length - 1, z)).add(origin); // Absolute world position of the top of the span
             long key = XandZAsLong(worldPos.getX(), worldPos.getZ());
             int worldY = worldPos.getY() + chaptersBaseHeight;
 
@@ -407,29 +404,11 @@ public class Chapter {
             }
         };
 
-        /* A file with the size and the palette before the blocks is streamed. Any other file (vanilla structure blocks often write the blocks first,
-           like the hand-built prologue) is loaded as a StructureTemplate, the same split as for the environment. */
-        boolean streamable;
         try (InputStream stream = server.getResourceManager().open(fileId)) {
-            streamable = LandscapeNbtReader.readStreamableSize(stream) != null;
+            ChapReader.read(stream, visitor);
         } catch (IOException e) {
             LOGGER.error("Cannot read landscape file {} of chapter {}: {}", fileId, name, e.getMessage());
             throw new RuntimeException("cannot read landscape file " + fileId, e);
-        }
-        if (streamable) {
-            try (InputStream stream = server.getResourceManager().open(fileId)) {
-                LandscapeNbtReader.read(stream, visitor);
-            } catch (IOException e) {
-                LOGGER.error("Cannot read landscape file {} of chapter {}: {}", fileId, name, e.getMessage());
-                throw new RuntimeException("cannot read landscape file " + fileId, e);
-            }
-        } else {
-            StructureTemplate landscapeTemplate = loadStructureTemplate(server, landscapeName, parentStory.ModId);
-            BlockPos placeholder = new BlockPos(0, 0, 0);
-            StructurePlacementData placementData = new StructurePlacementData().setMirror(BlockMirror.NONE).setRotation(BlockRotation.NONE).setPosition(placeholder);
-            for (StructureTemplate.StructureBlockInfo info : placementData.getRandomBlockInfos(landscapeTemplate.blockInfoLists, placeholder).getAll()) {
-                visitor.visit(info.pos().getX(), info.pos().getY(), info.pos().getZ(), info.state());
-            }
         }
 
         /* Water that is not above the solid surface of its column is dropped. */
@@ -467,33 +446,39 @@ public class Chapter {
         return tile.environmentBlockEntityNbt.get(XYZasLong(x, y, z));
     }
 
-    /* Puts one environment block, given in template coordinates, into the tile that owns its world column. Air is not stored: the stamp
-       treats a missing entry as air, and a template can hold millions of air blocks. */
-    private void addEnvironmentBlock(BlockPos origin, int x, int y, int z, BlockState state, NbtCompound blockEntityNbt) {
+    /* Puts one vertical span of environment blocks, given in template coordinates, into the tile that owns its world column. Air is not stored: the stamp
+       treats a missing entry as air. The span is in one column, so it is rotated once. */
+    private void addEnvironmentSpan(BlockPos origin, int x, int z, int y, int length, BlockState state) {
         BlockState rotated = state.rotate(rotation.blockRotation);
         if (rotated.isAir()) {
             return;
         }
-        BlockPos worldPos = rotatePos(new BlockPos(x, y, z)).add(origin);
-        LandscapeTile tile = tileAt(worldPos.getX(), worldPos.getZ());
+        BlockPos column = rotatePos(new BlockPos(x, 0, z)).add(origin);
+        LandscapeTile tile = tileAt(column.getX(), column.getZ());
         if (tile == null) {
-            environmentDropped++;
+            environmentDropped += length;
             return;
         }
-        int currentY = worldPos.getY() + chaptersBaseHeight;
-        long key = XYZasLong(worldPos.getX(), currentY, worldPos.getZ());
-        if (environmentHighestPoint < currentY) {
-            environmentHighestPoint = currentY;
+        for (int currentY = y + chaptersBaseHeight; currentY < y + length + chaptersBaseHeight; currentY++) {
+            tile.environmentMap.put(XYZasLong(column.getX(), currentY, column.getZ()), rotated);
         }
-        tile.environmentMap.put(key, rotated);
-        if (blockEntityNbt != null) {
-            tile.environmentBlockEntityNbt.put(key, blockEntityNbt);
+        int topY = y + length - 1 + chaptersBaseHeight;
+        if (environmentHighestPoint < topY) {
+            environmentHighestPoint = topY;
+        }
+    }
+
+    private void addEnvironmentBlockEntity(BlockPos origin, int x, int y, int z, NbtCompound blockEntityNbt) {
+        BlockPos column = rotatePos(new BlockPos(x, 0, z)).add(origin);
+        LandscapeTile tile = tileAt(column.getX(), column.getZ());
+        if (tile != null) {
+            tile.environmentBlockEntityNbt.put(XYZasLong(column.getX(), y + chaptersBaseHeight, column.getZ()), blockEntityNbt);
         }
     }
 
     /* Populate the environment maps of the internal tiles with absolute world coordinates. Needs the tiles of populateLandscapeMap.
-       A streamable environment file is read tag by tag and every block goes straight into the tile that owns it, so neither a StructureTemplate
-       nor a list of all blocks is ever in memory. Only a file that cannot be streamed (see LoadEnvironmentTemplate) goes through the template. */
+       The environment .chap file is read region by region and every span goes straight into the tile that owns its column, so no list of
+       all blocks is ever in memory. */
     public void populateEnvironmentMap(MinecraftServer server) {
         if (environmentSize == null) {
             LOGGER.error("Cannot populate environment map: environment not loaded for chapter {}", name);
@@ -502,42 +487,47 @@ public class Chapter {
         maxEnvironmentHeight = environmentSize.getY() + chaptersBaseHeight;
 
         BlockPos origin = templateOrigin();
-        BlockPos placeholder = new BlockPos(0, 0, 0);
         environmentDropped = 0;
         for (LandscapeTile tile : landscapeTiles) {
             tile.environmentMap = new Long2ObjectOpenHashMap<>();
             tile.environmentBlockEntityNbt = new Long2ObjectOpenHashMap<>();
         }
 
-        StructurePlacementData placementData = new StructurePlacementData()
-                .setMirror(BlockMirror.NONE)
-                .setRotation(rotation.blockRotation)
-                .setPosition(placeholder);
+        Identifier fileId = new Identifier(parentStory.ModId, "chapters/" + environmentName + ".chap");
+        try (InputStream stream = server.getResourceManager().open(fileId)) {
+            ChapReader.read(stream, new ChapReader.Visitor() {
+                @Override
+                public void visitSpan(int x, int z, int y, int length, BlockState state) {
+                    addEnvironmentSpan(origin, x, z, y, length, state);
+                }
 
-        if (environmentTemplate != null) {
-            for (StructureTemplate.StructureBlockInfo info : placementData.getRandomBlockInfos(environmentTemplate.blockInfoLists, placeholder).getAll()) {
-                addEnvironmentBlock(origin, info.pos().getX(), info.pos().getY(), info.pos().getZ(), info.state(), info.nbt());
-            }
-        } else {
-            Identifier fileId = new Identifier(parentStory.ModId, "structures/" + environmentName + ".nbt");
-            try (InputStream stream = server.getResourceManager().open(fileId)) {
-                LandscapeNbtReader.read(stream, (x, y, z, state, blockEntity) -> addEnvironmentBlock(origin, x, y, z, state, blockEntity));
-            } catch (IOException e) {
-                LOGGER.error("Cannot read environment file {} of chapter {}: {}", fileId, name, e.getMessage());
-                throw new RuntimeException("cannot read environment file " + fileId, e);
-            }
+                @Override
+                public void visitBlockEntity(int x, int y, int z, NbtCompound nbt) {
+                    addEnvironmentBlockEntity(origin, x, y, z, nbt);
+                }
+            });
+        } catch (IOException e) {
+            LOGGER.error("Cannot read environment file {} of chapter {}: {}", fileId, name, e.getMessage());
+            throw new RuntimeException("cannot read environment file " + fileId, e);
         }
         if (environmentDropped > 0) {
             LOGGER.warn("{} environment blocks of chapter {} lie outside its {}x{} area and were dropped.", environmentDropped, name, size.x, size.z);
         }
 
-        /* The no-foliage template is placed at the same origin as the environment (same size in X and Z, checked at load), so columns map 1:1.
-           Every block in it excludes its x/z column from foliage, except red wool, which only pins the template's corners to the environment's size. */
-        if (noFoliageTemplate != null) {
-            for (StructureTemplate.StructureBlockInfo info : placementData.getRandomBlockInfos(noFoliageTemplate.blockInfoLists, placeholder).getAll()) {
-                if (info.state().isOf(Blocks.RED_WOOL)) continue;
-                BlockPos worldPos = rotatePos(info.pos()).add(origin);
-                noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
+        /* The no-foliage file is placed at the same origin as the environment (same size in X and Z, checked at load), so columns map 1:1.
+           Every block in it excludes its x/z column from foliage, except red wool, which only pins the file's corners to the environment's size. */
+        if (noFoliageFileId != null) {
+            try (InputStream stream = server.getResourceManager().open(noFoliageFileId)) {
+                ChapReader.read(stream, (x, z, y, length, state) -> {
+                    if (state.isOf(Blocks.RED_WOOL)) {
+                        return;
+                    }
+                    BlockPos worldPos = rotatePos(new BlockPos(x, 0, z)).add(origin);
+                    noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
+                });
+            } catch (IOException e) {
+                LOGGER.error("Cannot read no-foliage file {} of chapter {}: {}", noFoliageFileId, name, e.getMessage());
+                throw new RuntimeException("cannot read no-foliage file " + noFoliageFileId, e);
             }
         }
     }
@@ -632,51 +622,40 @@ public class Chapter {
 
         return Math.max(xOffestFromСhapter, zOffestFromСhapter);
     }
-    // Method to load a StructureTemplate from a path
-    public StructureTemplate loadStructureTemplate(MinecraftServer server, String structureName, String modId) {
-        // Get the StructureTemplateManager
-        StructureTemplateManager templateManager = server.getStructureTemplateManager();
-        Identifier structureId = new Identifier(modId, structureName);
-
-        // Load the template
-        return templateManager.getTemplate(structureId)
-                .orElseThrow(() -> new IllegalArgumentException("Structure not found: " + structureId));
-    }
-
-    /* The environment is streamed when its file has the size and the palette before the blocks (files from the generator and the chapter block do):
-       then only the size is read here. Other files (vanilla structure blocks often write the blocks first) are loaded as a StructureTemplate. */
+    /* Reads the size of the environment file, which is all that is needed before the chapter is placed. */
     public void LoadEnvironmentTemplate(MinecraftServer server) {
-        int[] streamSize = null;
-        try (InputStream stream = server.getResourceManager().open(new Identifier(parentStory.ModId, "structures/" + environmentName + ".nbt"))) {
-            streamSize = LandscapeNbtReader.readStreamableSize(stream);
+        Identifier environmentId = new Identifier(parentStory.ModId, "chapters/" + environmentName + ".chap");
+        try (InputStream stream = server.getResourceManager().open(environmentId)) {
+            int[] fileSize = ChapReader.readSize(stream);
+            environmentSize = new Vec3i(fileSize[0], fileSize[1], fileSize[2]);
         } catch (IOException e) {
-            /* A missing or unreadable file falls through to the template manager, which fails with the "Structure not found" message. */
-        }
-        if (streamSize != null) {
-            environmentTemplate = null;
-            environmentSize = new Vec3i(streamSize[0], streamSize[1], streamSize[2]);
-        } else {
-            environmentTemplate = loadStructureTemplate(server, environmentName, parentStory.ModId);
-            environmentSize = environmentTemplate.getSize();
+            LOGGER.error("Cannot read environment file {} of chapter {}: {}", environmentId, name, e.getMessage());
+            throw new RuntimeException("cannot read environment file " + environmentId, e);
         }
 
-        /* The no-foliage template is optional and named after the environment with "-environment" swapped for "-no-foliage"
+        /* The no-foliage file is optional and named after the environment with "-environment" swapped for "-no-foliage"
            ("prologue-environment" -> "prologue-no-foliage"); a name without that suffix just gets "-no-foliage" appended.
            Without the file the chapter simply has no mask. */
         String noFoliageName = environmentName.endsWith("-environment")
                 ? environmentName.substring(0, environmentName.length() - "-environment".length()) + "-no-foliage"
                 : environmentName + "-no-foliage";
-        noFoliageTemplate = server.getStructureTemplateManager()
-                .getTemplate(new Identifier(parentStory.ModId, noFoliageName))
-                .orElse(null);
-        if (noFoliageTemplate != null) {
-            Vec3i envSize = environmentSize;
-            Vec3i maskSize = noFoliageTemplate.getSize();
-            if (envSize.getX() != maskSize.getX() || envSize.getZ() != maskSize.getZ()) {
-                LOGGER.error("No-foliage template {} is {}x{} (X by Z) but environment {} is {}x{}. They must match so they map 1:1: put red wool in the corners.", noFoliageName, maskSize.getX(), maskSize.getZ(), environmentName, envSize.getX(), envSize.getZ());
-                throw new RuntimeException("No-foliage template size differs from environment for chapter " + name);
-            }
+        Identifier noFoliageId = new Identifier(parentStory.ModId, "chapters/" + noFoliageName + ".chap");
+        noFoliageFileId = null;
+        if (server.getResourceManager().getResource(noFoliageId).isEmpty()) {
+            return;
         }
+        int[] maskSize;
+        try (InputStream stream = server.getResourceManager().open(noFoliageId)) {
+            maskSize = ChapReader.readSize(stream);
+        } catch (IOException e) {
+            LOGGER.error("Cannot read no-foliage file {} of chapter {}: {}", noFoliageId, name, e.getMessage());
+            throw new RuntimeException("cannot read no-foliage file " + noFoliageId, e);
+        }
+        if (environmentSize.getX() != maskSize[0] || environmentSize.getZ() != maskSize[2]) {
+            LOGGER.error("No-foliage file {} is {}x{} (X by Z) but environment {} is {}x{}. They must match so they map 1:1: put red wool in the corners.", noFoliageName, maskSize[0], maskSize[2], environmentName, environmentSize.getX(), environmentSize.getZ());
+            throw new RuntimeException("No-foliage file size differs from environment for chapter " + name);
+        }
+        noFoliageFileId = noFoliageId;
     }
 
     /* Resolved here on the server thread so worldgen threads only read the finished field. An unknown biome id fails loudly instead of silently generating the normal biome. */
