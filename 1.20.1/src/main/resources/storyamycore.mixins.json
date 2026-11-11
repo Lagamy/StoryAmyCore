@@ -13,6 +13,7 @@
 		"WorldgenerationPipeline.LakeFeatureMixin",
 		"WorldgenerationPipeline.FeaturesMixin",
 		"WorldgenerationPipeline.ChapterBiomeMixin",
+		"WorldgenerationPipeline.ChapterBiomeSetMixin",
 		"WorldgenerationPipeline.FixedBiomeSourceMixin",
 		"WorldgenerationPipeline.FlatChunkGeneratorMixin",
 		"StructureBlock.StructureBlockBlockEntityMixin",

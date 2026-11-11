@@ -1,7 +1,0 @@
-{
-  "render_type": "cutout",
-  "parent": "minecraft:block/crop",
-  "textures": {
-    "crop": "minecraft:block/wheat_stage7"
-  }
-}

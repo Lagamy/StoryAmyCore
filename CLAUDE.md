@@ -38,7 +38,7 @@ Use errors, logs and crash reports I paste for anything runtime. After a change,
 compiled (or the errors), and that nothing was run; don't claim it works.
 
 ## Architecture (current state)
-Worldgen only: stories made of chapters are placed in the Overworld, and their landscape and environment are stamped into terrain generation. There is no client code, networking, shader code or tests yet. For the class layout, worldgen pipeline and data files, go to `Docs.md`.
+Stories made of chapters are placed in the Overworld, and their landscape and environment are stamped into terrain generation. The client side has a light renderer, post-processing effects, entity shaders and a compass client, exposed to other mods through `StoryAmyClientApi`. Core registers no stories itself: dependent mods (e.g. SlenderMan's Arrival: Revisited) do. There is no networking or tests yet. For the class layout, worldgen pipeline and data files, go to `Docs.md`.
 
 ## Conventions for new code
 - 4 spaces, K&R braces (`if (x) {`). Classes `PascalCase`, methods/fields/locals `camelCase`. Interfaces get an `I` prefix, mixins end in `Mixin`.
@@ -58,7 +58,7 @@ Worldgen only: stories made of chapters are placed in the Overworld, and their l
 
 ## Roadmap (planned, not built)
 - Stories and chapters placement: exists, being extended.
-- Client-side graphics shaders integrated into gameplay elements (e.g. a flashlight). The client side is a blank slate: empty client entrypoint, no client mixins or resources, no networking, and `StoryEngine` state is server-only. A shader library choice, a networking layer, or a client/common source-set split are new dependencies/abstractions: propose first.
+- Client-side graphics shaders integrated into gameplay elements (e.g. a flashlight). `StoryEngine` state is server-only. A shader library choice, a networking layer, or a client/common source-set split are new dependencies/abstractions: propose first.
 
 ## Git
 Commit only when I ask. Match history: short, sentence-case, past-tense messages.

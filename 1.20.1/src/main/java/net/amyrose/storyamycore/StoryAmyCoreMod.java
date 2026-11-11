@@ -1,23 +1,16 @@
 package net.amyrose.storyamycore;
 
-import net.amyrose.storyamycore.api.StoryAmyApi;
-import net.amyrose.storyamycore.core.BlockPos2D;
 import net.amyrose.storyamycore.core.StoryEngine;
 import net.amyrose.storyamycore.core.StructureStreamJobs;
-import net.amyrose.storyamycore.block.ModBlocks;
 import net.amyrose.storyamycore.item.ModItemGroups;
 import net.amyrose.storyamycore.item.ModItems;
-import net.amyrose.storyamycore.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.GrassBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 public class StoryAmyCoreMod implements ModInitializer {
@@ -25,96 +18,6 @@ public class StoryAmyCoreMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		StoryAmyApi.registerStory(MOD_ID, "testStory", 1000);
-		StoryAmyApi.addFirstChapter(
-				MOD_ID,
-				"testStory",
-				"prologue",
-				281, 188,
-				"prologue-landscape",
-				Blocks.GRASS_BLOCK.getDefaultState(),
-				Set.of(
-						Blocks.STONE.getDefaultState(),
-						Blocks.DIRT.getDefaultState(),
-						Blocks.GRAVEL.getDefaultState(),
-						Blocks.SAND.getDefaultState(),
-						Blocks.DIORITE.getDefaultState()
-				),
-				"prologue-environment",
-				Set.of(
-						"minecraft:forest",
-						"minecraft:flower_forest",
-						"minecraft:birch_forest",
-						"minecraft:old_growth_birch_forest",
-						"minecraft:dark_forest",
-						"minecraft:pale_garden",
-						"minecraft:windswept_forest",
-						"minecraft:taiga",
-						"minecraft:snowy_taiga",
-						"minecraft:old_growth_pine_taiga",
-						"minecraft:old_growth_spruce_taiga",
-						"minecraft:grove",
-						"minecraft:sparse_jungle",
-						"minecraft:bamboo_jungle"
-				),
-				64,
-				0.85
-		);
-
-//		StoryAmyApi.addFirstChapter(
-//				MOD_ID,
-//				"testStory",
-//				"eightPagesTest",
-//				1000, 1000,
-//				"eightpages",
-//				Blocks.GRASS_BLOCK.getDefaultState(),
-//				Set.of(
-//						Blocks.STONE.getDefaultState(),
-//						Blocks.DIRT.getDefaultState(),
-//						Blocks.COARSE_DIRT.getDefaultState(),
-//						Blocks.GRAVEL.getDefaultState(),
-//						Blocks.SAND.getDefaultState(),
-//						Blocks.ANDESITE.getDefaultState()
-//				),
-//				"eightpages-environment",
-//				Set.of(
-//						"minecraft:plains",
-//						"minecraft:sunflower_plains"
-//				),
-//				64,
-//				new BlockPos2D(125, 125),
-//				"minecraft:forest",
-//				0.5
-//		);
-
-//		StoryAmyApi.addFirstChapter(
-//				MOD_ID,
-//				"testStory",
-//				"prologueTest",
-//				1000, 1000,
-//				"prologue-test-landscape",
-//				Blocks.GRASS_BLOCK.getDefaultState(),
-//				Set.of(
-//						Blocks.STONE.getDefaultState(),
-//						Blocks.DIRT.getDefaultState(),
-//						Blocks.COARSE_DIRT.getDefaultState(),
-//						Blocks.GRAVEL.getDefaultState(),
-//						Blocks.SAND.getDefaultState(),
-//						Blocks.ANDESITE.getDefaultState()
-//				),
-//				"prologue-test-environment",
-//				Set.of(
-//						"minecraft:plains",
-//						"minecraft:sunflower_plains"
-//				),
-//				64,
-//				new BlockPos2D(125, 125),
-//				"minecraft:forest",
-//				0.5
-//		);
-
-		ModBlocks.registerBlocks();
-		ModSounds.registerSounds();
 		ModItems.registerItems();
 		ModItemGroups.registerItemGroups();
 

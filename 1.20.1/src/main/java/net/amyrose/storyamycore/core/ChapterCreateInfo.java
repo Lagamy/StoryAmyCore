@@ -39,6 +39,7 @@ public class ChapterCreateInfo {
     public String biome; // null = no biome override; otherwise e.g. "minecraft:forest".
     public double minBiomeShare = 1.0; // 1.0 = every sampled point must be in an allowed biome; above 0 and at most 1.
     public int ringRadius = StoryEngine.ringRadius; // how many blocks the blend ring around the landscape spans.
+    public boolean litterGrass = false; // true = ground cover (grass, flower and mushroom patches) is still scattered inside the no-features mask; false = nothing is.
     public boolean adaptiveRing = false; // true = the ring may grow beyond ringRadius where the terrain is far from the landscape's edge.
     public double steepnessAdaptationFactor = 1.0; // only used with adaptiveRing: ring blocks per block of worst height difference (the ring needed is ceil(worst difference x this), never below ringRadius), above 0.
 }

@@ -60,11 +60,12 @@ public class Chapter {
     public Vec3i environmentSize;
     private int environmentDropped;
     public int environmentHighestPoint = Integer.MIN_VALUE;
-    private Identifier noFoliageFileId; // null when the chapter has no no-foliage file (see LoadEnvironmentTemplate).
+    private Identifier noFeaturesFileId; // null when the chapter has no no-features file (see LoadEnvironmentTemplate).
 
     public int chaptersBaseHeight = 64;
     public int maxEnvironmentHeight;
-    public LongOpenHashSet noFoliageMask = new LongOpenHashSet();
+    public LongOpenHashSet noFeaturesMask = new LongOpenHashSet();
+    public boolean litterGrass = false; // optional "litterGrass" JSON field: true = ground cover (grass, flower and mushroom patches) is still scattered inside the no-features mask.
     public Long2IntOpenHashMap landscapeBorder = new Long2IntOpenHashMap();
     public Long2IntOpenHashMap ringLayersMap = new Long2IntOpenHashMap();
     public Set<String> allowedBiomes;
@@ -200,8 +201,8 @@ public class Chapter {
        The chapter is judged by where that corner lies relative to a reference: the player's start (0, 0) for the first chapter, and for the others the point
        of the previous chapter's area (not its ring) nearest to the corner. A chapter is never judged by its center, so one that starts north of the reference
        is behind it even when it is centered on it.
-       The player looks south (+Z, the default spawn facing) and the unrotated chapter's front is its north side. Ahead of the reference only NONE
-       is allowed (behind it only BACK), and a chapter to the east/west also may turn RIGHT/LEFT (a 90 degree turn of the chapter, not the side of
+       The story runs along X: the unrotated chapter's front is its west side. Ahead of the reference (toward +X) only NONE is allowed (behind it,
+       toward -X, only BACK), and a chapter to the north/south (-Z/+Z) also may turn LEFT/RIGHT (a 90 degree turn of the chapter, not the side of
        the reference it is on). When it lies farther to the side than ahead, the side turn is tested first, otherwise the straight one.
        The rotation opposite to the previous chapter's (NONE/BACK, RIGHT/LEFT) is never allowed, so the story does not fold back on itself. */
     private List<ChapterRotation> rotationsToTry(int startX, int startZ) {
@@ -213,13 +214,13 @@ public class Chapter {
         }
         int toChapterX = startX - referenceX;
         int toChapterZ = startZ - referenceZ;
-        ChapterRotation straight = toChapterZ >= 0 ? ChapterRotation.NONE : ChapterRotation.BACK;
+        ChapterRotation straight = toChapterX >= 0 ? ChapterRotation.NONE : ChapterRotation.BACK;
         List<ChapterRotation> rotations = new ArrayList<>();
-        if (toChapterX == 0) {
+        if (toChapterZ == 0) {
             rotations.add(straight);
         } else {
-            ChapterRotation side = toChapterX > 0 ? ChapterRotation.RIGHT : ChapterRotation.LEFT;
-            if (Math.abs(toChapterX) > Math.abs(toChapterZ)) {
+            ChapterRotation side = toChapterZ > 0 ? ChapterRotation.RIGHT : ChapterRotation.LEFT;
+            if (Math.abs(toChapterZ) > Math.abs(toChapterX)) {
                 rotations.add(side);
                 rotations.add(straight);
             } else {
@@ -523,20 +524,20 @@ public class Chapter {
             LOGGER.warn("{} environment blocks of chapter {} lie outside its {}x{} area and were dropped.", environmentDropped, name, size.x, size.z);
         }
 
-        /* The no-foliage file is placed at the same origin as the environment (same size in X and Z, checked at load), so columns map 1:1.
-           Every block in it excludes its x/z column from foliage, except red wool, which only pins the file's corners to the environment's size. */
-        if (noFoliageFileId != null) {
-            try (InputStream stream = server.getResourceManager().open(noFoliageFileId)) {
+        /* The no-features file is placed at the same origin as the environment (same size in X and Z, checked at load), so columns map 1:1.
+           Every block in it excludes its x/z column from features, except red wool, which only pins the file's corners to the environment's size. */
+        if (noFeaturesFileId != null) {
+            try (InputStream stream = server.getResourceManager().open(noFeaturesFileId)) {
                 ChapReader.read(stream, (x, z, y, length, state) -> {
                     if (state.isOf(Blocks.RED_WOOL)) {
                         return;
                     }
                     BlockPos worldPos = rotatePos(new BlockPos(x, 0, z)).add(origin);
-                    noFoliageMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
+                    noFeaturesMask.add(XandZAsLong(worldPos.getX(), worldPos.getZ()));
                 });
             } catch (IOException e) {
-                LOGGER.error("Cannot read no-foliage file {} of chapter {}: {}", noFoliageFileId, name, e.getMessage());
-                throw new RuntimeException("cannot read no-foliage file " + noFoliageFileId, e);
+                LOGGER.error("Cannot read no-features file {} of chapter {}: {}", noFeaturesFileId, name, e.getMessage());
+                throw new RuntimeException("cannot read no-features file " + noFeaturesFileId, e);
             }
         }
     }
@@ -679,29 +680,29 @@ public class Chapter {
             throw new RuntimeException("cannot read environment file " + environmentId, e);
         }
 
-        /* The no-foliage file is optional and named after the environment with "-environment" swapped for "-no-foliage"
-           ("prologue-environment" -> "prologue-no-foliage"); a name without that suffix just gets "-no-foliage" appended.
+        /* The no-features file is optional and named after the environment with "-environment" swapped for "-no-features"
+           ("prologue-environment" -> "prologue-no-features"); a name without that suffix just gets "-no-features" appended.
            Without the file the chapter simply has no mask. */
-        String noFoliageName = environmentName.endsWith("-environment")
-                ? environmentName.substring(0, environmentName.length() - "-environment".length()) + "-no-foliage"
-                : environmentName + "-no-foliage";
-        Identifier noFoliageId = new Identifier(parentStory.ModId, "chapters/" + noFoliageName + ".chap");
-        noFoliageFileId = null;
-        if (server.getResourceManager().getResource(noFoliageId).isEmpty()) {
+        String noFeaturesName = environmentName.endsWith("-environment")
+                ? environmentName.substring(0, environmentName.length() - "-environment".length()) + "-no-features"
+                : environmentName + "-no-features";
+        Identifier noFeaturesId = new Identifier(parentStory.ModId, "chapters/" + noFeaturesName + ".chap");
+        noFeaturesFileId = null;
+        if (server.getResourceManager().getResource(noFeaturesId).isEmpty()) {
             return;
         }
         int[] maskSize;
-        try (InputStream stream = server.getResourceManager().open(noFoliageId)) {
+        try (InputStream stream = server.getResourceManager().open(noFeaturesId)) {
             maskSize = ChapReader.readSize(stream);
         } catch (IOException e) {
-            LOGGER.error("Cannot read no-foliage file {} of chapter {}: {}", noFoliageId, name, e.getMessage());
-            throw new RuntimeException("cannot read no-foliage file " + noFoliageId, e);
+            LOGGER.error("Cannot read no-features file {} of chapter {}: {}", noFeaturesId, name, e.getMessage());
+            throw new RuntimeException("cannot read no-features file " + noFeaturesId, e);
         }
         if (environmentSize.getX() != maskSize[0] || environmentSize.getZ() != maskSize[2]) {
-            LOGGER.error("No-foliage file {} is {}x{} (X by Z) but environment {} is {}x{}. They must match so they map 1:1: put red wool in the corners.", noFoliageName, maskSize[0], maskSize[2], environmentName, environmentSize.getX(), environmentSize.getZ());
-            throw new RuntimeException("No-foliage file size differs from environment for chapter " + name);
+            LOGGER.error("No-features file {} is {}x{} (X by Z) but environment {} is {}x{}. They must match so they map 1:1: put red wool in the corners.", noFeaturesName, maskSize[0], maskSize[2], environmentName, environmentSize.getX(), environmentSize.getZ());
+            throw new RuntimeException("No-features file size differs from environment for chapter " + name);
         }
-        noFoliageFileId = noFoliageId;
+        noFeaturesFileId = noFeaturesId;
     }
 
     /* Resolved here on the server thread so worldgen threads only read the finished field. An unknown biome id fails loudly instead of silently generating the normal biome. */

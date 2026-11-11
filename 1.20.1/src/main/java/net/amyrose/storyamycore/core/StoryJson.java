@@ -74,7 +74,7 @@ public final class StoryJson {
     }
 
     /* Optional fields are written only when they differ from their default: tileSize null = untiled, biome null = no biome override,
-       minBiomeShare 1.0, ringRadius equal to StoryEngine.ringRadius, adaptiveRing false (steepnessAdaptationFactor is only written when it is on). */
+       minBiomeShare 1.0, litterGrass false, ringRadius equal to StoryEngine.ringRadius, adaptiveRing false (steepnessAdaptationFactor is only written when it is on). */
     public static JsonObject chapterEntry(ChapterCreateInfo info) {
         JsonObject entry = new JsonObject();
         entry.add("size", pos(info.sizeX, info.sizeZ));
@@ -103,6 +103,9 @@ public final class StoryJson {
         }
         if (info.biome != null) {
             entry.addProperty("biome", info.biome);
+        }
+        if (info.litterGrass) {
+            entry.addProperty("litterGrass", true);
         }
         if (info.ringRadius != StoryEngine.ringRadius) {
             entry.addProperty("ringRadius", info.ringRadius);
@@ -198,6 +201,14 @@ public final class StoryJson {
             /* Optional: splits the landscape into templates of this size, named <landscapeName>_<column>_<row>. It must divide the chapter size evenly. */
             if (json.has("landscapeTileSize")) {
                 story.chapters.get(chapterName).landscapeTileSize = getPos(json, "landscapeTileSize", chapterWhere);
+            }
+
+            /* Optional: true lets grass, flower and mushroom patches be scattered inside the no-features mask too; absent means false. */
+            if (json.has("litterGrass")) {
+                if (!json.get("litterGrass").isJsonPrimitive() || !json.get("litterGrass").getAsJsonPrimitive().isBoolean()) {
+                    fail(chapterWhere + " 'litterGrass' must be true or false.");
+                }
+                story.chapters.get(chapterName).litterGrass = json.get("litterGrass").getAsBoolean();
             }
 
             /* Optional: the biome the chapter area is generated as, e.g. "minecraft:forest". */

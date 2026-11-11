@@ -198,23 +198,37 @@ public class StoryEngine {
 
     /* Reads stories directly instead of a chunk's present chapters, so it is usable from the features stage after a chunk reload.
        Read-only, so it is safe off the main thread. */
-    public static boolean isInNoFoliageMask(int x, int z) {
-        long key = XandZAsLong(x, z);
+    public static boolean isInNoFeaturesMask(int x, int z, boolean grass) {
         for (Story story : stories.values()) {
             for (Chapter chapter : story.chapters.values()) {
-                if (chapter.isPlaced() && chapter.chapterArea.inBounds(x, z) && chapter.noFoliageMask.contains(key)) {
-                    return true;
+                if (!chapter.isPlaced() || chapter.noFeaturesMask.isEmpty() || (grass && chapter.litterGrass)) {
+                    continue;
+                }
+                /* A feature can reach a few blocks from its origin (a tree crown, a rock blob), so the columns around the origin are tested as well.
+                   The corner test first keeps the many lookups for positions near a chapter only. */
+                if (!chapter.chapterArea.inBounds(x - NO_FEATURES_MARGIN, z - NO_FEATURES_MARGIN) && !chapter.chapterArea.inBounds(x + NO_FEATURES_MARGIN, z - NO_FEATURES_MARGIN)
+                        && !chapter.chapterArea.inBounds(x - NO_FEATURES_MARGIN, z + NO_FEATURES_MARGIN) && !chapter.chapterArea.inBounds(x + NO_FEATURES_MARGIN, z + NO_FEATURES_MARGIN)) {
+                    continue;
+                }
+                for (int dx = -NO_FEATURES_MARGIN; dx <= NO_FEATURES_MARGIN; dx++) {
+                    for (int dz = -NO_FEATURES_MARGIN; dz <= NO_FEATURES_MARGIN; dz++) {
+                        if (chapter.noFeaturesMask.contains(XandZAsLong(x + dx, z + dz))) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
         return false;
     }
 
+    static final int NO_FEATURES_MARGIN = 4;
+
     /* Vanilla scatters a new player up to 10 blocks (spawnRadius) around the world spawn, so the spawn is kept at least this far from any chapter's middle. */
     static final int SPAWN_EDGE_MARGIN = 16;
 
     /* Returns where the world spawn should move to, or null when it is fine. A spawn deeper than SPAWN_EDGE_MARGIN inside a chapter is moved
-       to just outside the nearest edge of that chapter (SPAWN_EDGE_MARGIN past it), so a spawn on a chapter's corner or edge is left alone.
+       to just outside the front edge of that chapter (SPAWN_EDGE_MARGIN past it), so a spawn on a chapter's corner or edge is left alone.
        Repeated because the new spot can fall inside another chapter. Reads placement only, so it runs on the server thread at world setup. */
     public static BlockPos2D findSpawnOutsideChapters(int spawnX, int spawnZ) {
         int x = spawnX;
@@ -238,14 +252,13 @@ public class StoryEngine {
                     }
                     insideAny = true;
                     moved = true;
-                    if (deepest == toWest) {
-                        x = area.beginning.x - SPAWN_EDGE_MARGIN;
-                    } else if (deepest == toEast) {
-                        x = area.end.x + SPAWN_EDGE_MARGIN;
-                    } else if (deepest == toNorth) {
-                        z = area.beginning.z - SPAWN_EDGE_MARGIN;
-                    } else {
-                        z = area.end.z + SPAWN_EDGE_MARGIN;
+                    /* The player is moved to the chapter's front edge, not the nearest one, so the story is entered from its start and not from the side.
+                       The unrotated front is the west side; the rotation turns it: RIGHT to the north, LEFT to the south, BACK to the east. */
+                    switch (chapter.rotation) {
+                        case NONE -> x = area.beginning.x - SPAWN_EDGE_MARGIN;
+                        case BACK -> x = area.end.x + SPAWN_EDGE_MARGIN;
+                        case RIGHT -> z = area.beginning.z - SPAWN_EDGE_MARGIN;
+                        case LEFT -> z = area.end.z + SPAWN_EDGE_MARGIN;
                     }
                 }
             }
