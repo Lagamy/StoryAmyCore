@@ -539,6 +539,7 @@ public class Chapter {
                 LOGGER.error("Cannot read no-features file {} of chapter {}: {}", noFeaturesFileId, name, e.getMessage());
                 throw new RuntimeException("cannot read no-features file " + noFeaturesFileId, e);
             }
+            LOGGER.info("No-features mask of chapter {}: {} columns, litterGrass = {}", name, noFeaturesMask.size(), litterGrass);
         }
     }
 

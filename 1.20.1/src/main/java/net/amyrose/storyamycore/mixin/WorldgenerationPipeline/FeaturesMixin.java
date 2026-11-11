@@ -24,10 +24,11 @@ public class FeaturesMixin {
     private void skipPositionsInNoFeaturesMask(Stream<BlockPos> stream, Consumer<BlockPos> consumer) {
         /* PlacedFeature instances are shared by all worldgen threads, so no per-feature state is kept here (the old version stored the chunk in a field).
            Filtering the stream drops masked positions before the original consumer runs, so it still sets the return value itself.
-           Ground cover (random patches and flowers) is told apart by its feature type, because a chapter can allow it inside the mask (litterGrass). */
+           Ground cover (random patches and flowers) is told apart by its feature type, because a chapter can allow it inside the mask (litterGrass).
+           A patch places its plants through an inner placed feature (simple_block) that goes through this same method, so that type counts as ground cover too. */
         PlacedFeature placed = (PlacedFeature) (Object) this;
         ConfiguredFeature<?, ?> configured = placed.feature().value();
-        boolean grass = configured.feature() == Feature.RANDOM_PATCH || configured.feature() == Feature.FLOWER || configured.feature() == Feature.NO_BONEMEAL_FLOWER;
+        boolean grass = configured.feature() == Feature.RANDOM_PATCH || configured.feature() == Feature.FLOWER || configured.feature() == Feature.NO_BONEMEAL_FLOWER || configured.feature() == Feature.SIMPLE_BLOCK;
         stream.filter(placedPos -> !StoryEngine.isInNoFeaturesMask(placedPos.getX(), placedPos.getZ(), grass)).forEach(consumer);
     }
 }
